@@ -1,0 +1,28 @@
+{
+  "type": "record",
+  "name": "AccountingEventV1",
+  "namespace": "com.synthetic.ledger",
+  "fields": [
+    {"name": "event_id", "type": "string"},
+    {"name": "schema_version", "type": "string"},
+    {"name": "event_type", "type": "string"},
+    {"name": "company_id", "type": "string"},
+    {"name": "tenant_id", "type": "string"},
+    {"name": "occurred_at", "type": "string"},
+    {"name": "ingested_at", "type": "string"},
+    {"name": "product_id", "type": "string"},
+    {"name": "supplier_id", "type": ["null", "string"], "default": null},
+    {"name": "customer_id", "type": ["null", "string"], "default": null},
+    {"name": "warehouse_id", "type": "string"},
+    {"name": "quantity", "type": "double"},
+    {"name": "unit_price", "type": "double"},
+    {"name": "discount", "type": "double"},
+    {"name": "tax", "type": "double"},
+    {"name": "currency", "type": "string"},
+    {"name": "cost_basis", "type": "double"},
+    {"name": "cmv", "type": "double"},
+    {"name": "debit_account", "type": "string"},
+    {"name": "credit_account", "type": "string"},
+    {"name": "channel", "type": "string"}
+  ]
+}

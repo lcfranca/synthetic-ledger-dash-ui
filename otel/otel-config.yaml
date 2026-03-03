@@ -1,0 +1,38 @@
+receivers:
+  kafka:
+    protocol_version: 2.0.0
+    brokers:
+      - kafka:9092
+    topic: accounting-events-v1
+    encoding: raw
+
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+  batch:
+    timeout: 200ms
+    send_batch_size: 50
+
+exporters:
+  otlphttp/storage_writer:
+    endpoint: http://storage-writer:8090
+    timeout: 30s
+    tls:
+      insecure: true
+    retry_on_failure:
+      enabled: true
+      initial_interval: 500ms
+      max_interval: 5s
+      max_elapsed_time: 30s
+    sending_queue:
+      enabled: true
+      num_consumers: 4
+      queue_size: 10000
+
+service:
+  pipelines:
+    logs:
+      receivers: [kafka]
+      processors: [memory_limiter, batch]
+      exporters: [otlphttp/storage_writer]

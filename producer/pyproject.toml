@@ -1,0 +1,25 @@
+[project]
+name = "synthetic-ledger-producer"
+version = "0.1.0"
+description = "Synthetic accounting event producer"
+requires-python = ">=3.12"
+dependencies = [
+  "confluent-kafka>=2.5.0",
+  "fastavro>=1.9.5",
+  "opentelemetry-proto>=1.27.0",
+  "orjson>=3.10.0",
+  "pydantic>=2.8.0",
+]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+producer = ["schemas/*.avsc"]

@@ -1,0 +1,118 @@
+services:
+  zookeeper:
+    image: zookeeper:3.9
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    depends_on:
+      zookeeper:
+        condition: service_started
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
+      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+    healthcheck:
+      test: ["CMD-SHELL", "cub kafka-ready -b localhost:9092 1 30"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+    ports:
+      - "9092:9092"
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8
+    volumes:
+      - ./infra/clickhouse/init/01-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    environment:
+      - CLICKHOUSE_DB=ledger
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+
+  druid-router:
+    image: apache/druid:29.0.1
+    command: ["router"]
+    environment:
+      - DRUID_SINGLE_NODE_CONF=micro-quickstart
+      - ZK_HOST=zookeeper
+    depends_on:
+      - zookeeper
+    ports:
+      - "8889:8888"
+
+  pinot-zookeeper:
+    image: zookeeper:3.9
+
+  pinot-controller:
+    image: apachepinot/pinot:1.2.0
+    command: ["StartController", "-zkAddress", "pinot-zookeeper:2181"]
+    depends_on:
+      - pinot-zookeeper
+    ports:
+      - "9001:9000"
+
+  pinot-broker:
+    image: apachepinot/pinot:1.2.0
+    command: ["StartBroker", "-zkAddress", "pinot-zookeeper:2181"]
+    depends_on:
+      - pinot-controller
+    ports:
+      - "8099:8099"
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.108.0
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    restart: unless-stopped
+    volumes:
+      - ./otel/otel-config.yaml:/etc/otelcol-contrib/config.yaml:ro
+    depends_on:
+      kafka:
+        condition: service_healthy
+      storage-writer:
+        condition: service_started
+
+  producer:
+    build: ./producer
+    profiles: ["producer"]
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+  storage-writer:
+    build: ./storage_writer
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8090:8090"
+    depends_on:
+      - clickhouse
+      - druid-router
+      - pinot-controller
+      - pinot-broker
+
+  api:
+    build: ./api
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+    depends_on:
+      - storage-writer
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - api

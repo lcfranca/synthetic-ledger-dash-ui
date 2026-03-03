@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: synthetic-ledger
+resources:
+  - ../../base/namespace.yaml
+  - ../../base/producer-deployment.yaml
+  - ../../base/otel-deployment.yaml
+  - ../../base/storage-writer-deployment.yaml
+  - ../../base/api-deployment.yaml
+  - ../../base/frontend-deployment.yaml
+
+configMapGenerator:
+  - name: synthetic-ledger-config
+    literals:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_TOPIC=accounting-events-v1
+      - TARGET_BACKENDS=clickhouse,druid,pinot
+      - API_REFRESH_INTERVAL_MS=1000
+
+  - name: otel-config
+    files:
+      - config.yaml=../../../otel/otel-config.yaml
