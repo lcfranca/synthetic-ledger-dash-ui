@@ -2,6 +2,8 @@
 
 Plataforma para geração de eventos contábeis sintéticos, ingestão por Kafka + OpenTelemetry Collector, persistência em múltiplos OLAP backends e dashboard near-real-time com foco em latência percebida.
 
+Versão atual do projeto (configuração oficial): `pyproject.toml` (`project.version = 0.0.1-rc.1`).
+
 ## Estrutura
 
 - `producer/`: gerador de eventos contábeis sintéticos em Python.
@@ -11,6 +13,14 @@ Plataforma para geração de eventos contábeis sintéticos, ingestão por Kafka
 - `frontend/`: dashboard near-real-time.
 - `k8s/`: manifests base para execução em Kubernetes.
 - `docs/`: documentação funcional e técnica.
+
+## Regras Contábeis do Sistema
+
+- Todo evento contábil gera lançamentos imutáveis de débito/crédito.
+- Somente lançamentos alteram saldos de BP/DRE.
+- Eventos de origem são mapeados em ontologia de lançamento (`ontology_event_type`, `ontology_description`, `ontology_source`).
+- Auditoria e rastreabilidade com `event_id`, `trace_id`, `source_payload_hash`, `revision`, `valid_from`, `valid_to` e `is_current`.
+- Time-travel via parâmetro `as_of` nos endpoints da API.
 
 ## Primeiros passos
 
@@ -62,3 +72,5 @@ O alvo `up` cria `.env` automaticamente a partir de `.env.example` se necessári
 ## Documentação técnica
 
 Veja [docs/architecture-state-of-the-art.md](docs/architecture-state-of-the-art.md).
+
+Direção estética e semântica de produto: [docs/art_bible.md](docs/art_bible.md).

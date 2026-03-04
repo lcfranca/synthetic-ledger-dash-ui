@@ -23,31 +23,34 @@ class ClickHouseAdapter(StorageAdapter):
 
         create_db = "CREATE DATABASE IF NOT EXISTS ledger"
         create_table = """
-        CREATE TABLE IF NOT EXISTS ledger.events (
+        CREATE TABLE IF NOT EXISTS ledger.entries (
+            entry_id String,
             event_id String,
-            schema_version String,
-            event_type String,
+            trace_id String,
             company_id String,
             tenant_id String,
+            entry_side String,
+            account_code String,
+            account_name String,
+            statement_section String,
+            amount Float64,
+            signed_amount Float64,
+            currency String,
+            ontology_event_type String,
+            ontology_description String,
+            ontology_source String,
+            source_payload_hash String,
+            schema_version String,
             occurred_at DateTime64(3, 'UTC'),
             ingested_at DateTime64(3, 'UTC'),
-            product_id String,
-            supplier_id Nullable(String),
-            customer_id Nullable(String),
-            warehouse_id String,
-            quantity Float64,
-            unit_price Float64,
-            discount Float64,
-            tax Float64,
-            currency String,
-            cost_basis Float64,
-            cmv Float64,
-            debit_account String,
-            credit_account String,
-            channel String
+            valid_from DateTime64(3, 'UTC'),
+            valid_to Nullable(DateTime64(3, 'UTC')),
+            is_current UInt8,
+            revision UInt32,
+            created_at DateTime64(3, 'UTC')
         )
         ENGINE = MergeTree
-        ORDER BY (company_id, occurred_at, event_id)
+        ORDER BY (company_id, occurred_at, entry_id)
         """.strip()
 
         db_response = await self.client.post(
@@ -75,10 +78,9 @@ class ClickHouseAdapter(StorageAdapter):
     async def write_event(self, event: dict) -> None:
         await self._ensure_schema()
         query = """
-            INSERT INTO ledger.events FORMAT JSONEachRow
+            INSERT INTO ledger.entries FORMAT JSONEachRow
         """.strip()
-        event.setdefault("channel", "online")
-        for field in ("occurred_at", "ingested_at"):
+        for field in ("occurred_at", "ingested_at", "valid_from", "created_at"):
             value = event.get(field)
             if isinstance(value, str):
                 normalized = value.replace("T", " ")

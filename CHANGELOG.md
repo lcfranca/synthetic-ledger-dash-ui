@@ -8,7 +8,14 @@ and this project adheres to Semantic Versioning.
 ## [Unreleased]
 
 ### Changed
-- Versão de release candidata definida em `VERSION` como `0.0.1-rc.1`.
+- Versão oficial do projeto passou para `pyproject.toml` (`0.0.1-rc.1`) como arquivo de configuração principal.
+- Dashboard deixou de ser apenas agregados e passou a exibir fila em tempo real de lançamentos Débito/Crédito com ontologia e trilha de auditoria.
+- API passou a derivar BP/DRE exclusivamente da tabela de lançamentos (`ledger.entries`) e incluiu suporte a time-travel via `as_of`.
+- Pipeline de ingestão passou a transformar eventos em lançamentos contábeis imutáveis com campos de auditoria, rastreabilidade e revisão temporal.
+
+### Added
+- `docs/art_bible.md` com direção estética do projeto (padrão art bible) e ontologia de lançamentos.
+- Endpoints de histórico de lançamentos e payload websocket com resumo + entradas recentes.
 
 ## [0.0.1] - 2026-03-03
 
