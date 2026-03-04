@@ -10,6 +10,7 @@ Versão atual do projeto (configuração oficial): `pyproject.toml` (`project.ve
 - `otel/`: configuração de ingestão e roteamento no OpenTelemetry Collector.
 - `storage_writer/`: serviço de persistência fan-out para ClickHouse, Druid e Pinot.
 - `api/`: camada de consulta agregada para o frontend.
+- `api_druid/`: camada de consulta agregada para dashboard com backend Druid.
 - `frontend/`: dashboard near-real-time.
 - `k8s/`: manifests base para execução em Kubernetes.
 - `docs/`: documentação funcional e técnica.
@@ -35,6 +36,8 @@ Versão atual do projeto (configuração oficial): `pyproject.toml` (`project.ve
 5. Acesse:
    - Frontend: `http://localhost:5173`
    - API: `http://localhost:8080/docs`
+   - Frontend (Druid): `http://localhost:5174`
+   - API (Druid): `http://localhost:8081/docs`
 
 O alvo `up` cria `.env` automaticamente a partir de `.env.example` se necessário.
 

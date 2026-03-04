@@ -109,6 +109,16 @@ services:
     depends_on:
       - storage-writer
 
+  api-druid:
+    build: ./api_druid
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8081:8080"
+    depends_on:
+      - storage-writer
+
   frontend:
     build: ./frontend
     restart: unless-stopped
@@ -116,3 +126,13 @@ services:
       - "5173:80"
     depends_on:
       - api
+
+  frontend-druid:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.druid
+    restart: unless-stopped
+    ports:
+      - "5174:80"
+    depends_on:
+      - api-druid

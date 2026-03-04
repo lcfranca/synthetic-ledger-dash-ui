@@ -27,5 +27,7 @@ rebuild:
 
 health:
 	@echo "API:" && curl -fsS http://localhost:8080/health && echo
+	@echo "API Druid:" && curl -fsS http://localhost:8081/health && echo
 	@echo "Storage Writer:" && curl -fsS http://localhost:8090/health && echo
 	@echo "Frontend:" && curl -fsSI http://localhost:5173 | head -n 1
+	@echo "Frontend Druid:" && curl -fsSI http://localhost:5174 | head -n 1

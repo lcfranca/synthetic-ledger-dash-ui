@@ -1,4 +1,5 @@
 import os
+import json
 
 import httpx
 
@@ -21,18 +22,30 @@ class DruidAdapter(StorageAdapter):
             return False
 
     async def write_event(self, event: dict) -> None:
-        payload = [{**event, "__time": event.get("occurred_at")}]
-        await self.client.post(
+        payload = {**event, "__time": event.get("occurred_at")}
+        inline_data = json.dumps(payload)
+        response = await self.client.post(
             f"{self.router_url}/druid/indexer/v1/task",
             json={
                 "type": "index_parallel",
                 "spec": {
-                    "ioConfig": {"type": "index_parallel", "inputSource": {"type": "inline", "data": payload}},
+                    "ioConfig": {
+                        "type": "index_parallel",
+                        "inputSource": {"type": "inline", "data": inline_data},
+                        "inputFormat": {"type": "json"},
+                    },
                     "dataSchema": {
                         "dataSource": self.datasource,
                         "timestampSpec": {"column": "__time", "format": "auto"},
                         "dimensionsSpec": {"dimensions": [k for k in event.keys()]},
+                        "granularitySpec": {
+                            "type": "uniform",
+                            "segmentGranularity": "HOUR",
+                            "queryGranularity": "NONE",
+                            "rollup": False,
+                        },
                     },
                 },
             },
         )
+        response.raise_for_status()
