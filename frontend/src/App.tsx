@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchFilterOptions, fetchSummary, type DashboardSummary, type EntryFilters, type JournalEntry } from './api'
 
@@ -8,6 +8,28 @@ function money(value: number) {
 
 function sideLabel(side: JournalEntry['entry_side']) {
   return side === 'debit' ? 'Débito' : 'Crédito'
+}
+
+type FilterSelectProps = {
+  label: string
+  value: string
+  onChange: (value: string) => void
+  options: string[]
+  allLabel?: string
+}
+
+function FilterSelect({ label, value, onChange, options, allLabel = 'Todos' }: FilterSelectProps) {
+  return (
+    <div className="filter-field">
+      <label>{label}</label>
+      <select value={value} onChange={(event) => onChange(event.target.value)}>
+        <option value="">{allLabel}</option>
+        {options.map((item) => (
+          <option key={item} value={item}>{item}</option>
+        ))}
+      </select>
+    </div>
+  )
 }
 
 export default function App() {
@@ -42,194 +64,89 @@ export default function App() {
 
   const clearFilters = () => setFilters({})
 
-  const appStyle: CSSProperties = {
-    minHeight: '100vh',
-    background: '#070b11',
-    color: '#dbe6f4',
-    fontFamily: 'Inter, Segoe UI, system-ui, sans-serif',
-    padding: '20px 24px 28px'
-  }
-
-  const panelStyle: CSSProperties = {
-    background: 'linear-gradient(180deg, rgba(15,20,30,0.96) 0%, rgba(10,14,21,0.96) 100%)',
-    border: '1px solid #1f2d3f',
-    borderRadius: 6,
-    boxShadow: 'inset 0 0 0 1px rgba(77,106,139,0.2)',
-    padding: 14,
-    marginBottom: 14
-  }
-
-  const metricGrid: CSSProperties = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-    gap: 10,
-    marginTop: 10
-  }
-
-  const metricCard: CSSProperties = {
-    border: '1px solid #223247',
-    borderRadius: 4,
-    background: '#0c131d',
-    padding: '10px 12px'
-  }
-
-  const inputStyle: CSSProperties = {
-    background: '#0b1119',
-    color: '#dbe6f4',
-    border: '1px solid #27374d',
-    borderRadius: 4,
-    padding: '8px 10px',
-    fontSize: 13
-  }
-
-  const labelStyle: CSSProperties = {
-    fontSize: 11,
-    letterSpacing: '0.06em',
-    textTransform: 'uppercase',
-    color: '#7f97b3',
-    marginBottom: 4,
-    display: 'block'
-  }
-
   return (
-    <main style={appStyle}>
-      <header style={{ ...panelStyle, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <main className="shield-app">
+      <header className="panel shell-header">
         <div>
-          <div style={{ fontSize: 11, color: '#8ca5c1', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+          <div className="meta-label">
             Synthetic Ledger Control Center
           </div>
-          <h1 style={{ margin: '6px 0 0', fontSize: 26, letterSpacing: '0.02em' }}>Dashboard Escudo Financeiro</h1>
+          <h1>Dashboard Escudo Financeiro</h1>
         </div>
-        <div style={{ textAlign: 'right', fontSize: 12, color: '#93aac3' }}>
+        <div className="header-time">
           <div>Atualização: {summary?.timestamp ?? '-'}</div>
           <div>As Of: {summary?.as_of ?? '-'}</div>
         </div>
       </header>
 
-      <section style={panelStyle}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-          <h2 style={{ margin: 0, fontSize: 15, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Filtros Operacionais</h2>
-          <button
-            onClick={clearFilters}
-            style={{ ...inputStyle, cursor: 'pointer', padding: '8px 12px', textTransform: 'uppercase', letterSpacing: '0.08em' }}
-          >
+      <section className="panel">
+        <div className="panel-title-row">
+          <h2>Filtros Operacionais</h2>
+          <button className="ghost-action" onClick={clearFilters}>
             Limpar filtros
           </button>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 }}>
-          <div>
-            <label style={labelStyle}>Produto</label>
-            <select style={inputStyle} value={filters.product_id ?? ''} onChange={(e) => setFilter('product_id', e.target.value)}>
-              <option value="">Todos</option>
-              {(filterOptions?.product_ids ?? []).map((item) => <option key={item} value={item}>{item}</option>)}
-            </select>
-          </div>
-          <div>
-            <label style={labelStyle}>Fornecedor</label>
-            <select style={inputStyle} value={filters.supplier_id ?? ''} onChange={(e) => setFilter('supplier_id', e.target.value)}>
-              <option value="">Todos</option>
-              {(filterOptions?.supplier_ids ?? []).map((item) => <option key={item} value={item}>{item}</option>)}
-            </select>
-          </div>
-          <div>
-            <label style={labelStyle}>Tipo de Evento</label>
-            <select style={inputStyle} value={filters.event_type ?? ''} onChange={(e) => setFilter('event_type', e.target.value)}>
-              <option value="">Todos</option>
-              {(filterOptions?.event_types ?? []).map((item) => <option key={item} value={item}>{item}</option>)}
-            </select>
-          </div>
-          <div>
-            <label style={labelStyle}>Categoria Lançamento</label>
-            <select style={inputStyle} value={filters.entry_category ?? ''} onChange={(e) => setFilter('entry_category', e.target.value)}>
-              <option value="">Todas</option>
-              {(filterOptions?.entry_categories ?? []).map((item) => <option key={item} value={item}>{item}</option>)}
-            </select>
-          </div>
-          <div>
-            <label style={labelStyle}>Conta Contábil</label>
-            <select style={inputStyle} value={filters.account_code ?? ''} onChange={(e) => setFilter('account_code', e.target.value)}>
-              <option value="">Todas</option>
-              {(filterOptions?.account_codes ?? []).map((item) => <option key={item} value={item}>{item}</option>)}
-            </select>
-          </div>
-          <div>
-            <label style={labelStyle}>Armazém</label>
-            <select style={inputStyle} value={filters.warehouse_id ?? ''} onChange={(e) => setFilter('warehouse_id', e.target.value)}>
-              <option value="">Todos</option>
-              {(filterOptions?.warehouse_ids ?? []).map((item) => <option key={item} value={item}>{item}</option>)}
-            </select>
-          </div>
-          <div>
-            <label style={labelStyle}>Tipo Lançamento</label>
-            <select style={inputStyle} value={filters.entry_side ?? ''} onChange={(e) => setFilter('entry_side', e.target.value)}>
+        <div className="filter-grid">
+          <FilterSelect label="Produto" value={filters.product_id ?? ''} onChange={(value) => setFilter('product_id', value)} options={filterOptions?.product_ids ?? []} />
+          <FilterSelect label="Fornecedor" value={filters.supplier_id ?? ''} onChange={(value) => setFilter('supplier_id', value)} options={filterOptions?.supplier_ids ?? []} />
+          <FilterSelect label="Tipo de Evento" value={filters.event_type ?? ''} onChange={(value) => setFilter('event_type', value)} options={filterOptions?.event_types ?? []} />
+          <FilterSelect label="Categoria de Lançamento" value={filters.entry_category ?? ''} onChange={(value) => setFilter('entry_category', value)} options={filterOptions?.entry_categories ?? []} allLabel="Todas" />
+          <FilterSelect label="Conta Contábil" value={filters.account_code ?? ''} onChange={(value) => setFilter('account_code', value)} options={filterOptions?.account_codes ?? []} allLabel="Todas" />
+          <FilterSelect label="Armazém" value={filters.warehouse_id ?? ''} onChange={(value) => setFilter('warehouse_id', value)} options={filterOptions?.warehouse_ids ?? []} />
+          <div className="filter-field">
+            <label>Tipo Lançamento</label>
+            <select value={filters.entry_side ?? ''} onChange={(event) => setFilter('entry_side', event.target.value)}>
               <option value="">Todos</option>
               <option value="debit">Débito</option>
               <option value="credit">Crédito</option>
             </select>
           </div>
-          <div>
-            <label style={labelStyle}>Fonte Ontológica</label>
-            <select style={inputStyle} value={filters.ontology_source ?? ''} onChange={(e) => setFilter('ontology_source', e.target.value)}>
-              <option value="">Todas</option>
-              {(filterOptions?.ontology_sources ?? []).map((item) => <option key={item} value={item}>{item}</option>)}
-            </select>
-          </div>
-          <div>
-            <label style={labelStyle}>Canal</label>
-            <select style={inputStyle} value={filters.channel ?? ''} onChange={(e) => setFilter('channel', e.target.value)}>
-              <option value="">Todos</option>
-              {(filterOptions?.channels ?? []).map((item) => <option key={item} value={item}>{item}</option>)}
-            </select>
-          </div>
-          <div>
-            <label style={labelStyle}>As Of (Time-travel)</label>
-            <input
-              style={inputStyle}
-              type="datetime-local"
-              value={filters.as_of ?? ''}
-              onChange={(e) => setFilter('as_of', e.target.value)}
-            />
+          <FilterSelect label="Fonte Ontológica" value={filters.ontology_source ?? ''} onChange={(value) => setFilter('ontology_source', value)} options={filterOptions?.ontology_sources ?? []} allLabel="Todas" />
+          <FilterSelect label="Canal" value={filters.channel ?? ''} onChange={(value) => setFilter('channel', value)} options={filterOptions?.channels ?? []} />
+          <div className="filter-field">
+            <label>As Of (Time-travel)</label>
+            <input type="datetime-local" value={filters.as_of ?? ''} onChange={(event) => setFilter('as_of', event.target.value)} />
           </div>
         </div>
       </section>
 
-      <section style={panelStyle}>
-        <h2 style={{ margin: 0, fontSize: 15, letterSpacing: '0.06em', textTransform: 'uppercase' }}>KPIs Contábeis</h2>
-        <div style={metricGrid}>
-          <article style={metricCard}>
-            <div style={{ fontSize: 11, color: '#8aa0bb', textTransform: 'uppercase' }}>Caixa</div>
-            <div style={{ fontSize: 20, marginTop: 4 }}>{summary ? money(summary.balance_sheet.assets.cash) : '-'}</div>
+      <section className="panel">
+        <h2>KPIs Contábeis</h2>
+        <div className="metric-grid">
+          <article className="metric-card">
+            <div className="metric-label">Caixa</div>
+            <div className="metric-value">{summary ? money(summary.balance_sheet.assets.cash) : '-'}</div>
           </article>
-          <article style={metricCard}>
-            <div style={{ fontSize: 11, color: '#8aa0bb', textTransform: 'uppercase' }}>Estoque</div>
-            <div style={{ fontSize: 20, marginTop: 4 }}>{summary ? money(summary.balance_sheet.assets.inventory) : '-'}</div>
+          <article className="metric-card">
+            <div className="metric-label">Estoque</div>
+            <div className="metric-value">{summary ? money(summary.balance_sheet.assets.inventory) : '-'}</div>
           </article>
-          <article style={metricCard}>
-            <div style={{ fontSize: 11, color: '#8aa0bb', textTransform: 'uppercase' }}>Receita</div>
-            <div style={{ fontSize: 20, marginTop: 4 }}>{summary ? money(summary.income_statement.revenue) : '-'}</div>
+          <article className="metric-card metric-card--accent">
+            <div className="metric-label">Receita</div>
+            <div className="metric-value">{summary ? money(summary.income_statement.revenue) : '-'}</div>
           </article>
-          <article style={metricCard}>
-            <div style={{ fontSize: 11, color: '#8aa0bb', textTransform: 'uppercase' }}>CMV</div>
-            <div style={{ fontSize: 20, marginTop: 4 }}>{summary ? money(summary.income_statement.cmv) : '-'}</div>
+          <article className="metric-card">
+            <div className="metric-label">CMV</div>
+            <div className="metric-value">{summary ? money(summary.income_statement.cmv) : '-'}</div>
           </article>
-          <article style={metricCard}>
-            <div style={{ fontSize: 11, color: '#8aa0bb', textTransform: 'uppercase' }}>Resultado Líquido</div>
-            <div style={{ fontSize: 20, marginTop: 4 }}>{summary ? money(summary.income_statement.net_income) : '-'}</div>
+          <article className="metric-card">
+            <div className="metric-label">Resultado Líquido</div>
+            <div className="metric-value">{summary ? money(summary.income_statement.net_income) : '-'}</div>
           </article>
         </div>
       </section>
 
-      <section style={panelStyle}>
-        <h2 style={{ margin: '0 0 8px', fontSize: 15, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+      <section className="panel">
+        <h2>
           Fila de Lançamentos Débito/Crédito
         </h2>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ borderCollapse: 'separate', borderSpacing: 0, width: '100%', minWidth: 1700, fontSize: 12 }}>
+        <div className="table-wrap">
+          <table className="ledger-table">
             <thead>
               <tr>
                 {['Ocorrido em', 'Tipo', 'Conta', 'Categoria', 'Produto', 'Fornecedor', 'Canal', 'Valor', 'Origem Ontológica', 'Descrição Ontológica', 'Event ID', 'Trace ID', 'Hash'].map((header) => (
-                  <th key={header} style={{ textAlign: 'left', padding: '9px 10px', borderBottom: '1px solid #233348', color: '#88a0ba', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500 }}>
+                  <th key={header}>
                     {header}
                   </th>
                 ))}
@@ -237,20 +154,20 @@ export default function App() {
             </thead>
             <tbody>
               {(summary?.entries ?? []).map((entry) => (
-                <tr key={entry.entry_id} style={{ background: 'rgba(11,16,24,0.85)' }}>
-                  <td style={{ padding: '8px 10px', borderBottom: '1px solid #1d2a3b' }}>{entry.occurred_at}</td>
-                  <td style={{ padding: '8px 10px', borderBottom: '1px solid #1d2a3b' }}>{sideLabel(entry.entry_side)}</td>
-                  <td style={{ padding: '8px 10px', borderBottom: '1px solid #1d2a3b' }}>{entry.account_code} - {entry.account_name}</td>
-                  <td style={{ padding: '8px 10px', borderBottom: '1px solid #1d2a3b' }}>{entry.entry_category}</td>
-                  <td style={{ padding: '8px 10px', borderBottom: '1px solid #1d2a3b' }}>{entry.product_id}</td>
-                  <td style={{ padding: '8px 10px', borderBottom: '1px solid #1d2a3b' }}>{entry.supplier_id ?? '-'}</td>
-                  <td style={{ padding: '8px 10px', borderBottom: '1px solid #1d2a3b' }}>{entry.channel}</td>
-                  <td style={{ padding: '8px 10px', borderBottom: '1px solid #1d2a3b' }}>{money(entry.amount)}</td>
-                  <td style={{ padding: '8px 10px', borderBottom: '1px solid #1d2a3b' }}>{entry.ontology_event_type} ({entry.ontology_source})</td>
-                  <td style={{ padding: '8px 10px', borderBottom: '1px solid #1d2a3b' }}>{entry.ontology_description}</td>
-                  <td style={{ padding: '8px 10px', borderBottom: '1px solid #1d2a3b', color: '#8ba6c5' }}>{entry.event_id}</td>
-                  <td style={{ padding: '8px 10px', borderBottom: '1px solid #1d2a3b', color: '#8ba6c5' }}>{entry.trace_id}</td>
-                  <td style={{ padding: '8px 10px', borderBottom: '1px solid #1d2a3b', color: '#8ba6c5' }}>{entry.source_payload_hash.slice(0, 20)}...</td>
+                <tr key={entry.entry_id}>
+                  <td>{entry.occurred_at}</td>
+                  <td>{sideLabel(entry.entry_side)}</td>
+                  <td>{entry.account_code} - {entry.account_name}</td>
+                  <td>{entry.entry_category}</td>
+                  <td>{entry.product_id}</td>
+                  <td>{entry.supplier_id ?? '-'}</td>
+                  <td>{entry.channel}</td>
+                  <td>{money(entry.amount)}</td>
+                  <td>{entry.ontology_event_type} ({entry.ontology_source})</td>
+                  <td>{entry.ontology_description}</td>
+                  <td className="mono-text">{entry.event_id}</td>
+                  <td className="mono-text">{entry.trace_id}</td>
+                  <td className="mono-text">{entry.source_payload_hash.slice(0, 20)}...</td>
                 </tr>
               ))}
             </tbody>
