@@ -34,14 +34,169 @@ services:
       - "8123:8123"
       - "9000:9000"
 
+  druid-postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=druid
+      - POSTGRES_USER=druid
+      - POSTGRES_PASSWORD=druid
+    volumes:
+      - druid_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U druid -d druid"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  druid-coordinator:
+    image: apache/druid:29.0.1
+    command: ["coordinator"]
+    depends_on:
+      zookeeper:
+        condition: service_started
+      druid-postgres:
+        condition: service_healthy
+    environment:
+      - druid_zk_service_host=zookeeper:2181
+      - druid_metadata_storage_type=postgresql
+      - druid_metadata_storage_connector_connectURI=jdbc:postgresql://druid-postgres:5432/druid
+      - druid_metadata_storage_connector_user=druid
+      - druid_metadata_storage_connector_password=druid
+      - druid_storage_type=local
+      - druid_storage_storageDirectory=/opt/shared/segments
+      - druid_indexer_logs_type=file
+      - druid_indexer_logs_directory=/opt/shared/indexing-logs
+      - druid_extensions_loadList=["druid-kafka-indexing-service","postgresql-metadata-storage"]
+    volumes:
+      - druid_shared:/opt/shared
+
+  druid-overlord:
+    image: apache/druid:29.0.1
+    command: ["overlord"]
+    depends_on:
+      zookeeper:
+        condition: service_started
+      druid-postgres:
+        condition: service_healthy
+      druid-coordinator:
+        condition: service_started
+    environment:
+      - druid_zk_service_host=zookeeper:2181
+      - druid_metadata_storage_type=postgresql
+      - druid_metadata_storage_connector_connectURI=jdbc:postgresql://druid-postgres:5432/druid
+      - druid_metadata_storage_connector_user=druid
+      - druid_metadata_storage_connector_password=druid
+      - druid_storage_type=local
+      - druid_storage_storageDirectory=/opt/shared/segments
+      - druid_indexer_logs_type=file
+      - druid_indexer_logs_directory=/opt/shared/indexing-logs
+      - druid_extensions_loadList=["druid-kafka-indexing-service","postgresql-metadata-storage"]
+      - druid_indexer_runner_type=remote
+    volumes:
+      - druid_shared:/opt/shared
+
+  druid-broker:
+    image: apache/druid:29.0.1
+    command: ["broker"]
+    depends_on:
+      zookeeper:
+        condition: service_started
+      druid-postgres:
+        condition: service_healthy
+      druid-coordinator:
+        condition: service_started
+      druid-overlord:
+        condition: service_started
+    environment:
+      - druid_zk_service_host=zookeeper:2181
+      - druid_metadata_storage_type=postgresql
+      - druid_metadata_storage_connector_connectURI=jdbc:postgresql://druid-postgres:5432/druid
+      - druid_metadata_storage_connector_user=druid
+      - druid_metadata_storage_connector_password=druid
+      - druid_storage_type=local
+      - druid_storage_storageDirectory=/opt/shared/segments
+      - druid_indexer_logs_type=file
+      - druid_indexer_logs_directory=/opt/shared/indexing-logs
+      - druid_extensions_loadList=["druid-kafka-indexing-service","postgresql-metadata-storage"]
+    volumes:
+      - druid_shared:/opt/shared
+
+  druid-historical:
+    image: apache/druid:29.0.1
+    command: ["historical"]
+    depends_on:
+      zookeeper:
+        condition: service_started
+      druid-postgres:
+        condition: service_healthy
+      druid-coordinator:
+        condition: service_started
+    environment:
+      - druid_zk_service_host=zookeeper:2181
+      - druid_metadata_storage_type=postgresql
+      - druid_metadata_storage_connector_connectURI=jdbc:postgresql://druid-postgres:5432/druid
+      - druid_metadata_storage_connector_user=druid
+      - druid_metadata_storage_connector_password=druid
+      - druid_storage_type=local
+      - druid_storage_storageDirectory=/opt/shared/segments
+      - druid_indexer_logs_type=file
+      - druid_indexer_logs_directory=/opt/shared/indexing-logs
+      - druid_extensions_loadList=["druid-kafka-indexing-service","postgresql-metadata-storage"]
+    volumes:
+      - druid_shared:/opt/shared
+
+  druid-middlemanager:
+    image: apache/druid:29.0.1
+    command: ["middleManager"]
+    depends_on:
+      zookeeper:
+        condition: service_started
+      druid-postgres:
+        condition: service_healthy
+      druid-overlord:
+        condition: service_started
+    environment:
+      - druid_zk_service_host=zookeeper:2181
+      - druid_metadata_storage_type=postgresql
+      - druid_metadata_storage_connector_connectURI=jdbc:postgresql://druid-postgres:5432/druid
+      - druid_metadata_storage_connector_user=druid
+      - druid_metadata_storage_connector_password=druid
+      - druid_storage_type=local
+      - druid_storage_storageDirectory=/opt/shared/segments
+      - druid_indexer_logs_type=file
+      - druid_indexer_logs_directory=/opt/shared/indexing-logs
+      - druid_extensions_loadList=["druid-kafka-indexing-service","postgresql-metadata-storage"]
+      - druid_worker_capacity=2
+    volumes:
+      - druid_shared:/opt/shared
+
   druid-router:
     image: apache/druid:29.0.1
     command: ["router"]
     environment:
-      - DRUID_SINGLE_NODE_CONF=micro-quickstart
-      - ZK_HOST=zookeeper
+      - druid_zk_service_host=zookeeper:2181
+      - druid_metadata_storage_type=postgresql
+      - druid_metadata_storage_connector_connectURI=jdbc:postgresql://druid-postgres:5432/druid
+      - druid_metadata_storage_connector_user=druid
+      - druid_metadata_storage_connector_password=druid
+      - druid_storage_type=local
+      - druid_storage_storageDirectory=/opt/shared/segments
+      - druid_indexer_logs_type=file
+      - druid_indexer_logs_directory=/opt/shared/indexing-logs
+      - druid_extensions_loadList=["druid-kafka-indexing-service","postgresql-metadata-storage"]
     depends_on:
-      - zookeeper
+      zookeeper:
+        condition: service_started
+      druid-postgres:
+        condition: service_healthy
+      druid-coordinator:
+        condition: service_started
+      druid-overlord:
+        condition: service_started
+      druid-broker:
+        condition: service_started
+    volumes:
+      - druid_shared:/opt/shared
     ports:
       - "8889:8888"
 
@@ -136,3 +291,7 @@ services:
       - "5174:80"
     depends_on:
       - api-druid
+
+volumes:
+  druid_pgdata:
+  druid_shared:

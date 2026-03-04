@@ -22,6 +22,8 @@ Versão atual do projeto (configuração oficial): `pyproject.toml` (`project.ve
 - Eventos de origem são mapeados em ontologia de lançamento (`ontology_event_type`, `ontology_description`, `ontology_source`).
 - Auditoria e rastreabilidade com `event_id`, `trace_id`, `source_payload_hash`, `revision`, `valid_from`, `valid_to` e `is_current`.
 - Time-travel via parâmetro `as_of` nos endpoints da API.
+- Druid pode consumir lançamentos diretamente do Kafka (`DRUID_KAFKA_TOPIC`) via supervisor automático configurado no `storage_writer`.
+- Para consumo Kafka no Druid, o endpoint de indexing/supervisor deve estar ativo (overlord/indexer disponível no cluster Druid).
 
 ## Primeiros passos
 
@@ -40,6 +42,9 @@ Versão atual do projeto (configuração oficial): `pyproject.toml` (`project.ve
    - API (Druid): `http://localhost:8081/docs`
 
 O alvo `up` cria `.env` automaticamente a partir de `.env.example` se necessário.
+
+Para diagnosticar supervisor Kafka do Druid:
+- `http://localhost:8090/debug/druid-supervisor`
 
 ## Versionamento de schema (AVRO)
 

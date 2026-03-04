@@ -1,12 +1,15 @@
 import json
 import os
 import gzip
+import asyncio
 import uuid
 import hashlib
 from base64 import b64decode
 from datetime import datetime, timezone
 from typing import Any
 
+import httpx
+from confluent_kafka import Producer
 from fastapi import FastAPI, HTTPException, Request
 from opentelemetry.proto.collector.logs.v1.logs_service_pb2 import ExportLogsServiceRequest
 
@@ -14,6 +17,7 @@ from storage_writer.adapters import ClickHouseAdapter, DruidAdapter, PinotAdapte
 
 app = FastAPI(title="synthetic-ledger-storage-writer", version="0.1.0")
 last_otlp_stats: dict[str, Any] = {}
+druid_supervisor_status: dict[str, Any] = {}
 
 
 def build_adapters() -> dict[str, Any]:
@@ -27,6 +31,151 @@ def build_adapters() -> dict[str, Any]:
 
 
 adapters = build_adapters()
+
+
+def is_true(name: str, default: str = "false") -> bool:
+    return os.getenv(name, default).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def build_entries_kafka_producer() -> Producer | None:
+    if not is_true("DRUID_KAFKA_PUBLISH_ENABLED", "true"):
+        return None
+    bootstrap = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
+    return Producer({"bootstrap.servers": bootstrap, "linger.ms": 10, "batch.num.messages": 1000})
+
+
+entries_kafka_producer = build_entries_kafka_producer()
+
+
+def publish_entry_to_kafka(entry: dict[str, Any]) -> bool:
+    if entries_kafka_producer is None:
+        return False
+    topic = os.getenv("DRUID_KAFKA_TOPIC", "ledger-entries-v1")
+    try:
+        entries_kafka_producer.produce(
+            topic=topic,
+            key=str(entry.get("company_id", "unknown")),
+            value=json.dumps(entry, separators=(",", ":")).encode("utf-8"),
+        )
+        entries_kafka_producer.poll(0)
+        return True
+    except Exception:
+        return False
+
+
+async def ensure_druid_kafka_supervisor() -> None:
+    global druid_supervisor_status
+    if not is_true("DRUID_KAFKA_CONSUMER_ENABLED", "true"):
+        druid_supervisor_status = {"enabled": False, "reason": "DRUID_KAFKA_CONSUMER_ENABLED=false"}
+        return
+
+    if "druid" not in adapters:
+        druid_supervisor_status = {"enabled": False, "reason": "druid adapter disabled"}
+        return
+
+    topic = os.getenv("DRUID_KAFKA_TOPIC", "ledger-entries-v1")
+    datasource = os.getenv("DRUID_DATASOURCE", "ledger_events")
+    druid_url = os.getenv("DRUID_ROUTER_URL", "http://druid-router:8888")
+    kafka_bootstrap = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
+
+    supervisor_spec = {
+        "type": "kafka",
+        "spec": {
+            "dataSchema": {
+                "dataSource": datasource,
+                "timestampSpec": {"column": "occurred_at", "format": "auto"},
+                "dimensionsSpec": {
+                    "dimensions": [
+                        "entry_id",
+                        "event_id",
+                        "trace_id",
+                        "company_id",
+                        "tenant_id",
+                        "entry_side",
+                        "account_code",
+                        "account_name",
+                        "statement_section",
+                        "currency",
+                        "ontology_event_type",
+                        "ontology_description",
+                        "ontology_source",
+                        "product_id",
+                        "supplier_id",
+                        "customer_id",
+                        "warehouse_id",
+                        "channel",
+                        "entry_category",
+                        "source_payload_hash",
+                        "schema_version",
+                        "ingested_at",
+                        "valid_from",
+                        "valid_to",
+                    ]
+                },
+                "metricsSpec": [
+                    {"type": "doubleSum", "name": "amount", "fieldName": "amount"},
+                    {"type": "doubleSum", "name": "signed_amount", "fieldName": "signed_amount"},
+                    {"type": "longMax", "name": "revision", "fieldName": "revision"},
+                    {"type": "longMax", "name": "is_current", "fieldName": "is_current"},
+                ],
+                "granularitySpec": {
+                    "type": "uniform",
+                    "segmentGranularity": "HOUR",
+                    "queryGranularity": "NONE",
+                    "rollup": False,
+                },
+            },
+            "ioConfig": {
+                "type": "kafka",
+                "topic": topic,
+                "consumerProperties": {"bootstrap.servers": kafka_bootstrap},
+                "inputFormat": {"type": "json"},
+                "useEarliestOffset": True,
+            },
+            "tuningConfig": {"type": "kafka"},
+        },
+    }
+
+    last_error = ""
+    for attempt in range(1, 13):
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                response = await client.post(f"{druid_url}/druid/indexer/v1/supervisor", json=supervisor_spec)
+                response.raise_for_status()
+                payload = response.json()
+                supervisor_id = payload.get("id") or payload.get("supervisorId")
+                druid_supervisor_status = {
+                    "enabled": True,
+                    "topic": topic,
+                    "datasource": datasource,
+                    "supervisor_id": supervisor_id,
+                    "attempt": attempt,
+                    "raw": payload,
+                }
+                return
+        except Exception as exc:
+            last_error = str(exc)
+            await asyncio.sleep(5)
+
+    druid_supervisor_status = {
+        "enabled": False,
+        "topic": topic,
+        "datasource": datasource,
+        "error": last_error,
+    }
+
+
+async def bootstrap_druid_supervisor_task() -> None:
+    global druid_supervisor_status
+    druid_supervisor_status = {"enabled": False, "state": "starting"}
+    try:
+        await ensure_druid_kafka_supervisor()
+    except Exception as exc:
+        druid_supervisor_status = {
+            "enabled": False,
+            "state": "failed",
+            "error": str(exc),
+        }
 
 
 def now_iso() -> str:
@@ -232,6 +381,16 @@ async def debug_last_otlp() -> dict[str, Any]:
     return last_otlp_stats
 
 
+@app.get("/debug/druid-supervisor")
+async def debug_druid_supervisor() -> dict[str, Any]:
+    return druid_supervisor_status
+
+
+@app.on_event("startup")
+async def startup_tasks() -> None:
+    asyncio.create_task(bootstrap_druid_supervisor_task())
+
+
 @app.post("/v1/logs")
 async def ingest_otlp_logs(request: Request) -> dict[str, Any]:
     global last_otlp_stats
@@ -328,9 +487,12 @@ async def ingest_otlp_logs(request: Request) -> dict[str, Any]:
             active_adapters[name] = adapter
 
     written = 0
+    kafka_published = 0
     backend_writes: dict[str, int] = {name: 0 for name in active_adapters.keys()}
     backend_errors: dict[str, str] = {}
     for entry in entries:
+        if publish_entry_to_kafka(entry):
+            kafka_published += 1
         for name, adapter in active_adapters.items():
             try:
                 await adapter.write_event(entry)
@@ -340,22 +502,24 @@ async def ingest_otlp_logs(request: Request) -> dict[str, Any]:
                 backend_errors[name] = str(exc)
                 continue
 
-    if written == 0:
+    if written == 0 and kafka_published == 0:
         last_otlp_stats = {
             "payload_bytes": len(raw),
             "content_type": content_type,
             "accepted": len(entries),
             "written": written,
+            "kafka_published": kafka_published,
             "backend_writes": backend_writes,
             "backend_errors": backend_errors,
         }
-        raise HTTPException(status_code=503, detail="No backend available for write")
+        raise HTTPException(status_code=503, detail="No backend or kafka topic available for write")
 
     last_otlp_stats = {
         "payload_bytes": len(raw),
         "content_type": content_type,
         "accepted": len(entries),
         "written": written,
+        "kafka_published": kafka_published,
         "backend_writes": backend_writes,
         "backend_errors": backend_errors,
     }
@@ -363,6 +527,7 @@ async def ingest_otlp_logs(request: Request) -> dict[str, Any]:
     return {
         "accepted": len(entries),
         "written": written,
+        "kafka_published": kafka_published,
         "backend_writes": backend_writes,
         "backend_errors": backend_errors,
     }
@@ -373,6 +538,7 @@ async def ingest_direct(request: Request) -> dict[str, Any]:
     event = await request.json()
     entries = event_to_journal_entries(event)
     written = 0
+    kafka_published = 0
     active_adapters: dict[str, Any] = {}
     for name, adapter in adapters.items():
         if await adapter.healthy():
@@ -381,6 +547,8 @@ async def ingest_direct(request: Request) -> dict[str, Any]:
     backend_writes: dict[str, int] = {name: 0 for name in active_adapters.keys()}
     backend_errors: dict[str, str] = {}
     for entry in entries:
+        if publish_entry_to_kafka(entry):
+            kafka_published += 1
         for name, adapter in active_adapters.items():
             try:
                 await adapter.write_event(entry)
@@ -392,6 +560,7 @@ async def ingest_direct(request: Request) -> dict[str, Any]:
     return {
         "accepted": len(entries),
         "written": written,
+        "kafka_published": kafka_published,
         "backend_writes": backend_writes,
         "backend_errors": backend_errors,
     }
