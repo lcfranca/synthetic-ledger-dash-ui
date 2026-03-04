@@ -1,0 +1,217 @@
+:root {
+  --bg: #050505;
+  --bg-panel: #0a0a0a;
+  --bg-panel-strong: #0d0d0d;
+  --text-primary: #f7f7f7;
+  --text-secondary: #b6b6b6;
+  --text-muted: #8f8f8f;
+  --line: #262626;
+  --line-strong: #333333;
+  --accent: #ff6a00;
+  --accent-soft: #3a2315;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+}
+
+body {
+  color: var(--text-primary);
+  font-family: Inter, Segoe UI, system-ui, sans-serif;
+}
+
+.shield-app {
+  min-height: 100vh;
+  padding: 18px;
+  background:
+    linear-gradient(to right, rgba(255, 106, 0, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 106, 0, 0.04) 1px, transparent 1px),
+    var(--bg);
+  background-size: 24px 24px, 24px 24px, auto;
+}
+
+.panel {
+  border: 1px solid var(--line-strong);
+  border-radius: 0;
+  background: linear-gradient(180deg, var(--bg-panel-strong) 0%, var(--bg-panel) 100%);
+  margin-bottom: 12px;
+  padding: 12px;
+}
+
+.shell-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-top: 1px solid var(--accent);
+}
+
+.meta-label {
+  color: var(--text-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.shell-header h1 {
+  margin: 8px 0 0;
+  color: var(--text-primary);
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.header-time {
+  text-align: right;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.panel h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 12px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.panel-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.ghost-action {
+  border: 1px solid var(--line-strong);
+  background: #111;
+  color: var(--text-primary);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 8px 12px;
+  border-radius: 0;
+  cursor: pointer;
+}
+
+.ghost-action:hover {
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+}
+
+.filter-field label {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--text-muted);
+  font-size: 10px;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.filter-field select,
+.filter-field input {
+  width: 100%;
+  border: 1px solid var(--line-strong);
+  background: #090909;
+  color: var(--text-primary);
+  border-radius: 0;
+  font-size: 12px;
+  padding: 8px;
+  outline: none;
+}
+
+.filter-field select:focus,
+.filter-field input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent-soft);
+}
+
+.metric-grid {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+}
+
+.metric-card {
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: #090909;
+  padding: 10px;
+  min-height: 82px;
+}
+
+.metric-card--accent {
+  border-color: var(--accent);
+}
+
+.metric-label {
+  color: var(--text-muted);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.metric-value {
+  margin-top: 8px;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  margin-top: 10px;
+  border: 1px solid var(--line);
+}
+
+.ledger-table {
+  width: 100%;
+  min-width: 1680px;
+  border-collapse: collapse;
+  background: #090909;
+  font-size: 12px;
+}
+
+.ledger-table th {
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-size: 10px;
+  font-weight: 600;
+  text-align: left;
+  padding: 10px;
+  border-bottom: 1px solid var(--line-strong);
+  background: #0d0d0d;
+}
+
+.ledger-table td {
+  color: var(--text-secondary);
+  padding: 9px 10px;
+  border-bottom: 1px solid #1d1d1d;
+  white-space: nowrap;
+}
+
+.ledger-table tbody tr:hover {
+  background: rgba(255, 106, 0, 0.08);
+}
+
+.mono-text {
+  color: #cfcfcf;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}

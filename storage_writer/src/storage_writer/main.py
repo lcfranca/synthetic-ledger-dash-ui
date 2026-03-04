@@ -18,6 +18,7 @@ from storage_writer.adapters import ClickHouseAdapter, DruidAdapter, PinotAdapte
 app = FastAPI(title="synthetic-ledger-storage-writer", version="0.1.0")
 last_otlp_stats: dict[str, Any] = {}
 druid_supervisor_status: dict[str, Any] = {}
+pinot_realtime_status: dict[str, Any] = {}
 
 
 def build_adapters() -> dict[str, Any]:
@@ -75,7 +76,7 @@ async def ensure_druid_kafka_supervisor() -> None:
 
     topic = os.getenv("DRUID_KAFKA_TOPIC", "ledger-entries-v1")
     datasource = os.getenv("DRUID_DATASOURCE", "ledger_events")
-    druid_url = os.getenv("DRUID_ROUTER_URL", "http://druid-router:8888")
+    druid_url = os.getenv("DRUID_OVERLORD_URL", "http://druid-overlord:8081")
     kafka_bootstrap = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
 
     supervisor_spec = {
@@ -137,9 +138,13 @@ async def ensure_druid_kafka_supervisor() -> None:
     }
 
     last_error = ""
-    for attempt in range(1, 13):
+    retry_seconds = max(int(os.getenv("DRUID_SUPERVISOR_RETRY_SECONDS", "5")), 1)
+    max_attempts = int(os.getenv("DRUID_SUPERVISOR_MAX_ATTEMPTS", "0"))
+    attempt = 0
+    while max_attempts <= 0 or attempt < max_attempts:
+        attempt += 1
         try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
+            async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
                 response = await client.post(f"{druid_url}/druid/indexer/v1/supervisor", json=supervisor_spec)
                 response.raise_for_status()
                 payload = response.json()
@@ -155,12 +160,23 @@ async def ensure_druid_kafka_supervisor() -> None:
                 return
         except Exception as exc:
             last_error = str(exc)
-            await asyncio.sleep(5)
+            druid_supervisor_status = {
+                "enabled": False,
+                "state": "retrying",
+                "topic": topic,
+                "datasource": datasource,
+                "attempt": attempt,
+                "error": last_error,
+                "retry_in_seconds": retry_seconds,
+            }
+            await asyncio.sleep(retry_seconds)
 
     druid_supervisor_status = {
         "enabled": False,
+        "state": "failed",
         "topic": topic,
         "datasource": datasource,
+        "attempt": attempt,
         "error": last_error,
     }
 
@@ -178,8 +194,199 @@ async def bootstrap_druid_supervisor_task() -> None:
         }
 
 
+async def ensure_pinot_kafka_realtime_table() -> None:
+    global pinot_realtime_status
+    if not is_true("PINOT_KAFKA_CONSUMER_ENABLED", "true"):
+        pinot_realtime_status = {"enabled": False, "reason": "PINOT_KAFKA_CONSUMER_ENABLED=false"}
+        return
+
+    if "pinot" not in adapters:
+        pinot_realtime_status = {"enabled": False, "reason": "pinot adapter disabled"}
+        return
+
+    controller_url = os.getenv("PINOT_CONTROLLER_URL", "http://pinot-controller:9000")
+    table = os.getenv("PINOT_TABLE", "ledger_events")
+    topic = os.getenv("DRUID_KAFKA_TOPIC", "ledger-entries-v1")
+    kafka_bootstrap = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
+
+    schema_name = table
+    realtime_table_name = f"{table}_REALTIME"
+
+    schema_payload = {
+        "schemaName": schema_name,
+        "dimensionFieldSpecs": [
+            {"name": "entry_id", "dataType": "STRING"},
+            {"name": "event_id", "dataType": "STRING"},
+            {"name": "trace_id", "dataType": "STRING"},
+            {"name": "company_id", "dataType": "STRING"},
+            {"name": "tenant_id", "dataType": "STRING"},
+            {"name": "entry_side", "dataType": "STRING"},
+            {"name": "account_code", "dataType": "STRING"},
+            {"name": "account_name", "dataType": "STRING"},
+            {"name": "statement_section", "dataType": "STRING"},
+            {"name": "currency", "dataType": "STRING"},
+            {"name": "ontology_event_type", "dataType": "STRING"},
+            {"name": "ontology_description", "dataType": "STRING"},
+            {"name": "ontology_source", "dataType": "STRING"},
+            {"name": "product_id", "dataType": "STRING"},
+            {"name": "supplier_id", "dataType": "STRING"},
+            {"name": "customer_id", "dataType": "STRING"},
+            {"name": "warehouse_id", "dataType": "STRING"},
+            {"name": "channel", "dataType": "STRING"},
+            {"name": "entry_category", "dataType": "STRING"},
+            {"name": "source_payload_hash", "dataType": "STRING"},
+            {"name": "schema_version", "dataType": "STRING"},
+            {"name": "occurred_at", "dataType": "STRING"},
+            {"name": "ingested_at", "dataType": "STRING"},
+            {"name": "valid_from", "dataType": "STRING"},
+            {"name": "valid_to", "dataType": "STRING"},
+            {"name": "created_at", "dataType": "STRING"},
+        ],
+        "metricFieldSpecs": [
+            {"name": "amount", "dataType": "DOUBLE"},
+            {"name": "signed_amount", "dataType": "DOUBLE"},
+            {"name": "is_current", "dataType": "INT"},
+            {"name": "revision", "dataType": "INT"},
+        ],
+        "dateTimeFieldSpecs": [
+            {
+                "name": "occurred_at_epoch_ms",
+                "dataType": "LONG",
+                "format": "1:MILLISECONDS:EPOCH",
+                "granularity": "1:MILLISECONDS",
+            }
+        ],
+    }
+
+    table_payload = {
+        "tableName": realtime_table_name,
+        "tableType": "REALTIME",
+        "segmentsConfig": {
+            "timeColumnName": "occurred_at_epoch_ms",
+            "schemaName": schema_name,
+            "replication": "1",
+        },
+        "tenants": {"broker": "DefaultTenant", "server": "DefaultTenant"},
+        "tableIndexConfig": {
+            "loadMode": "MMAP",
+            "streamConfigs": {
+                "streamType": "kafka",
+                "stream.kafka.topic.name": topic,
+                "stream.kafka.broker.list": kafka_bootstrap,
+                "stream.kafka.consumer.type": "lowlevel",
+                "stream.kafka.decoder.class.name": "org.apache.pinot.plugin.stream.kafka.KafkaJSONMessageDecoder",
+                "stream.kafka.consumer.prop.auto.offset.reset": "smallest",
+            },
+        },
+        "ingestionConfig": {
+            "continueOnError": True,
+            "rowTimeValueCheck": False,
+        },
+        "metadata": {},
+    }
+
+    retry_seconds = max(int(os.getenv("PINOT_BOOTSTRAP_RETRY_SECONDS", "5")), 1)
+    max_attempts = int(os.getenv("PINOT_BOOTSTRAP_MAX_ATTEMPTS", "0"))
+    attempt = 0
+    last_error = ""
+
+    while max_attempts <= 0 or attempt < max_attempts:
+        attempt += 1
+        try:
+            async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
+                schema_get = await client.get(f"{controller_url}/schemas/{schema_name}")
+                if schema_get.status_code == 404:
+                    schema_create = await client.post(f"{controller_url}/schemas", json=schema_payload)
+                    schema_create.raise_for_status()
+                elif schema_get.status_code >= 400:
+                    schema_get.raise_for_status()
+                else:
+                    current_schema = schema_get.json()
+                    current_fields = {
+                        item.get("name")
+                        for group in (
+                            current_schema.get("dimensionFieldSpecs", []),
+                            current_schema.get("metricFieldSpecs", []),
+                            current_schema.get("dateTimeFieldSpecs", []),
+                        )
+                        for item in group
+                        if isinstance(item, dict)
+                    }
+                    if "occurred_at_epoch_ms" not in current_fields:
+                        schema_update = await client.put(f"{controller_url}/schemas/{schema_name}", json=schema_payload)
+                        schema_update.raise_for_status()
+
+                tables_response = await client.get(f"{controller_url}/tables")
+                tables_response.raise_for_status()
+                existing_tables = set((tables_response.json() or {}).get("tables", []))
+                has_realtime_table = realtime_table_name in existing_tables or table in existing_tables
+
+                if not has_realtime_table:
+                    table_create = await client.post(f"{controller_url}/tables", json=table_payload)
+                    table_create.raise_for_status()
+
+                tables_verify = await client.get(f"{controller_url}/tables")
+                tables_verify.raise_for_status()
+                verified_tables = set((tables_verify.json() or {}).get("tables", []))
+                has_realtime_table = realtime_table_name in verified_tables or table in verified_tables
+                if not has_realtime_table:
+                    raise RuntimeError("Pinot realtime table was not registered in controller")
+
+                pinot_realtime_status = {
+                    "enabled": True,
+                    "table": realtime_table_name,
+                    "topic": topic,
+                    "attempt": attempt,
+                    "controller_url": controller_url,
+                    "state": "ready",
+                }
+                return
+        except Exception as exc:
+            last_error = str(exc)
+            pinot_realtime_status = {
+                "enabled": False,
+                "state": "retrying",
+                "table": realtime_table_name,
+                "topic": topic,
+                "attempt": attempt,
+                "error": last_error,
+                "retry_in_seconds": retry_seconds,
+            }
+            await asyncio.sleep(retry_seconds)
+
+    pinot_realtime_status = {
+        "enabled": False,
+        "state": "failed",
+        "table": realtime_table_name,
+        "topic": topic,
+        "attempt": attempt,
+        "error": last_error,
+    }
+
+
+async def bootstrap_pinot_realtime_task() -> None:
+    global pinot_realtime_status
+    pinot_realtime_status = {"enabled": False, "state": "starting"}
+    try:
+        await ensure_pinot_kafka_realtime_table()
+    except Exception as exc:
+        pinot_realtime_status = {
+            "enabled": False,
+            "state": "failed",
+            "error": str(exc),
+        }
+
+
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def to_epoch_millis(value: str) -> int:
+    normalized = value.replace("Z", "+00:00")
+    try:
+        return int(datetime.fromisoformat(normalized).timestamp() * 1000)
+    except ValueError:
+        return int(datetime.now(timezone.utc).timestamp() * 1000)
 
 
 def account_name(account_code: str) -> str:
@@ -262,6 +469,7 @@ def make_entry(
         "source_payload_hash": payload_hash,
         "schema_version": event.get("schema_version", "1.0.0"),
         "occurred_at": occurred_at,
+        "occurred_at_epoch_ms": to_epoch_millis(occurred_at),
         "ingested_at": ingested_at,
         "valid_from": ingested_at,
         "valid_to": None,
@@ -386,9 +594,15 @@ async def debug_druid_supervisor() -> dict[str, Any]:
     return druid_supervisor_status
 
 
+@app.get("/debug/pinot-realtime")
+async def debug_pinot_realtime() -> dict[str, Any]:
+    return pinot_realtime_status
+
+
 @app.on_event("startup")
 async def startup_tasks() -> None:
     asyncio.create_task(bootstrap_druid_supervisor_task())
+    asyncio.create_task(bootstrap_pinot_realtime_task())
 
 
 @app.post("/v1/logs")
@@ -483,6 +697,10 @@ async def ingest_otlp_logs(request: Request) -> dict[str, Any]:
 
     active_adapters: dict[str, Any] = {}
     for name, adapter in adapters.items():
+        if name == "druid" and not is_true("DRUID_DIRECT_WRITE_ENABLED", "false"):
+            continue
+        if name == "pinot" and not is_true("PINOT_DIRECT_WRITE_ENABLED", "false"):
+            continue
         if await adapter.healthy():
             active_adapters[name] = adapter
 
@@ -541,6 +759,10 @@ async def ingest_direct(request: Request) -> dict[str, Any]:
     kafka_published = 0
     active_adapters: dict[str, Any] = {}
     for name, adapter in adapters.items():
+        if name == "druid" and not is_true("DRUID_DIRECT_WRITE_ENABLED", "false"):
+            continue
+        if name == "pinot" and not is_true("PINOT_DIRECT_WRITE_ENABLED", "false"):
+            continue
         if await adapter.healthy():
             active_adapters[name] = adapter
 

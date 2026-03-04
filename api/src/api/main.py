@@ -3,6 +3,7 @@ import os
 
 from fastapi import FastAPI, Query, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.websockets import WebSocketDisconnect, WebSocketState
 
 from api.repository import DashboardRepository
 
@@ -97,5 +98,11 @@ async def ws_metrics(ws: WebSocket):
             payload["entries"] = await repo.get_recent_entries(limit=30)
             await ws.send_json(payload)
             await asyncio.sleep(refresh_interval)
+    except WebSocketDisconnect:
+        return
     except Exception:
-        await ws.close()
+        if ws.application_state != WebSocketState.DISCONNECTED:
+            try:
+                await ws.close()
+            except RuntimeError:
+                return

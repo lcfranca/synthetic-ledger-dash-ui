@@ -11,6 +11,7 @@ class DruidAdapter(StorageAdapter):
 
     def __init__(self) -> None:
         self.router_url = os.getenv("DRUID_ROUTER_URL", "http://druid-router:8888")
+        self.overlord_url = os.getenv("DRUID_OVERLORD_URL", "http://druid-overlord:8081")
         self.datasource = os.getenv("DRUID_DATASOURCE", "ledger_events")
         self.client = httpx.AsyncClient(timeout=2.5)
 
@@ -25,7 +26,7 @@ class DruidAdapter(StorageAdapter):
         payload = {**event, "__time": event.get("occurred_at")}
         inline_data = json.dumps(payload)
         response = await self.client.post(
-            f"{self.router_url}/druid/indexer/v1/task",
+            f"{self.overlord_url}/druid/indexer/v1/task",
             json={
                 "type": "index_parallel",
                 "spec": {

@@ -5,9 +5,9 @@ from fastapi import FastAPI, Query, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.websockets import WebSocketDisconnect, WebSocketState
 
-from api_druid.repository import DashboardRepository
+from api_pinot.repository import DashboardRepository
 
-app = FastAPI(title="synthetic-ledger-api-druid", version="0.1.0")
+app = FastAPI(title="synthetic-ledger-api-pinot", version="0.1.0")
 repo = DashboardRepository()
 refresh_interval = int(os.getenv("API_REFRESH_INTERVAL_MS", "1000")) / 1000
 
@@ -22,7 +22,7 @@ app.add_middleware(
 
 @app.get("/health")
 async def health() -> dict:
-    return {"status": "ok", "backend": "druid"}
+    return {"status": "ok", "backend": "pinot"}
 
 
 @app.get("/api/v1/dashboard/summary")
@@ -52,7 +52,7 @@ async def dashboard_summary(
     summary = await repo.get_summary(as_of=as_of, filters=filters)
     summary["entries"] = await repo.get_recent_entries(limit=30, as_of=as_of, filters=filters)
     summary["filters"] = filters
-    summary["backend"] = "druid"
+    summary["backend"] = "pinot"
     return summary
 
 
@@ -82,7 +82,7 @@ async def dashboard_entries(
         "channel": channel,
     }
     entries = await repo.get_recent_entries(limit=limit, as_of=as_of, filters=filters)
-    return {"entries": entries, "count": len(entries), "as_of": as_of, "filters": filters, "backend": "druid"}
+    return {"entries": entries, "count": len(entries), "as_of": as_of, "filters": filters, "backend": "pinot"}
 
 
 @app.get("/api/v1/dashboard/filter-options")
@@ -97,7 +97,7 @@ async def ws_metrics(ws: WebSocket):
         while True:
             payload = await repo.get_summary()
             payload["entries"] = await repo.get_recent_entries(limit=30)
-            payload["backend"] = "druid"
+            payload["backend"] = "pinot"
             await ws.send_json(payload)
             await asyncio.sleep(refresh_interval)
     except WebSocketDisconnect:

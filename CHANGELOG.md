@@ -16,6 +16,17 @@ and this project adheres to Semantic Versioning.
 ### Added
 - `docs/art_bible.md` com direção estética do projeto (padrão art bible) e ontologia de lançamentos.
 - Endpoints de histórico de lançamentos e payload websocket com resumo + entradas recentes.
+- Roteiro operacional para acesso ao Pinot:
+	- Navegador: `http://localhost:9001` (Pinot Controller UI) para status de cluster, tabelas e segmentos.
+	- SQL via navegador: `http://localhost:8099` (Pinot Broker) para API/queries HTTP.
+	- SQL via cliente (DBeaver/DataGrip): host `localhost`, porta `8099`, database `default`, protocolo Pinot/Trino compatível conforme driver do cliente.
+- Nova API dedicada do Pinot em `api_pinot/` com endpoints de dashboard e websocket (`/ws/metrics`).
+- Nova UI dedicada do Pinot em `frontend_pinot/`, modular e desacoplada das UIs de ClickHouse e Druid.
+
+### Fixed
+- Bootstrap do supervisor Kafka no Druid ajustado para seguir redirect HTTP (`307`) e manter ingestão estável.
+- Endpoints websocket das APIs (`api` e `api-druid`) ajustados para desconexão segura sem erro de fechamento duplicado.
+- Bootstrap de tabela realtime do Pinot via Kafka adicionado ao `storage_writer`, com retry e endpoint de debug (`/debug/pinot-realtime`).
 
 ## [0.0.1] - 2026-03-03
 
