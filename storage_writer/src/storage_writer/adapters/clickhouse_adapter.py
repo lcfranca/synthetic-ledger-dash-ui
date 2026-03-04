@@ -39,6 +39,12 @@ class ClickHouseAdapter(StorageAdapter):
             ontology_event_type String,
             ontology_description String,
             ontology_source String,
+            product_id String,
+            supplier_id Nullable(String),
+            customer_id Nullable(String),
+            warehouse_id String,
+            channel String,
+            entry_category String,
             source_payload_hash String,
             schema_version String,
             occurred_at DateTime64(3, 'UTC'),
@@ -66,6 +72,22 @@ class ClickHouseAdapter(StorageAdapter):
             auth=(self.user, self.password),
         )
         table_response.raise_for_status()
+
+        alter_statements = [
+            "ALTER TABLE ledger.entries ADD COLUMN IF NOT EXISTS product_id String",
+            "ALTER TABLE ledger.entries ADD COLUMN IF NOT EXISTS supplier_id Nullable(String)",
+            "ALTER TABLE ledger.entries ADD COLUMN IF NOT EXISTS customer_id Nullable(String)",
+            "ALTER TABLE ledger.entries ADD COLUMN IF NOT EXISTS warehouse_id String DEFAULT 'unknown-warehouse'",
+            "ALTER TABLE ledger.entries ADD COLUMN IF NOT EXISTS channel String DEFAULT 'unknown-channel'",
+            "ALTER TABLE ledger.entries ADD COLUMN IF NOT EXISTS entry_category String DEFAULT 'operacional'",
+        ]
+        for statement in alter_statements:
+            alter_response = await self.client.post(
+                f"{self.base_url}/",
+                params={"query": statement},
+                auth=(self.user, self.password),
+            )
+            alter_response.raise_for_status()
         self._schema_ready = True
 
     async def healthy(self) -> bool:

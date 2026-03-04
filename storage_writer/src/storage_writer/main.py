@@ -51,6 +51,22 @@ def statement_section(account_code: str) -> str:
     return "other"
 
 
+def entry_category(account_code: str, event_type: str) -> str:
+    if account_code.startswith("3."):
+        return "receita"
+    if account_code.startswith("4."):
+        return "cmv_despesa"
+    if account_code == "1.1.03.01-Estoque":
+        return "estoque"
+    if account_code == "1.1.01.01-Caixa":
+        return "caixa"
+    if event_type == "purchase":
+        return "suprimentos"
+    if event_type == "sale":
+        return "comercial"
+    return "operacional"
+
+
 def make_entry(
     *,
     event: dict[str, Any],
@@ -65,6 +81,12 @@ def make_entry(
     sign = 1.0 if entry_side == "debit" else -1.0
     occurred_at = event.get("occurred_at", now_iso())
     ingested_at = event.get("ingested_at", now_iso())
+    canonical_event_type = str(event.get("event_type", "unknown"))
+    product_id = str(event.get("product_id", "unknown-product"))
+    supplier_id = event.get("supplier_id")
+    customer_id = event.get("customer_id")
+    warehouse_id = str(event.get("warehouse_id", "unknown-warehouse"))
+    channel = str(event.get("channel", "unknown-channel"))
 
     return {
         "entry_id": str(uuid.uuid4()),
@@ -79,9 +101,15 @@ def make_entry(
         "amount": round(amount, 2),
         "signed_amount": round(amount * sign, 2),
         "currency": event.get("currency", "BRL"),
-        "ontology_event_type": event.get("event_type", "unknown"),
+        "ontology_event_type": canonical_event_type,
         "ontology_description": ontology_description,
         "ontology_source": ontology_source,
+        "product_id": product_id,
+        "supplier_id": supplier_id,
+        "customer_id": customer_id,
+        "warehouse_id": warehouse_id,
+        "channel": channel,
+        "entry_category": entry_category(account_code, canonical_event_type),
         "source_payload_hash": payload_hash,
         "schema_version": event.get("schema_version", "1.0.0"),
         "occurred_at": occurred_at,

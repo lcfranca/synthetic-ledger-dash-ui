@@ -25,16 +25,67 @@ async def health() -> dict:
 
 
 @app.get("/api/v1/dashboard/summary")
-async def dashboard_summary(as_of: str | None = Query(default=None)) -> dict:
-    summary = await repo.get_summary(as_of=as_of)
-    summary["entries"] = await repo.get_recent_entries(limit=30, as_of=as_of)
+async def dashboard_summary(
+    as_of: str | None = Query(default=None),
+    product_id: str | None = Query(default=None),
+    supplier_id: str | None = Query(default=None),
+    event_type: str | None = Query(default=None),
+    entry_category: str | None = Query(default=None),
+    account_code: str | None = Query(default=None),
+    warehouse_id: str | None = Query(default=None),
+    entry_side: str | None = Query(default=None),
+    ontology_source: str | None = Query(default=None),
+    channel: str | None = Query(default=None),
+) -> dict:
+    filters = {
+        "product_id": product_id,
+        "supplier_id": supplier_id,
+        "ontology_event_type": event_type,
+        "entry_category": entry_category,
+        "account_code": account_code,
+        "warehouse_id": warehouse_id,
+        "entry_side": entry_side,
+        "ontology_source": ontology_source,
+        "channel": channel,
+    }
+    summary = await repo.get_summary(as_of=as_of, filters=filters)
+    summary["entries"] = await repo.get_recent_entries(limit=30, as_of=as_of, filters=filters)
+    summary["filters"] = filters
     return summary
 
 
 @app.get("/api/v1/dashboard/entries")
-async def dashboard_entries(limit: int = Query(default=50, ge=1, le=500), as_of: str | None = Query(default=None)) -> dict:
-    entries = await repo.get_recent_entries(limit=limit, as_of=as_of)
-    return {"entries": entries, "count": len(entries), "as_of": as_of}
+async def dashboard_entries(
+    limit: int = Query(default=50, ge=1, le=500),
+    as_of: str | None = Query(default=None),
+    product_id: str | None = Query(default=None),
+    supplier_id: str | None = Query(default=None),
+    event_type: str | None = Query(default=None),
+    entry_category: str | None = Query(default=None),
+    account_code: str | None = Query(default=None),
+    warehouse_id: str | None = Query(default=None),
+    entry_side: str | None = Query(default=None),
+    ontology_source: str | None = Query(default=None),
+    channel: str | None = Query(default=None),
+) -> dict:
+    filters = {
+        "product_id": product_id,
+        "supplier_id": supplier_id,
+        "ontology_event_type": event_type,
+        "entry_category": entry_category,
+        "account_code": account_code,
+        "warehouse_id": warehouse_id,
+        "entry_side": entry_side,
+        "ontology_source": ontology_source,
+        "channel": channel,
+    }
+    entries = await repo.get_recent_entries(limit=limit, as_of=as_of, filters=filters)
+    return {"entries": entries, "count": len(entries), "as_of": as_of, "filters": filters}
+
+
+@app.get("/api/v1/dashboard/filter-options")
+async def dashboard_filter_options() -> dict:
+    return await repo.get_filter_options()
 
 
 @app.websocket("/ws/metrics")
