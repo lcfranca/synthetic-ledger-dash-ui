@@ -24,8 +24,31 @@ Versão atual do projeto (configuração oficial): `pyproject.toml` (`project.ve
 - Eventos de origem são mapeados em ontologia de lançamento (`ontology_event_type`, `ontology_description`, `ontology_source`).
 - Auditoria e rastreabilidade com `event_id`, `trace_id`, `source_payload_hash`, `revision`, `valid_from`, `valid_to` e `is_current`.
 - Time-travel via parâmetro `as_of` nos endpoints da API.
-- Druid pode consumir lançamentos diretamente do Kafka (`DRUID_KAFKA_TOPIC`) via supervisor automático configurado no `storage_writer`.
-- Para consumo Kafka no Druid, o endpoint de indexing/supervisor deve estar ativo (overlord/indexer disponível no cluster Druid).
+- Os três painéis são orientados ao mesmo stream Kafka canônico de lançamentos (`LEDGER_ENTRIES_KAFKA_TOPIC`).
+- O `storage_writer` deriva lançamentos contábeis uma única vez e publica no tópico canônico.
+- ClickHouse é alimentado por fan-out Kafka no `storage_writer`.
+- Druid consome o mesmo tópico via supervisor Kafka.
+- Pinot consome o mesmo tópico via tabela realtime Kafka.
+
+## Arquitetura modular dos painéis
+
+Cada painel é isolado em sua própria API e frontend, mas todos compartilham o mesmo contrato de lançamentos e o mesmo backbone Kafka.
+
+### Backplane comum
+
+- Producer/Otel → `storage_writer`
+- `storage_writer` → `LEDGER_ENTRIES_KAFKA_TOPIC`
+- Consumidores independentes:
+   - ClickHouse dashboard
+   - Druid dashboard
+   - Pinot dashboard
+
+### Endpoints de debug do fan-out
+
+- Último OTLP processado: `http://localhost:8090/debug/last-otlp`
+- Fan-out Kafka para backends diretos: `http://localhost:8090/debug/kafka-fanout`
+- Supervisor Kafka do Druid: `http://localhost:8090/debug/druid-supervisor`
+- Bootstrap realtime do Pinot: `http://localhost:8090/debug/pinot-realtime`
 
 ## Primeiros passos
 
@@ -37,66 +60,63 @@ Versão atual do projeto (configuração oficial): `pyproject.toml` (`project.ve
    - `make stop-populate`
 4. Acompanhe saúde dos serviços:
    - `make health`
-5. Acesse:
-   - Frontend: `http://localhost:5173`
-   - API: `http://localhost:8080/docs`
-   - Frontend (Druid): `http://localhost:5174`
-   - API (Druid): `http://localhost:8081/docs`
-   - Frontend (Pinot): `http://localhost:5175`
-   - API (Pinot): `http://localhost:8082/docs`
+5. Rode validações rápidas por painel:
+   - `make health-clickhouse`
+   - `make health-druid`
+   - `make health-pinot`
+   - `make smoke-all`
 
 O alvo `up` cria `.env` automaticamente a partir de `.env.example` se necessário.
 
-Para diagnosticar supervisor Kafka do Druid:
-- `http://localhost:8090/debug/druid-supervisor`
+## Painel 1 — ClickHouse
 
-Para diagnosticar bootstrap realtime do Pinot:
-- `http://localhost:8090/debug/pinot-realtime`
+### URLs
 
-## Acesso ao Apache Pinot no navegador
+- Frontend: `http://localhost:5173`
+- API: `http://localhost:8080/docs`
+- Health: `http://localhost:8080/health`
 
-Com a stack ativa (`make up`), os endpoints principais do Pinot são:
+### Fonte de dados
 
-- Controller UI: `http://localhost:9001`
-- Broker SQL/API: `http://localhost:8099`
-- Dashboard Pinot dedicado: `http://localhost:5175`
+- Backend de leitura: ClickHouse
+- Alimentação: fan-out Kafka do `storage_writer`
+- Tabela: `ledger.entries`
 
-### Passo a passo rápido
+### Verificações rápidas
 
-1. Validar serviços do Pinot:
-   - `docker compose ps pinot-zookeeper pinot-controller pinot-broker api-pinot frontend-pinot`
-2. Abrir Controller UI:
-   - `http://localhost:9001`
-3. Confirmar bootstrap no writer:
-   - `curl http://localhost:8090/debug/pinot-realtime`
-4. Testar query no Broker:
-   - `curl -X POST http://localhost:8099/query/sql -H 'Content-Type: application/json' -d '{"sql":"SELECT COUNT(*) AS c FROM ledger_events"}'`
-5. Abrir dashboard Pinot dedicado:
-   - `http://localhost:5175`
+1. `make health-clickhouse`
+2. `make smoke-clickhouse`
+3. Conexão analítica:
+   - Host `localhost`
+   - HTTP `8123`
+   - Native `9000`
+   - Database `ledger`
 
-## Acesso ao Apache Druid no navegador
+## Painel 2 — Druid
 
-Com a stack ativa (`make up`), o Router do Druid fica exposto em `localhost:8889`.
+### URLs
 
-### URLs principais
+- Frontend: `http://localhost:5174`
+- API: `http://localhost:8081/docs`
+- Router/UI: `http://localhost:8889`
+- SQL endpoint: `http://localhost:8889/druid/v2/sql`
+- Health API: `http://localhost:8081/health`
+- Health Router: `http://localhost:8889/status/health`
 
-- Console web do Druid (Router): `http://localhost:8889`
-- Unified Console (quando disponível): `http://localhost:8889/unified-console.html`
-- SQL endpoint (API): `http://localhost:8889/druid/v2/sql`
-- Status de saúde (Router): `http://localhost:8889/status/health`
+### Fonte de dados
 
-### Passo a passo rápido
+- Backend de leitura: Apache Druid
+- Alimentação: supervisor Kafka no datasource `ledger_events`
+- Debug: `http://localhost:8090/debug/druid-supervisor`
 
-1. Validar serviços Druid:
-    - `docker compose ps druid-router druid-broker druid-coordinator druid-overlord druid-middlemanager`
-2. Abrir o console no navegador:
-   - `http://localhost:8889`
-3. No menu de SQL da UI, testar rapidamente:
-   - `SELECT COUNT(*) AS c FROM "ledger_events"`
-4. Validar supervisor Kafka do datasource:
-    - `curl http://localhost:8090/debug/druid-supervisor`
-5. Testar SQL do datasource no Router (via terminal):
-    - `curl -X POST http://localhost:8889/druid/v2/sql -H 'Content-Type: application/json' -d '{"query":"SELECT COUNT(*) AS c FROM \"ledger_events\""}'`
+### Verificações rápidas
+
+1. `make health-druid`
+2. `make smoke-druid`
+3. Validar serviços:
+   - `docker compose ps druid-router druid-broker druid-coordinator druid-overlord druid-middlemanager`
+4. Testar SQL:
+   - `curl -X POST http://localhost:8889/druid/v2/sql -H 'Content-Type: application/json' -d '{"query":"SELECT COUNT(*) AS c FROM \"ledger_events\""}'`
 
 ### Troubleshooting comum
 
@@ -112,6 +132,31 @@ Com a stack ativa (`make up`), o Router do Druid fica exposto em `localhost:8889
    - Se necessário, reinicie writer após Druid estabilizar:
       - `docker compose restart storage-writer`
 
+## Painel 3 — Pinot
+
+### URLs
+
+- Frontend: `http://localhost:5175`
+- API: `http://localhost:8082/docs`
+- Controller UI: `http://localhost:9001`
+- Broker SQL/API: `http://localhost:8099`
+- Health API: `http://localhost:8082/health`
+
+### Fonte de dados
+
+- Backend de leitura: Apache Pinot
+- Alimentação: tabela realtime Kafka `ledger_events`
+- Debug: `http://localhost:8090/debug/pinot-realtime`
+
+### Verificações rápidas
+
+1. `make health-pinot`
+2. `make smoke-pinot`
+3. Validar serviços:
+   - `docker compose ps pinot-zookeeper pinot-controller pinot-broker pinot-server api-pinot frontend-pinot`
+4. Testar query no Broker:
+   - `curl -X POST http://localhost:8099/query/sql -H 'Content-Type: application/json' -d '{"sql":"SELECT COUNT(*) AS c FROM ledger_events"}'`
+
 ## Versionamento de schema (AVRO)
 
 - Schemas versionados em:
@@ -119,7 +164,7 @@ Com a stack ativa (`make up`), o Router do Druid fica exposto em `localhost:8889
    - `shared/schemas/avro/accounting_event_v2.avsc`
 - O producer valida eventos contra AVRO via `SCHEMA_MAJOR_VERSION`.
 
-## DBeaver (conexões)
+## Conexões analíticas por painel
 
 ### ClickHouse
 - Host: `localhost`

@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 import httpx
-from confluent_kafka import Producer
+from confluent_kafka import Consumer, Producer
 from fastapi import FastAPI, HTTPException, Request
 from opentelemetry.proto.collector.logs.v1.logs_service_pb2 import ExportLogsServiceRequest
 
@@ -19,6 +19,7 @@ app = FastAPI(title="synthetic-ledger-storage-writer", version="0.1.0")
 last_otlp_stats: dict[str, Any] = {}
 druid_supervisor_status: dict[str, Any] = {}
 pinot_realtime_status: dict[str, Any] = {}
+kafka_fanout_status: dict[str, Any] = {}
 
 
 def build_adapters() -> dict[str, Any]:
@@ -38,20 +39,62 @@ def is_true(name: str, default: str = "false") -> bool:
     return os.getenv(name, default).strip().lower() in {"1", "true", "yes", "on"}
 
 
+def ledger_entries_topic() -> str:
+    return os.getenv("LEDGER_ENTRIES_KAFKA_TOPIC", os.getenv("DRUID_KAFKA_TOPIC", "ledger-entries-v1"))
+
+
+def direct_write_enabled(name: str) -> bool:
+    if name == "clickhouse":
+        default = "false" if is_true("KAFKA_FANOUT_CONSUMER_ENABLED", "true") else "true"
+        return is_true("CLICKHOUSE_DIRECT_WRITE_ENABLED", default)
+    if name == "druid":
+        return is_true("DRUID_DIRECT_WRITE_ENABLED", "false")
+    if name == "pinot":
+        return is_true("PINOT_DIRECT_WRITE_ENABLED", "false")
+    return False
+
+
+def kafka_fanout_target_names() -> list[str]:
+    configured = [item.strip() for item in os.getenv("KAFKA_FANOUT_TARGET_BACKENDS", "clickhouse").split(",") if item.strip()]
+    return [name for name in configured if name in adapters]
+
+
 def build_entries_kafka_producer() -> Producer | None:
-    if not is_true("DRUID_KAFKA_PUBLISH_ENABLED", "true"):
+    if not is_true("LEDGER_ENTRIES_KAFKA_PUBLISH_ENABLED", os.getenv("DRUID_KAFKA_PUBLISH_ENABLED", "true")):
         return None
     bootstrap = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
     return Producer({"bootstrap.servers": bootstrap, "linger.ms": 10, "batch.num.messages": 1000})
 
 
+def build_entries_kafka_consumer() -> Consumer | None:
+    if not is_true("KAFKA_FANOUT_CONSUMER_ENABLED", "true"):
+        return None
+    targets = kafka_fanout_target_names()
+    if not targets:
+        return None
+    bootstrap = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
+    group_id = os.getenv("KAFKA_FANOUT_GROUP_ID", "ledger-fanout-clickhouse-v1")
+    offset_reset = os.getenv("KAFKA_FANOUT_AUTO_OFFSET_RESET", "latest")
+    consumer = Consumer(
+        {
+            "bootstrap.servers": bootstrap,
+            "group.id": group_id,
+            "auto.offset.reset": offset_reset,
+            "enable.auto.commit": False,
+        }
+    )
+    consumer.subscribe([ledger_entries_topic()])
+    return consumer
+
+
 entries_kafka_producer = build_entries_kafka_producer()
+entries_kafka_consumer = build_entries_kafka_consumer()
 
 
 def publish_entry_to_kafka(entry: dict[str, Any]) -> bool:
     if entries_kafka_producer is None:
         return False
-    topic = os.getenv("DRUID_KAFKA_TOPIC", "ledger-entries-v1")
+    topic = ledger_entries_topic()
     try:
         entries_kafka_producer.produce(
             topic=topic,
@@ -64,6 +107,81 @@ def publish_entry_to_kafka(entry: dict[str, Any]) -> bool:
         return False
 
 
+async def consume_entries_from_kafka() -> None:
+    global kafka_fanout_status
+    if entries_kafka_consumer is None:
+        kafka_fanout_status = {
+            "enabled": False,
+            "reason": "KAFKA_FANOUT_CONSUMER_ENABLED=false or no target backends configured",
+        }
+        return
+
+    targets = kafka_fanout_target_names()
+    kafka_fanout_status = {
+        "enabled": True,
+        "state": "starting",
+        "topic": ledger_entries_topic(),
+        "target_backends": targets,
+        "messages_processed": 0,
+        "backend_writes": {name: 0 for name in targets},
+    }
+
+    while True:
+        try:
+            message = await asyncio.to_thread(entries_kafka_consumer.poll, 1.0)
+            if message is None:
+                kafka_fanout_status["state"] = "idle"
+                continue
+
+            if message.error():
+                kafka_fanout_status.update({"state": "error", "error": str(message.error())})
+                await asyncio.sleep(1)
+                continue
+
+            payload = json.loads(message.value().decode("utf-8"))
+            successful_targets: list[str] = []
+            backend_errors: dict[str, str] = {}
+            for name in targets:
+                adapter = adapters.get(name)
+                if adapter is None:
+                    continue
+                try:
+                    await adapter.write_event(dict(payload))
+                    successful_targets.append(name)
+                    kafka_fanout_status["backend_writes"][name] = kafka_fanout_status["backend_writes"].get(name, 0) + 1
+                except Exception as exc:
+                    backend_errors[name] = str(exc)
+
+            if len(successful_targets) != len(targets):
+                kafka_fanout_status.update(
+                    {
+                        "state": "retrying",
+                        "error": f"fanout failed for backends: {backend_errors}",
+                        "last_backend_errors": backend_errors,
+                    }
+                )
+                await asyncio.sleep(1)
+                continue
+
+            await asyncio.to_thread(entries_kafka_consumer.commit, message=message, asynchronous=False)
+            kafka_fanout_status.update(
+                {
+                    "state": "running",
+                    "messages_processed": kafka_fanout_status.get("messages_processed", 0) + 1,
+                    "last_event_id": payload.get("event_id"),
+                    "last_offsets": {
+                        "topic": message.topic(),
+                        "partition": message.partition(),
+                        "offset": message.offset(),
+                    },
+                    "last_backend_errors": {},
+                }
+            )
+        except Exception as exc:
+            kafka_fanout_status.update({"state": "error", "error": str(exc)})
+            await asyncio.sleep(1)
+
+
 async def ensure_druid_kafka_supervisor() -> None:
     global druid_supervisor_status
     if not is_true("DRUID_KAFKA_CONSUMER_ENABLED", "true"):
@@ -74,10 +192,11 @@ async def ensure_druid_kafka_supervisor() -> None:
         druid_supervisor_status = {"enabled": False, "reason": "druid adapter disabled"}
         return
 
-    topic = os.getenv("DRUID_KAFKA_TOPIC", "ledger-entries-v1")
+    topic = ledger_entries_topic()
     datasource = os.getenv("DRUID_DATASOURCE", "ledger_events")
     druid_url = os.getenv("DRUID_OVERLORD_URL", "http://druid-overlord:8081")
     kafka_bootstrap = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
+    use_earliest_offset = is_true("DRUID_KAFKA_USE_EARLIEST_OFFSET", "false")
 
     supervisor_spec = {
         "type": "kafka",
@@ -131,7 +250,7 @@ async def ensure_druid_kafka_supervisor() -> None:
                 "topic": topic,
                 "consumerProperties": {"bootstrap.servers": kafka_bootstrap},
                 "inputFormat": {"type": "json"},
-                "useEarliestOffset": True,
+                "useEarliestOffset": use_earliest_offset,
             },
             "tuningConfig": {"type": "kafka"},
         },
@@ -206,8 +325,9 @@ async def ensure_pinot_kafka_realtime_table() -> None:
 
     controller_url = os.getenv("PINOT_CONTROLLER_URL", "http://pinot-controller:9000")
     table = os.getenv("PINOT_TABLE", "ledger_events")
-    topic = os.getenv("DRUID_KAFKA_TOPIC", "ledger-entries-v1")
+    topic = ledger_entries_topic()
     kafka_bootstrap = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
+    offset_reset = os.getenv("PINOT_KAFKA_AUTO_OFFSET_RESET", "largest")
 
     schema_name = table
     realtime_table_name = f"{table}_REALTIME"
@@ -275,7 +395,7 @@ async def ensure_pinot_kafka_realtime_table() -> None:
                 "stream.kafka.broker.list": kafka_bootstrap,
                 "stream.kafka.consumer.type": "lowlevel",
                 "stream.kafka.decoder.class.name": "org.apache.pinot.plugin.stream.kafka.KafkaJSONMessageDecoder",
-                "stream.kafka.consumer.prop.auto.offset.reset": "smallest",
+                "stream.kafka.consumer.prop.auto.offset.reset": offset_reset,
             },
         },
         "ingestionConfig": {
@@ -324,6 +444,15 @@ async def ensure_pinot_kafka_realtime_table() -> None:
                 if not has_realtime_table:
                     table_create = await client.post(f"{controller_url}/tables", json=table_payload)
                     table_create.raise_for_status()
+                else:
+                    table_get = await client.get(f"{controller_url}/tables/{realtime_table_name}")
+                    table_get.raise_for_status()
+                    current_table = (table_get.json() or {}).get("REALTIME", {})
+                    current_stream_config = ((current_table.get("tableIndexConfig") or {}).get("streamConfigs") or {})
+                    desired_stream_config = table_payload["tableIndexConfig"]["streamConfigs"]
+                    if any(current_stream_config.get(key) != value for key, value in desired_stream_config.items()):
+                        table_update = await client.put(f"{controller_url}/tables/{realtime_table_name}", json=table_payload)
+                        table_update.raise_for_status()
 
                 tables_verify = await client.get(f"{controller_url}/tables")
                 tables_verify.raise_for_status()
@@ -599,10 +728,16 @@ async def debug_pinot_realtime() -> dict[str, Any]:
     return pinot_realtime_status
 
 
+@app.get("/debug/kafka-fanout")
+async def debug_kafka_fanout() -> dict[str, Any]:
+    return kafka_fanout_status
+
+
 @app.on_event("startup")
 async def startup_tasks() -> None:
     asyncio.create_task(bootstrap_druid_supervisor_task())
     asyncio.create_task(bootstrap_pinot_realtime_task())
+    asyncio.create_task(consume_entries_from_kafka())
 
 
 @app.post("/v1/logs")
@@ -697,9 +832,7 @@ async def ingest_otlp_logs(request: Request) -> dict[str, Any]:
 
     active_adapters: dict[str, Any] = {}
     for name, adapter in adapters.items():
-        if name == "druid" and not is_true("DRUID_DIRECT_WRITE_ENABLED", "false"):
-            continue
-        if name == "pinot" and not is_true("PINOT_DIRECT_WRITE_ENABLED", "false"):
+        if not direct_write_enabled(name):
             continue
         if await adapter.healthy():
             active_adapters[name] = adapter
@@ -730,7 +863,7 @@ async def ingest_otlp_logs(request: Request) -> dict[str, Any]:
             "backend_writes": backend_writes,
             "backend_errors": backend_errors,
         }
-        raise HTTPException(status_code=503, detail="No backend or kafka topic available for write")
+        raise HTTPException(status_code=503, detail="No direct backend or kafka topic available for write")
 
     last_otlp_stats = {
         "payload_bytes": len(raw),
@@ -759,9 +892,7 @@ async def ingest_direct(request: Request) -> dict[str, Any]:
     kafka_published = 0
     active_adapters: dict[str, Any] = {}
     for name, adapter in adapters.items():
-        if name == "druid" and not is_true("DRUID_DIRECT_WRITE_ENABLED", "false"):
-            continue
-        if name == "pinot" and not is_true("PINOT_DIRECT_WRITE_ENABLED", "false"):
+        if not direct_write_enabled(name):
             continue
         if await adapter.healthy():
             active_adapters[name] = adapter
