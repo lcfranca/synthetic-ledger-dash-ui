@@ -1,38 +1,82 @@
 SHELL := /bin/bash
 
-.PHONY: up down logs ps rebuild populate stop-populate health health-clickhouse health-druid health-pinot smoke-clickhouse smoke-druid smoke-pinot smoke-all
+ENV_FILE ?= .env
+STACK_SELECTION := bash scripts/stack-selection.sh
+
+.PHONY: run stop up down logs ps rebuild populate stop-populate health health-clickhouse health-druid health-pinot smoke-clickhouse smoke-druid smoke-pinot smoke-all smoke-startup print-selection
+
+run:
+	@if [ ! -f $(ENV_FILE) ]; then cp .env.example $(ENV_FILE); fi
+	@services="$$($(STACK_SELECTION) services $(ENV_FILE))"; \
+	if [ -z "$$services" ]; then \
+		echo "No services resolved from $(ENV_FILE)."; \
+		exit 1; \
+	fi; \
+	eval "$$($(STACK_SELECTION) exports $(ENV_FILE))"; \
+	echo "Starting services: $$services"; \
+	echo "Resolved stacks: $$ACTIVE_RESOLVED_STACKS"; \
+	TARGET_BACKENDS="$$TARGET_BACKENDS" \
+	API_ALLOWED_BACKENDS="$$API_ALLOWED_BACKENDS" \
+	API_DEFAULT_BACKEND="$$API_DEFAULT_BACKEND" \
+	KAFKA_FANOUT_TARGET_BACKENDS="$$KAFKA_FANOUT_TARGET_BACKENDS" \
+	docker compose --env-file $(ENV_FILE) up --build -d $$services; \
+	$(MAKE) smoke-startup ENV_FILE=$(ENV_FILE)
+
+stop:
+	@docker compose --env-file $(ENV_FILE) --profile producer down --remove-orphans --volumes --rmi local --timeout 5 || true
+	@project_name="$${COMPOSE_PROJECT_NAME:-$$(basename "$$(pwd)")}"; \
+	remaining_containers="$$(docker ps -aq --filter label=com.docker.compose.project=$$project_name)"; \
+	if [ -n "$$remaining_containers" ]; then docker rm -f $$remaining_containers >/dev/null 2>&1 || true; fi; \
+	remaining_volumes="$$( (docker volume ls -q --filter label=com.docker.compose.project=$$project_name; docker volume ls -q | grep -E "^$${project_name}_") | sort -u )"; \
+	if [ -n "$$remaining_volumes" ]; then docker volume rm -f $$remaining_volumes >/dev/null 2>&1 || true; fi; \
+	remaining_networks="$$(docker network ls -q --filter label=com.docker.compose.project=$$project_name)"; \
+	if [ -n "$$remaining_networks" ]; then docker network rm $$remaining_networks >/dev/null 2>&1 || true; fi; \
+	echo "Stack stopped and cleaned."
 
 up:
-	@if [ ! -f .env ]; then cp .env.example .env; fi
-	docker compose up --build -d
+	@$(MAKE) run ENV_FILE=$(ENV_FILE)
 
 populate:
-	@if [ ! -f .env ]; then cp .env.example .env; fi
-	docker compose --profile producer up --build -d producer
+	@if [ ! -f $(ENV_FILE) ]; then cp .env.example $(ENV_FILE); fi
+	@services="$$($(STACK_SELECTION) services $(ENV_FILE))"; \
+	eval "$$($(STACK_SELECTION) exports $(ENV_FILE))"; \
+	TARGET_BACKENDS="$$TARGET_BACKENDS" \
+	API_ALLOWED_BACKENDS="$$API_ALLOWED_BACKENDS" \
+	API_DEFAULT_BACKEND="$$API_DEFAULT_BACKEND" \
+	KAFKA_FANOUT_TARGET_BACKENDS="$$KAFKA_FANOUT_TARGET_BACKENDS" \
+	docker compose --env-file $(ENV_FILE) --profile producer up --build -d $$services producer
 
 stop-populate:
-	docker compose stop producer
+	docker compose --env-file $(ENV_FILE) stop producer
 
 down:
-	docker compose --profile producer down --remove-orphans
+	@$(MAKE) stop ENV_FILE=$(ENV_FILE)
 
 logs:
-	docker compose logs -f --tail=200
+	docker compose --env-file $(ENV_FILE) logs -f --tail=200
 
 ps:
-	docker compose ps
+	docker compose --env-file $(ENV_FILE) ps
 
 rebuild:
-	docker compose build --no-cache
+	docker compose --env-file $(ENV_FILE) build --no-cache
+
+print-selection:
+	@if [ ! -f $(ENV_FILE) ]; then cp .env.example $(ENV_FILE); fi
+	@echo "Services: $$($(STACK_SELECTION) services $(ENV_FILE))"
+	@$(STACK_SELECTION) exports $(ENV_FILE)
 
 health:
-	@echo "API:" && curl -fsS http://localhost:8080/health && echo
-	@echo "API Druid:" && curl -fsS http://localhost:8081/health && echo
-	@echo "API Pinot:" && curl -fsS http://localhost:8082/health && echo
+	@echo "Master Data:" && curl -fsS http://localhost:8091/health && echo
 	@echo "Storage Writer:" && curl -fsS http://localhost:8090/health && echo
-	@echo "Frontend:" && curl -fsSI http://localhost:5173 | head -n 1
-	@echo "Frontend Druid:" && curl -fsSI http://localhost:5174 | head -n 1
-	@echo "Frontend Pinot:" && curl -fsSI http://localhost:5175 | head -n 1
+	@echo "Realtime Gateway:" && curl -fsS http://localhost:8083/health && echo
+	@eval "$$($(STACK_SELECTION) exports $(ENV_FILE))"; \
+	if echo "$$ACTIVE_RESOLVED_STACKS" | grep -Eq '(^|,)clickhouse($$|,)'; then echo "API ClickHouse:" && curl -fsS http://localhost:8080/health && echo; fi; \
+	if echo "$$ACTIVE_RESOLVED_STACKS" | grep -Eq '(^|,)druid($$|,)'; then echo "API Druid:" && curl -fsS http://localhost:8081/health && echo; fi; \
+	if echo "$$ACTIVE_RESOLVED_STACKS" | grep -Eq '(^|,)pinot($$|,)'; then echo "API Pinot:" && curl -fsS http://localhost:8082/health && echo; fi; \
+	if echo "$$ACTIVE_RESOLVED_STACKS" | grep -Eq '(^|,)clickhouse($$|,)'; then echo "Frontend ClickHouse:" && curl -fsSI http://localhost:5173 | head -n 1; fi; \
+	if echo "$$ACTIVE_RESOLVED_STACKS" | grep -Eq '(^|,)druid($$|,)'; then echo "Frontend Druid:" && curl -fsSI http://localhost:5174 | head -n 1; fi; \
+	if echo "$$ACTIVE_RESOLVED_STACKS" | grep -Eq '(^|,)pinot($$|,)'; then echo "Frontend Pinot:" && curl -fsSI http://localhost:5175 | head -n 1; fi
 
 health-clickhouse:
 	@echo "ClickHouse API:" && curl -fsS http://localhost:8080/health && echo
@@ -62,4 +106,13 @@ smoke-pinot:
 	@echo "Pinot entries:" && curl -fsS 'http://localhost:8082/api/v1/dashboard/entries?limit=5' | head -c 400 && echo
 	@echo "Pinot SQL count:" && curl -fsS -X POST http://localhost:8099/query/sql -H 'Content-Type: application/json' -d '{"sql":"SELECT COUNT(*) AS c FROM ledger_events"}' && echo
 
-smoke-all: smoke-clickhouse smoke-druid smoke-pinot
+smoke-all:
+	@eval "$$($(STACK_SELECTION) exports $(ENV_FILE))"; \
+	if echo "$$ACTIVE_RESOLVED_STACKS" | grep -Eq '(^|,)clickhouse($$|,)'; then $(MAKE) smoke-clickhouse ENV_FILE=$(ENV_FILE); fi; \
+	if echo "$$ACTIVE_RESOLVED_STACKS" | grep -Eq '(^|,)druid($$|,)'; then $(MAKE) smoke-druid ENV_FILE=$(ENV_FILE); fi; \
+	if echo "$$ACTIVE_RESOLVED_STACKS" | grep -Eq '(^|,)pinot($$|,)'; then $(MAKE) smoke-pinot ENV_FILE=$(ENV_FILE); fi
+
+smoke-startup:
+	@set -a; source $(ENV_FILE); set +a; \
+	eval "$$($(STACK_SELECTION) exports $(ENV_FILE))"; \
+	ACTIVE_STACKS="$$ACTIVE_RESOLVED_STACKS" RUN_PRODUCER_ON_START="$${RUN_PRODUCER_ON_START:-false}" python3 scripts/smoke_accounting.py

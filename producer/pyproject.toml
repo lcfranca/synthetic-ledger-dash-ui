@@ -22,4 +22,4 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [tool.setuptools.package-data]
-producer = ["schemas/*.avsc"]
+producer = ["schemas/*.avsc", "domain_data/*.json"]

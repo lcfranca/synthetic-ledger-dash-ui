@@ -1,0 +1,11 @@
+{
+  "company_id": "company-demo",
+  "tenant_id": "tenant-company-demo",
+  "legal_name": "Aurora Commerce Brasil Ltda",
+  "trade_name": "Aurora Digital",
+  "description": "Operadora omnichannel de varejo com foco em casa, eletrônicos leves, utilidades e brinquedos infantis, vendendo em marketplaces e canal próprio.",
+  "segment": "varejo_omnichannel",
+  "currency": "BRL",
+  "headquarters_city": "Sao Paulo",
+  "headquarters_state": "SP"
+}

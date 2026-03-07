@@ -1,0 +1,26 @@
+[
+  {
+    "supplier_id": "sup-casa-prime",
+    "supplier_name": "Casa Prime Utilidades Ltda",
+    "payment_terms_days": 28,
+    "lead_time_days": 4
+  },
+  {
+    "supplier_id": "sup-mobile-br",
+    "supplier_name": "Mobile BR Distribuicao SA",
+    "payment_terms_days": 21,
+    "lead_time_days": 6
+  },
+  {
+    "supplier_id": "sup-kids-hub",
+    "supplier_name": "Kids Hub Brinquedos Importados Ltda",
+    "payment_terms_days": 30,
+    "lead_time_days": 8
+  },
+  {
+    "supplier_id": "sup-audio-wave",
+    "supplier_name": "Audio Wave Comercio Eletronico Ltda",
+    "payment_terms_days": 24,
+    "lead_time_days": 5
+  }
+]

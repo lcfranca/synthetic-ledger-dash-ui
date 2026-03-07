@@ -1,4 +1,16 @@
 services:
+  master-data:
+    build:
+      context: .
+      dockerfile: master_data/Dockerfile
+    mem_limit: 128m
+    cpus: 0.25
+    restart: unless-stopped
+    volumes:
+      - master_data_store:/data
+    ports:
+      - "8091:8091"
+
   zookeeper:
     image: zookeeper:3.9
     healthcheck:
@@ -9,6 +21,8 @@ services:
 
   kafka:
     image: confluentinc/cp-kafka:7.6.1
+    mem_limit: ${KAFKA_MEM_LIMIT:-768m}
+    cpus: ${KAFKA_CPU_LIMIT:-1.0}
     depends_on:
       zookeeper:
         condition: service_healthy
@@ -33,6 +47,8 @@ services:
 
   clickhouse:
     image: clickhouse/clickhouse-server:24.8
+    mem_limit: ${CLICKHOUSE_MEM_LIMIT:-1536m}
+    cpus: ${CLICKHOUSE_CPU_LIMIT:-2.0}
     volumes:
       - ./infra/clickhouse/init/01-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
     environment:
@@ -43,6 +59,8 @@ services:
 
   druid-postgres:
     image: postgres:16-alpine
+    mem_limit: ${DRUID_POSTGRES_MEM_LIMIT:-512m}
+    cpus: ${DRUID_POSTGRES_CPU_LIMIT:-0.75}
     environment:
       - POSTGRES_DB=druid
       - POSTGRES_USER=druid
@@ -57,6 +75,8 @@ services:
 
   druid-coordinator:
     image: apache/druid:29.0.1
+    mem_limit: ${DRUID_COORDINATOR_MEM_LIMIT:-384m}
+    cpus: ${DRUID_COORDINATOR_CPU_LIMIT:-0.75}
     command: ["coordinator"]
     depends_on:
       zookeeper:
@@ -64,8 +84,8 @@ services:
       druid-postgres:
         condition: service_healthy
     environment:
-      - DRUID_XMS=256m
-      - DRUID_XMX=256m
+      - DRUID_XMS=${DRUID_COORDINATOR_XMS:-128m}
+      - DRUID_XMX=${DRUID_COORDINATOR_XMX:-128m}
       - druid_zk_service_host=zookeeper:2181
       - druid_metadata_storage_type=postgresql
       - druid_metadata_storage_connector_connectURI=jdbc:postgresql://druid-postgres:5432/druid
@@ -81,6 +101,8 @@ services:
 
   druid-overlord:
     image: apache/druid:29.0.1
+    mem_limit: ${DRUID_OVERLORD_MEM_LIMIT:-512m}
+    cpus: ${DRUID_OVERLORD_CPU_LIMIT:-0.75}
     command: ["overlord"]
     depends_on:
       zookeeper:
@@ -90,8 +112,8 @@ services:
       druid-coordinator:
         condition: service_started
     environment:
-      - DRUID_XMS=256m
-      - DRUID_XMX=256m
+      - DRUID_XMS=${DRUID_OVERLORD_XMS:-192m}
+      - DRUID_XMX=${DRUID_OVERLORD_XMX:-192m}
       - druid_zk_service_host=zookeeper:2181
       - druid_metadata_storage_type=postgresql
       - druid_metadata_storage_connector_connectURI=jdbc:postgresql://druid-postgres:5432/druid
@@ -108,6 +130,8 @@ services:
 
   druid-broker:
     image: apache/druid:29.0.1
+    mem_limit: ${DRUID_BROKER_MEM_LIMIT:-512m}
+    cpus: ${DRUID_BROKER_CPU_LIMIT:-0.75}
     command: ["broker"]
     depends_on:
       zookeeper:
@@ -119,8 +143,8 @@ services:
       druid-overlord:
         condition: service_started
     environment:
-      - DRUID_XMS=256m
-      - DRUID_XMX=256m
+      - DRUID_XMS=${DRUID_BROKER_XMS:-160m}
+      - DRUID_XMX=${DRUID_BROKER_XMX:-160m}
       - druid_zk_service_host=zookeeper:2181
       - druid_metadata_storage_type=postgresql
       - druid_metadata_storage_connector_connectURI=jdbc:postgresql://druid-postgres:5432/druid
@@ -136,6 +160,8 @@ services:
 
   druid-historical:
     image: apache/druid:29.0.1
+    mem_limit: ${DRUID_HISTORICAL_MEM_LIMIT:-768m}
+    cpus: ${DRUID_HISTORICAL_CPU_LIMIT:-1.0}
     command: ["historical"]
     depends_on:
       zookeeper:
@@ -145,8 +171,8 @@ services:
       druid-coordinator:
         condition: service_started
     environment:
-      - DRUID_XMS=512m
-      - DRUID_XMX=512m
+      - DRUID_XMS=${DRUID_HISTORICAL_XMS:-256m}
+      - DRUID_XMX=${DRUID_HISTORICAL_XMX:-256m}
       - druid_processing_numThreads=1
       - druid_processing_numMergeBuffers=1
       - druid_processing_buffer_sizeBytes=26214400
@@ -165,6 +191,8 @@ services:
 
   druid-middlemanager:
     image: apache/druid:29.0.1
+    mem_limit: ${DRUID_MIDDLEMANAGER_MEM_LIMIT:-896m}
+    cpus: ${DRUID_MIDDLEMANAGER_CPU_LIMIT:-1.0}
     command: ["middleManager"]
     depends_on:
       zookeeper:
@@ -174,8 +202,8 @@ services:
       druid-overlord:
         condition: service_started
     environment:
-      - DRUID_XMS=512m
-      - DRUID_XMX=512m
+      - DRUID_XMS=${DRUID_MIDDLEMANAGER_XMS:-320m}
+      - DRUID_XMX=${DRUID_MIDDLEMANAGER_XMX:-320m}
       - druid_zk_service_host=zookeeper:2181
       - druid_metadata_storage_type=postgresql
       - druid_metadata_storage_connector_connectURI=jdbc:postgresql://druid-postgres:5432/druid
@@ -192,10 +220,12 @@ services:
 
   druid-router:
     image: apache/druid:29.0.1
+    mem_limit: ${DRUID_ROUTER_MEM_LIMIT:-384m}
+    cpus: ${DRUID_ROUTER_CPU_LIMIT:-0.5}
     command: ["router"]
     environment:
-      - DRUID_XMS=256m
-      - DRUID_XMX=256m
+      - DRUID_XMS=${DRUID_ROUTER_XMS:-128m}
+      - DRUID_XMX=${DRUID_ROUTER_XMX:-128m}
       - druid_zk_service_host=zookeeper:2181
       - druid_metadata_storage_type=postgresql
       - druid_metadata_storage_connector_connectURI=jdbc:postgresql://druid-postgres:5432/druid
@@ -232,7 +262,10 @@ services:
 
   pinot-controller:
     image: apachepinot/pinot:1.2.0
-    command: ["StartController", "-zkAddress", "pinot-zookeeper:2181"]
+    hostname: pinot-controller
+    mem_limit: ${PINOT_CONTROLLER_MEM_LIMIT:-1280m}
+    cpus: ${PINOT_CONTROLLER_CPU_LIMIT:-1.0}
+    command: ["StartController", "-controllerHost", "pinot-controller", "-zkAddress", "pinot-zookeeper:2181"]
     depends_on:
       pinot-zookeeper:
         condition: service_healthy
@@ -248,7 +281,10 @@ services:
 
   pinot-broker:
     image: apachepinot/pinot:1.2.0
-    command: ["StartBroker", "-zkAddress", "pinot-zookeeper:2181"]
+    hostname: pinot-broker
+    mem_limit: ${PINOT_BROKER_MEM_LIMIT:-1280m}
+    cpus: ${PINOT_BROKER_CPU_LIMIT:-1.0}
+    command: ["StartBroker", "-brokerHost", "pinot-broker", "-zkAddress", "pinot-zookeeper:2181"]
     depends_on:
       pinot-controller:
         condition: service_healthy
@@ -262,13 +298,18 @@ services:
 
   pinot-server:
     image: apachepinot/pinot:1.2.0
-    command: ["StartServer", "-zkAddress", "pinot-zookeeper:2181"]
+    hostname: pinot-server
+    mem_limit: ${PINOT_SERVER_MEM_LIMIT:-1536m}
+    cpus: ${PINOT_SERVER_CPU_LIMIT:-1.5}
+    command: ["StartServer", "-serverHost", "pinot-server", "-zkAddress", "pinot-zookeeper:2181"]
     depends_on:
       pinot-controller:
         condition: service_healthy
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.108.0
+    mem_limit: ${OTEL_MEM_LIMIT:-384m}
+    cpus: ${OTEL_CPU_LIMIT:-0.75}
     command: ["--config=/etc/otelcol-contrib/config.yaml"]
     restart: unless-stopped
     volumes:
@@ -280,7 +321,9 @@ services:
         condition: service_started
 
   producer:
-    build: ./producer
+    build:
+      context: .
+      dockerfile: producer/Dockerfile
     profiles: ["producer"]
     restart: unless-stopped
     env_file:
@@ -288,31 +331,56 @@ services:
     depends_on:
       kafka:
         condition: service_healthy
+      master-data:
+        condition: service_started
 
   storage-writer:
-    build: ./storage_writer
+    build:
+      context: .
+      dockerfile: storage_writer/Dockerfile
+    mem_limit: ${STORAGE_WRITER_MEM_LIMIT:-640m}
+    cpus: ${STORAGE_WRITER_CPU_LIMIT:-1.0}
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      ACTIVE_STACKS: ${ACTIVE_STACKS:-pinot}
+      TARGET_BACKENDS: ${TARGET_BACKENDS:-}
+      KAFKA_FANOUT_TARGET_BACKENDS: ${KAFKA_FANOUT_TARGET_BACKENDS:-}
     ports:
       - "8090:8090"
     depends_on:
-      clickhouse:
-        condition: service_started
-      druid-router:
-        condition: service_started
       kafka:
         condition: service_healthy
-      pinot-controller:
-        condition: service_healthy
-      pinot-broker:
+      master-data:
+        condition: service_started
+
+  realtime-gateway:
+    build: ./realtime_gateway
+    mem_limit: ${REALTIME_GATEWAY_MEM_LIMIT:-256m}
+    cpus: ${REALTIME_GATEWAY_CPU_LIMIT:-0.5}
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      ACTIVE_STACKS: ${ACTIVE_STACKS:-pinot}
+    ports:
+      - "8083:8080"
+    depends_on:
+      kafka:
         condition: service_healthy
 
   api:
     build: ./api
+    mem_limit: ${API_MEM_LIMIT:-320m}
+    cpus: ${API_CPU_LIMIT:-0.5}
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      ACTIVE_STACKS: ${ACTIVE_STACKS:-pinot}
+      API_ALLOWED_BACKENDS: ${API_ALLOWED_BACKENDS:-}
+      API_DEFAULT_BACKEND: ${API_DEFAULT_BACKEND:-}
     ports:
       - "8080:8080"
     depends_on:
@@ -320,9 +388,15 @@ services:
 
   api-druid:
     build: ./api_druid
+    mem_limit: ${API_DRUID_MEM_LIMIT:-320m}
+    cpus: ${API_DRUID_CPU_LIMIT:-0.5}
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      ACTIVE_STACKS: ${ACTIVE_STACKS:-pinot}
+      API_ALLOWED_BACKENDS: ${API_ALLOWED_BACKENDS:-}
+      API_DEFAULT_BACKEND: ${API_DEFAULT_BACKEND:-}
     ports:
       - "8081:8080"
     depends_on:
@@ -330,9 +404,15 @@ services:
 
   api-pinot:
     build: ./api_pinot
+    mem_limit: ${API_PINOT_MEM_LIMIT:-320m}
+    cpus: ${API_PINOT_CPU_LIMIT:-0.5}
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      ACTIVE_STACKS: ${ACTIVE_STACKS:-pinot}
+      API_ALLOWED_BACKENDS: ${API_ALLOWED_BACKENDS:-}
+      API_DEFAULT_BACKEND: ${API_DEFAULT_BACKEND:-}
     ports:
       - "8082:8080"
     depends_on:
@@ -341,6 +421,8 @@ services:
 
   frontend:
     build: ./frontend
+    mem_limit: ${FRONTEND_MEM_LIMIT:-192m}
+    cpus: ${FRONTEND_CPU_LIMIT:-0.5}
     restart: unless-stopped
     ports:
       - "5173:80"
@@ -351,6 +433,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.druid
+    mem_limit: ${FRONTEND_DRUID_MEM_LIMIT:-192m}
+    cpus: ${FRONTEND_DRUID_CPU_LIMIT:-0.5}
     restart: unless-stopped
     ports:
       - "5174:80"
@@ -359,6 +443,8 @@ services:
 
   frontend-pinot:
     build: ./frontend_pinot
+    mem_limit: ${FRONTEND_PINOT_MEM_LIMIT:-192m}
+    cpus: ${FRONTEND_PINOT_CPU_LIMIT:-0.5}
     restart: unless-stopped
     ports:
       - "5175:80"
@@ -368,3 +454,4 @@ services:
 volumes:
   druid_pgdata:
   druid_shared:
+  master_data_store:

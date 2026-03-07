@@ -1,0 +1,134 @@
+[
+  {
+    "account_code": "1.1.01.01",
+    "account_name": "Caixa e Equivalentes",
+    "statement_section": "asset",
+    "normal_side": "debit",
+    "entry_category": "caixa",
+    "account_role": "cash",
+    "documentation": "Disponibilidades imediatas recebidas via marketplaces e liquidacoes operacionais.",
+    "usage_notes": "Usada na liquidacao das vendas com repasse rapido e reconciliacao diaria.",
+    "financial_statement_group": "BP"
+  },
+  {
+    "account_code": "1.1.01.02",
+    "account_name": "Bancos Conta Movimento",
+    "statement_section": "asset",
+    "normal_side": "debit",
+    "entry_category": "caixa",
+    "account_role": "bank_accounts",
+    "documentation": "Saldo mantido em contas bancarias para pagamentos de frete, taxas e liquidacoes diretas.",
+    "usage_notes": "Usada em vendas do site proprio, fretes e saques operacionais.",
+    "financial_statement_group": "BP"
+  },
+  {
+    "account_code": "1.1.02.01",
+    "account_name": "Tributos a Recuperar",
+    "statement_section": "asset",
+    "normal_side": "debit",
+    "entry_category": "tributos",
+    "account_role": "recoverable_tax",
+    "documentation": "Creditos fiscais oriundos da aquisicao de mercadorias para revenda.",
+    "usage_notes": "Aumenta nas compras recebidas e compoe o ativo circulante.",
+    "financial_statement_group": "BP"
+  },
+  {
+    "account_code": "1.1.03.01",
+    "account_name": "Estoque de Mercadorias",
+    "statement_section": "asset",
+    "normal_side": "debit",
+    "entry_category": "estoque",
+    "account_role": "inventory",
+    "documentation": "Custo acumulado das mercadorias disponiveis para venda nos centros de distribuicao.",
+    "usage_notes": "Atualizada por compras, vendas e devolucoes. Nunca deve resultar em saldo negativo.",
+    "financial_statement_group": "BP"
+  },
+  {
+    "account_code": "2.1.01.01",
+    "account_name": "Fornecedores",
+    "statement_section": "liability",
+    "normal_side": "credit",
+    "entry_category": "fornecedores",
+    "account_role": "accounts_payable",
+    "documentation": "Obrigacoes com fornecedores pela entrada de mercadorias recebidas no estoque.",
+    "usage_notes": "Reconhece a compra a prazo e suporta a politica de reposicao automatica.",
+    "financial_statement_group": "BP"
+  },
+  {
+    "account_code": "2.1.03.01",
+    "account_name": "Tributos sobre Vendas a Recolher",
+    "statement_section": "liability",
+    "normal_side": "credit",
+    "entry_category": "tributos",
+    "account_role": "tax_payable",
+    "documentation": "Obrigacao fiscal gerada a cada venda faturada e revertida parcialmente em devolucoes.",
+    "usage_notes": "Compoe o passivo circulante ligado ao ciclo de faturamento.",
+    "financial_statement_group": "BP"
+  },
+  {
+    "account_code": "3.1.01.01",
+    "account_name": "Receita Bruta de Vendas",
+    "statement_section": "revenue",
+    "normal_side": "credit",
+    "entry_category": "receita",
+    "account_role": "revenue",
+    "documentation": "Receita operacional originada dos pedidos efetivamente faturados nos canais de venda.",
+    "usage_notes": "Atualizada por cada evento de venda e monitorada em tempo real no dashboard.",
+    "financial_statement_group": "DRE"
+  },
+  {
+    "account_code": "3.1.02.01",
+    "account_name": "Devolucoes e Abatimentos sobre Vendas",
+    "statement_section": "contra_revenue",
+    "normal_side": "debit",
+    "entry_category": "devolucoes",
+    "account_role": "returns",
+    "documentation": "Conta redutora da receita para cancelamentos, arrependimentos e devolucoes de clientes.",
+    "usage_notes": "Movimentada por eventos explicitos de return e afeta a receita liquida.",
+    "financial_statement_group": "DRE"
+  },
+  {
+    "account_code": "4.1.01.01",
+    "account_name": "Custo das Mercadorias Vendidas",
+    "statement_section": "expense",
+    "normal_side": "debit",
+    "entry_category": "cmv_despesa",
+    "account_role": "cogs",
+    "documentation": "Baixa do custo medio ponderado dos itens efetivamente vendidos.",
+    "usage_notes": "Revertida em devolucoes quando a mercadoria retorna ao estoque.",
+    "financial_statement_group": "DRE"
+  },
+  {
+    "account_code": "4.1.02.01",
+    "account_name": "Taxas de Marketplace",
+    "statement_section": "expense",
+    "normal_side": "debit",
+    "entry_category": "despesa_comercial",
+    "account_role": "marketplace_fees",
+    "documentation": "Comissoes e tarifas comerciais cobradas pelos canais de marketplace.",
+    "usage_notes": "Incide sobre o valor liquido da venda de acordo com a politica do canal.",
+    "financial_statement_group": "DRE"
+  },
+  {
+    "account_code": "4.1.03.01",
+    "account_name": "Fretes sobre Vendas",
+    "statement_section": "expense",
+    "normal_side": "debit",
+    "entry_category": "fretes",
+    "account_role": "outbound_freight",
+    "documentation": "Custo logistico da expedicao de pedidos faturados aos clientes finais.",
+    "usage_notes": "Movimentada por eventos explicitos de freight emitidos apos a venda.",
+    "financial_statement_group": "DRE"
+  },
+  {
+    "account_code": "4.1.04.01",
+    "account_name": "Despesas Bancarias",
+    "statement_section": "expense",
+    "normal_side": "debit",
+    "entry_category": "despesas_financeiras",
+    "account_role": "bank_fees",
+    "documentation": "Tarifas financeiras incidentes em pagamentos operacionais e conciliacoes bancarias.",
+    "usage_notes": "Usada principalmente na liquidacao de fretes e cobrancas diretas.",
+    "financial_statement_group": "DRE"
+  }
+]

@@ -1,0 +1,56 @@
+[
+  {
+    "channel_id": "mercado_livre",
+    "channel_name": "Mercado Livre",
+    "commission_rate": 0.16,
+    "settlement_days": 14,
+    "price_multiplier": 1.02,
+    "demand_weight": 0.33,
+    "channel_type": "marketplace"
+  },
+  {
+    "channel_id": "amazon",
+    "channel_name": "Amazon",
+    "commission_rate": 0.18,
+    "settlement_days": 18,
+    "price_multiplier": 1.03,
+    "demand_weight": 0.24,
+    "channel_type": "marketplace"
+  },
+  {
+    "channel_id": "magalu",
+    "channel_name": "Magazine Luiza",
+    "commission_rate": 0.15,
+    "settlement_days": 16,
+    "price_multiplier": 1.01,
+    "demand_weight": 0.17,
+    "channel_type": "marketplace"
+  },
+  {
+    "channel_id": "shopee",
+    "channel_name": "Shopee",
+    "commission_rate": 0.14,
+    "settlement_days": 12,
+    "price_multiplier": 0.98,
+    "demand_weight": 0.18,
+    "channel_type": "marketplace"
+  },
+  {
+    "channel_id": "site_proprio",
+    "channel_name": "Site Proprio",
+    "commission_rate": 0.04,
+    "settlement_days": 2,
+    "price_multiplier": 1.00,
+    "demand_weight": 0.08,
+    "channel_type": "direct"
+  },
+  {
+    "channel_id": "b2b_procurement",
+    "channel_name": "Suprimentos B2B",
+    "commission_rate": 0.0,
+    "settlement_days": 30,
+    "price_multiplier": 1.0,
+    "demand_weight": 0.0,
+    "channel_type": "procurement"
+  }
+]

@@ -14,12 +14,15 @@ from fastapi import FastAPI, HTTPException, Request
 from opentelemetry.proto.collector.logs.v1.logs_service_pb2 import ExportLogsServiceRequest
 
 from storage_writer.adapters import ClickHouseAdapter, DruidAdapter, PinotAdapter
+from storage_writer.master_data import load_accounts_by_code, load_accounts_by_role
 
 app = FastAPI(title="synthetic-ledger-storage-writer", version="0.1.0")
 last_otlp_stats: dict[str, Any] = {}
 druid_supervisor_status: dict[str, Any] = {}
 pinot_realtime_status: dict[str, Any] = {}
 kafka_fanout_status: dict[str, Any] = {}
+ACCOUNTS_BY_CODE = load_accounts_by_code()
+ACCOUNTS_BY_ROLE = load_accounts_by_role()
 
 
 def build_adapters() -> dict[str, Any]:
@@ -28,7 +31,8 @@ def build_adapters() -> dict[str, Any]:
         "druid": DruidAdapter,
         "pinot": PinotAdapter,
     }
-    enabled = [item.strip() for item in os.getenv("TARGET_BACKENDS", "clickhouse,druid,pinot").split(",") if item.strip()]
+    enabled_csv = os.getenv("TARGET_BACKENDS") or os.getenv("ACTIVE_STACKS") or "clickhouse,druid,pinot"
+    enabled = [item.strip() for item in enabled_csv.split(",") if item.strip()]
     return {name: registry[name]() for name in enabled if name in registry}
 
 
@@ -211,20 +215,29 @@ async def ensure_druid_kafka_supervisor() -> None:
                         "trace_id",
                         "company_id",
                         "tenant_id",
+                        "company_name",
                         "entry_side",
                         "account_code",
                         "account_name",
+                        "account_role",
                         "statement_section",
                         "currency",
                         "ontology_event_type",
                         "ontology_description",
                         "ontology_source",
                         "product_id",
+                        "product_name",
+                        "product_category",
+                        "product_brand",
                         "supplier_id",
+                        "supplier_name",
                         "customer_id",
                         "warehouse_id",
+                        "warehouse_name",
                         "channel",
+                        "channel_name",
                         "entry_category",
+                        "order_id",
                         "source_payload_hash",
                         "schema_version",
                         "ingested_at",
@@ -235,6 +248,8 @@ async def ensure_druid_kafka_supervisor() -> None:
                 "metricsSpec": [
                     {"type": "doubleSum", "name": "amount", "fieldName": "amount"},
                     {"type": "doubleSum", "name": "signed_amount", "fieldName": "signed_amount"},
+                    {"type": "doubleSum", "name": "quantity", "fieldName": "quantity"},
+                    {"type": "doubleSum", "name": "unit_price", "fieldName": "unit_price"},
                     {"type": "longMax", "name": "revision", "fieldName": "revision"},
                     {"type": "longMax", "name": "is_current", "fieldName": "is_current"},
                 ],
@@ -340,20 +355,29 @@ async def ensure_pinot_kafka_realtime_table() -> None:
             {"name": "trace_id", "dataType": "STRING"},
             {"name": "company_id", "dataType": "STRING"},
             {"name": "tenant_id", "dataType": "STRING"},
+            {"name": "company_name", "dataType": "STRING"},
             {"name": "entry_side", "dataType": "STRING"},
             {"name": "account_code", "dataType": "STRING"},
             {"name": "account_name", "dataType": "STRING"},
+            {"name": "account_role", "dataType": "STRING"},
             {"name": "statement_section", "dataType": "STRING"},
             {"name": "currency", "dataType": "STRING"},
             {"name": "ontology_event_type", "dataType": "STRING"},
             {"name": "ontology_description", "dataType": "STRING"},
             {"name": "ontology_source", "dataType": "STRING"},
             {"name": "product_id", "dataType": "STRING"},
+            {"name": "product_name", "dataType": "STRING"},
+            {"name": "product_category", "dataType": "STRING"},
+            {"name": "product_brand", "dataType": "STRING"},
             {"name": "supplier_id", "dataType": "STRING"},
+            {"name": "supplier_name", "dataType": "STRING"},
             {"name": "customer_id", "dataType": "STRING"},
             {"name": "warehouse_id", "dataType": "STRING"},
+            {"name": "warehouse_name", "dataType": "STRING"},
             {"name": "channel", "dataType": "STRING"},
+            {"name": "channel_name", "dataType": "STRING"},
             {"name": "entry_category", "dataType": "STRING"},
+            {"name": "order_id", "dataType": "STRING"},
             {"name": "source_payload_hash", "dataType": "STRING"},
             {"name": "schema_version", "dataType": "STRING"},
             {"name": "occurred_at", "dataType": "STRING"},
@@ -365,6 +389,13 @@ async def ensure_pinot_kafka_realtime_table() -> None:
         "metricFieldSpecs": [
             {"name": "amount", "dataType": "DOUBLE"},
             {"name": "signed_amount", "dataType": "DOUBLE"},
+            {"name": "quantity", "dataType": "DOUBLE"},
+            {"name": "unit_price", "dataType": "DOUBLE"},
+            {"name": "gross_amount", "dataType": "DOUBLE"},
+            {"name": "net_amount", "dataType": "DOUBLE"},
+            {"name": "tax_amount", "dataType": "DOUBLE"},
+            {"name": "marketplace_fee_amount", "dataType": "DOUBLE"},
+            {"name": "inventory_cost_total", "dataType": "DOUBLE"},
             {"name": "is_current", "dataType": "INT"},
             {"name": "revision", "dataType": "INT"},
         ],
@@ -432,7 +463,16 @@ async def ensure_pinot_kafka_realtime_table() -> None:
                         for item in group
                         if isinstance(item, dict)
                     }
-                    if "occurred_at_epoch_ms" not in current_fields:
+                    desired_fields = {
+                        item["name"]
+                        for group in (
+                            schema_payload["dimensionFieldSpecs"],
+                            schema_payload["metricFieldSpecs"],
+                            schema_payload["dateTimeFieldSpecs"],
+                        )
+                        for item in group
+                    }
+                    if not desired_fields.issubset(current_fields):
                         schema_update = await client.put(f"{controller_url}/schemas/{schema_name}", json=schema_payload)
                         schema_update.raise_for_status()
 
@@ -519,12 +559,18 @@ def to_epoch_millis(value: str) -> int:
 
 
 def account_name(account_code: str) -> str:
+    account = ACCOUNTS_BY_CODE.get(account_code)
+    if account:
+        return str(account.get("account_name", account_code))
     if "-" in account_code:
         return account_code.split("-", maxsplit=1)[1]
     return account_code
 
 
 def statement_section(account_code: str) -> str:
+    account = ACCOUNTS_BY_CODE.get(account_code)
+    if account:
+        return str(account.get("statement_section", "other"))
     if account_code.startswith("1."):
         return "asset"
     if account_code.startswith("2."):
@@ -536,7 +582,17 @@ def statement_section(account_code: str) -> str:
     return "other"
 
 
+def account_role(account_code: str) -> str:
+    account = ACCOUNTS_BY_CODE.get(account_code)
+    if account:
+        return str(account.get("account_role", "other"))
+    return "other"
+
+
 def entry_category(account_code: str, event_type: str) -> str:
+    account = ACCOUNTS_BY_CODE.get(account_code)
+    if account:
+        return str(account.get("entry_category", "operacional"))
     if account_code.startswith("3."):
         return "receita"
     if account_code.startswith("4."):
@@ -552,6 +608,19 @@ def entry_category(account_code: str, event_type: str) -> str:
     return "operacional"
 
 
+def account_code_for_role(role: str) -> str:
+    account = ACCOUNTS_BY_ROLE.get(role)
+    if not account:
+        raise KeyError(f"Account role not configured: {role}")
+    return str(account["account_code"])
+
+
+def optional_text(value: Any) -> str | None:
+    if value in (None, "", "null", "None"):
+        return None
+    return str(value)
+
+
 def make_entry(
     *,
     event: dict[str, Any],
@@ -563,15 +632,19 @@ def make_entry(
     ontology_source: str = "synthetic_producer",
 ) -> dict[str, Any]:
     section = statement_section(account_code)
+    role = account_role(account_code)
     sign = 1.0 if entry_side == "debit" else -1.0
     occurred_at = event.get("occurred_at", now_iso())
     ingested_at = event.get("ingested_at", now_iso())
     canonical_event_type = str(event.get("event_type", "unknown"))
     product_id = str(event.get("product_id", "unknown-product"))
-    supplier_id = event.get("supplier_id")
-    customer_id = event.get("customer_id")
+    supplier_id = optional_text(event.get("supplier_id"))
+    supplier_name = optional_text(event.get("supplier_name"))
+    customer_id = optional_text(event.get("customer_id"))
     warehouse_id = str(event.get("warehouse_id", "unknown-warehouse"))
+    warehouse_name = str(event.get("warehouse_name", warehouse_id))
     channel = str(event.get("channel", "unknown-channel"))
+    channel_name = str(event.get("channel_name", channel))
 
     return {
         "entry_id": str(uuid.uuid4()),
@@ -579,22 +652,38 @@ def make_entry(
         "trace_id": event["event_id"],
         "company_id": event["company_id"],
         "tenant_id": event["tenant_id"],
+        "company_name": event.get("company_name", event["company_id"]),
         "entry_side": entry_side,
         "account_code": account_code,
         "account_name": account_name(account_code),
+        "account_role": role,
         "statement_section": section,
         "amount": round(amount, 2),
         "signed_amount": round(amount * sign, 2),
+        "quantity": round(float(event.get("quantity", 0.0) or 0.0), 3),
+        "unit_price": round(float(event.get("unit_price", 0.0) or 0.0), 2),
+        "gross_amount": round(float(event.get("gross_amount", 0.0) or 0.0), 2),
+        "net_amount": round(float(event.get("net_amount", 0.0) or 0.0), 2),
+        "tax_amount": round(float(event.get("tax", 0.0) or 0.0), 2),
+        "marketplace_fee_amount": round(float(event.get("marketplace_fee", 0.0) or 0.0), 2),
+        "inventory_cost_total": round(float(event.get("cmv", 0.0) or 0.0), 2),
         "currency": event.get("currency", "BRL"),
         "ontology_event_type": canonical_event_type,
         "ontology_description": ontology_description,
         "ontology_source": ontology_source,
         "product_id": product_id,
+        "product_name": str(event.get("product_name", product_id)),
+        "product_category": str(event.get("product_category", "Sem categoria")),
+        "product_brand": str(event.get("product_brand", "Marca propria")),
         "supplier_id": supplier_id,
+        "supplier_name": supplier_name,
         "customer_id": customer_id,
         "warehouse_id": warehouse_id,
+        "warehouse_name": warehouse_name,
         "channel": channel,
+        "channel_name": channel_name,
         "entry_category": entry_category(account_code, canonical_event_type),
+        "order_id": str(event.get("order_id", event["event_id"])),
         "source_payload_hash": payload_hash,
         "schema_version": event.get("schema_version", "1.0.0"),
         "occurred_at": occurred_at,
@@ -609,11 +698,12 @@ def make_entry(
 
 
 def event_to_journal_entries(event: dict[str, Any]) -> list[dict[str, Any]]:
-    gross = float(event.get("quantity", 0)) * float(event.get("unit_price", 0))
-    discount = float(event.get("discount", 0))
-    tax = float(event.get("tax", 0))
-    amount = max(gross - discount + tax, 0.0)
-    cmv = float(event.get("cmv", 0.0))
+    gross = round(float(event.get("gross_amount", 0.0) or 0.0), 2)
+    discount = round(float(event.get("discount", 0.0) or 0.0), 2)
+    net_amount = round(float(event.get("net_amount", max(gross - discount, 0.0)) or 0.0), 2)
+    tax_amount = round(float(event.get("tax", 0.0) or 0.0), 2)
+    marketplace_fee = round(float(event.get("marketplace_fee", 0.0) or 0.0), 2)
+    cmv = round(float(event.get("cmv", 0.0) or 0.0), 2)
 
     canonical_event = {
         **event,
@@ -624,51 +714,89 @@ def event_to_journal_entries(event: dict[str, Any]) -> list[dict[str, Any]]:
 
     event_type = canonical_event.get("event_type")
     if event_type == "purchase":
-        return [
-            make_entry(
-                event=canonical_event,
-                entry_side="debit",
-                account_code="1.1.03.01-Estoque",
-                amount=amount,
-                ontology_description="Compra de estoque com reconhecimento de ativo.",
-                payload_hash=payload_hash,
-            ),
-            make_entry(
-                event=canonical_event,
-                entry_side="credit",
-                account_code="1.1.01.01-Caixa",
-                amount=amount,
-                ontology_description="Saída de caixa associada à compra.",
-                payload_hash=payload_hash,
-            ),
-        ]
-
-    if event_type == "sale":
         entries = [
             make_entry(
                 event=canonical_event,
                 entry_side="debit",
-                account_code="1.1.01.01-Caixa",
-                amount=amount,
-                ontology_description="Entrada de caixa por venda.",
+                account_code=account_code_for_role("inventory"),
+                amount=net_amount,
+                ontology_description="Entrada de mercadorias no estoque com base no pedido de compra.",
+                payload_hash=payload_hash,
+            ),
+        ]
+        if tax_amount > 0:
+            entries.append(
+                make_entry(
+                    event=canonical_event,
+                    entry_side="debit",
+                    account_code=account_code_for_role("recoverable_tax"),
+                    amount=tax_amount,
+                    ontology_description="Reconhecimento de tributos recuperaveis sobre a compra.",
+                    payload_hash=payload_hash,
+                )
+            )
+        entries.append(
+            make_entry(
+                event=canonical_event,
+                entry_side="credit",
+                account_code=account_code_for_role("accounts_payable"),
+                amount=round(net_amount + tax_amount, 2),
+                ontology_description="Reconhecimento do passivo com fornecedor pela compra recebida.",
+                payload_hash=payload_hash,
+            )
+        )
+        return entries
+
+    if event_type == "sale":
+        settlement_account_code = str(canonical_event.get("debit_account", account_code_for_role("cash")))
+        settlement_amount = round(net_amount + tax_amount - marketplace_fee, 2)
+        entries = [
+            make_entry(
+                event=canonical_event,
+                entry_side="debit",
+                account_code=settlement_account_code,
+                amount=max(settlement_amount, 0.0),
+                ontology_description="Liquidacao financeira liquida da venda no canal selecionado.",
                 payload_hash=payload_hash,
             ),
             make_entry(
                 event=canonical_event,
                 entry_side="credit",
-                account_code="3.1.01.01-Receita",
-                amount=amount,
-                ontology_description="Reconhecimento de receita de venda.",
+                account_code=account_code_for_role("revenue"),
+                amount=net_amount,
+                ontology_description="Reconhecimento da receita operacional liquida de descontos comerciais.",
                 payload_hash=payload_hash,
             ),
         ]
+        if marketplace_fee > 0:
+            entries.append(
+                make_entry(
+                    event=canonical_event,
+                    entry_side="debit",
+                    account_code=account_code_for_role("marketplace_fees"),
+                    amount=marketplace_fee,
+                    ontology_description="Despesa comercial cobrada pelo canal de venda.",
+                    payload_hash=payload_hash,
+                )
+            )
+        if tax_amount > 0:
+            entries.append(
+                make_entry(
+                    event=canonical_event,
+                    entry_side="credit",
+                    account_code=account_code_for_role("tax_payable"),
+                    amount=tax_amount,
+                    ontology_description="Tributos sobre vendas a recolher derivados do documento fiscal.",
+                    payload_hash=payload_hash,
+                )
+            )
         if cmv > 0:
             entries.extend(
                 [
                     make_entry(
                         event=canonical_event,
                         entry_side="debit",
-                        account_code="4.1.01.01-CMV",
+                        account_code=account_code_for_role("cogs"),
                         amount=cmv,
                         ontology_description="Reconhecimento do custo da mercadoria vendida.",
                         payload_hash=payload_hash,
@@ -676,7 +804,7 @@ def event_to_journal_entries(event: dict[str, Any]) -> list[dict[str, Any]]:
                     make_entry(
                         event=canonical_event,
                         entry_side="credit",
-                        account_code="1.1.03.01-Estoque",
+                        account_code=account_code_for_role("inventory"),
                         amount=cmv,
                         ontology_description="Baixa de estoque por venda.",
                         payload_hash=payload_hash,
@@ -685,20 +813,110 @@ def event_to_journal_entries(event: dict[str, Any]) -> list[dict[str, Any]]:
             )
         return entries
 
+    if event_type == "return":
+        refund_account_code = str(canonical_event.get("credit_account", account_code_for_role("cash")))
+        entries = [
+            make_entry(
+                event=canonical_event,
+                entry_side="debit",
+                account_code=account_code_for_role("returns"),
+                amount=net_amount,
+                ontology_description="Reconhecimento da devolucao do cliente reduzindo a receita liquida.",
+                payload_hash=payload_hash,
+            ),
+            make_entry(
+                event=canonical_event,
+                entry_side="credit",
+                account_code=refund_account_code,
+                amount=round(net_amount + tax_amount, 2),
+                ontology_description="Estorno financeiro do valor devolvido ao cliente.",
+                payload_hash=payload_hash,
+            ),
+        ]
+        if tax_amount > 0:
+            entries.append(
+                make_entry(
+                    event=canonical_event,
+                    entry_side="debit",
+                    account_code=account_code_for_role("tax_payable"),
+                    amount=tax_amount,
+                    ontology_description="Reversao dos tributos sobre venda associados ao item devolvido.",
+                    payload_hash=payload_hash,
+                )
+            )
+        if cmv > 0:
+            entries.extend(
+                [
+                    make_entry(
+                        event=canonical_event,
+                        entry_side="debit",
+                        account_code=account_code_for_role("inventory"),
+                        amount=cmv,
+                        ontology_description="Retorno da mercadoria devolvida ao estoque disponivel.",
+                        payload_hash=payload_hash,
+                    ),
+                    make_entry(
+                        event=canonical_event,
+                        entry_side="credit",
+                        account_code=account_code_for_role("cogs"),
+                        amount=cmv,
+                        ontology_description="Reversao do custo da mercadoria vendida para item devolvido.",
+                        payload_hash=payload_hash,
+                    ),
+                ]
+            )
+        return entries
+
+    if event_type == "freight":
+        freight_account_code = str(canonical_event.get("debit_account", account_code_for_role("outbound_freight")))
+        settlement_account_code = str(canonical_event.get("credit_account", account_code_for_role("bank_accounts")))
+        entries = [
+            make_entry(
+                event=canonical_event,
+                entry_side="debit",
+                account_code=freight_account_code,
+                amount=net_amount,
+                ontology_description="Reconhecimento do frete de expedicao vinculado ao pedido faturado.",
+                payload_hash=payload_hash,
+            )
+        ]
+        if marketplace_fee > 0:
+            entries.append(
+                make_entry(
+                    event=canonical_event,
+                    entry_side="debit",
+                    account_code=account_code_for_role("bank_fees"),
+                    amount=marketplace_fee,
+                    ontology_description="Tarifa bancaria cobrada na liquidacao do frete operacional.",
+                    payload_hash=payload_hash,
+                )
+            )
+        entries.append(
+            make_entry(
+                event=canonical_event,
+                entry_side="credit",
+                account_code=settlement_account_code,
+                amount=round(net_amount + marketplace_fee, 2),
+                ontology_description="Baixa financeira do frete pago ao operador logistico.",
+                payload_hash=payload_hash,
+            )
+        )
+        return entries
+
     return [
         make_entry(
             event=canonical_event,
             entry_side="debit",
-            account_code=str(canonical_event.get("debit_account", "1.1.01.01-Caixa")),
-            amount=amount,
+                account_code=str(canonical_event.get("debit_account", account_code_for_role("cash"))),
+                amount=net_amount,
             ontology_description="Lançamento de débito derivado de evento canônico.",
             payload_hash=payload_hash,
         ),
         make_entry(
             event=canonical_event,
             entry_side="credit",
-            account_code=str(canonical_event.get("credit_account", "3.1.01.01-Receita")),
-            amount=amount,
+                account_code=str(canonical_event.get("credit_account", account_code_for_role("revenue"))),
+                amount=net_amount,
             ontology_description="Lançamento de crédito derivado de evento canônico.",
             payload_hash=payload_hash,
         ),

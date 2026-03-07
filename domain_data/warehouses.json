@@ -1,0 +1,20 @@
+[
+  {
+    "warehouse_id": "sp01",
+    "warehouse_name": "CD Sao Paulo Guarulhos",
+    "city": "Guarulhos",
+    "state": "SP"
+  },
+  {
+    "warehouse_id": "mg01",
+    "warehouse_name": "Hub Extrema Minas",
+    "city": "Extrema",
+    "state": "MG"
+  },
+  {
+    "warehouse_id": "pr01",
+    "warehouse_name": "Operacao Sul Curitiba",
+    "city": "Curitiba",
+    "state": "PR"
+  }
+]

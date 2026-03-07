@@ -25,9 +25,9 @@ export default function EntriesTable({ summary }: Props) {
                 <td>{sideLabel(entry.entry_side)}</td>
                 <td>{entry.account_code} - {entry.account_name}</td>
                 <td>{entry.entry_category}</td>
-                <td>{entry.product_id}</td>
-                <td>{entry.supplier_id ?? '-'}</td>
-                <td>{entry.channel}</td>
+                <td>{entry.product_name} <br /> <small>{entry.product_category}</small></td>
+                <td>{entry.supplier_name ?? '-'}</td>
+                <td>{entry.channel_name}</td>
                 <td>{money(entry.amount)}</td>
                 <td>{entry.ontology_event_type} ({entry.ontology_source})</td>
                 <td>{entry.ontology_description}</td>

@@ -52,12 +52,24 @@ Cada painel é isolado em sua própria API e frontend, mas todos compartilham o 
 
 ## Primeiros passos
 
+Antes da subida, escolha no `.env` quais stacks completas ficam ativas:
+
+- `ACTIVE_STACKS=pinot`
+- `RUN_PRODUCER_ON_START=false`
+
+`ACTIVE_STACKS` aceita listas separadas por vírgula e sobe a stack inteira de cada tecnologia selecionada: backend, API e frontend. Exemplos:
+
+- `ACTIVE_STACKS=clickhouse,pinot`
+- `ACTIVE_STACKS=druid,pinot`
+
 1. Suba ambiente local com um comando:
-   - `make up`
+   - `make run`
 2. Inicie a produção de eventos sintéticos:
    - `make populate`
 3. Pare a produção de eventos quando quiser:
    - `make stop-populate`
+4. Derrube e limpe completamente o ambiente local:
+   - `make stop`
 4. Acompanhe saúde dos serviços:
    - `make health`
 5. Rode validações rápidas por painel:
@@ -66,7 +78,18 @@ Cada painel é isolado em sua própria API e frontend, mas todos compartilham o 
    - `make health-pinot`
    - `make smoke-all`
 
-O alvo `up` cria `.env` automaticamente a partir de `.env.example` se necessário.
+Ao final de `make run`, o projeto agora executa um smoke automático de subida para validar saúde do `master-data`, contrato do catálogo Pinot e, quando `RUN_PRODUCER_ON_START=true`, a aritmética de BP e DRE.
+
+O produtor também passa a emitir eventos explícitos de `return` e `freight`, o que mantém contas de devoluções, fretes sobre vendas e despesas bancárias com movimento real no razão.
+
+O alvo `run` cria `.env` automaticamente a partir de `.env.example` se necessário.
+
+## Modo econômico
+
+- O `.env.example` já vem em modo econômico com Pinot-only por padrão.
+- `make run` sobe apenas os serviços derivados da variável `ACTIVE_STACKS`.
+- `make stop` executa `down --remove-orphans --volumes --rmi local` e remove sobras do projeto para liberar portas, rede e volumes.
+- Os limites de CPU/memória do `.env` foram recalibrados para um WSL com 15 GB de RAM e 4 GB de swap.
 
 ## Painel 1 — ClickHouse
 
@@ -147,6 +170,7 @@ O alvo `up` cria `.env` automaticamente a partir de `.env.example` se necessári
 - Backend de leitura: Apache Pinot
 - Alimentação: tabela realtime Kafka `ledger_events`
 - Debug: `http://localhost:8090/debug/pinot-realtime`
+- Catálogo operacional agregado: `http://localhost:8082/api/v1/master-data/overview`
 
 ### Verificações rápidas
 
@@ -156,6 +180,23 @@ O alvo `up` cria `.env` automaticamente a partir de `.env.example` se necessári
    - `docker compose ps pinot-zookeeper pinot-controller pinot-broker pinot-server api-pinot frontend-pinot`
 4. Testar query no Broker:
    - `curl -X POST http://localhost:8099/query/sql -H 'Content-Type: application/json' -d '{"sql":"SELECT COUNT(*) AS c FROM ledger_events"}'`
+5. Conferir eventos explícitos novos:
+   - `curl -fsS 'http://localhost:8082/api/v1/dashboard/entries?limit=80' | grep 'ontology_event_type'`
+
+### Master data e plano de contas
+
+- O frontend Pinot agora expõe um painel dedicado de catálogo com identidade da empresa, canais, produtos e plano de contas.
+- O plano de contas cobre caixa, bancos, tributos recuperáveis, estoque, fornecedores, tributos a recolher, receita, devoluções, CMV, frete e despesas bancárias.
+- O card de fechamento do BP mostra, em tempo real, `Ativos` versus `Passivos + Patrimônio` e a `difference` calculada na API.
+
+## Smoke contábil estrito
+
+- `make smoke-startup` valida automaticamente o resumo expandido de qualquer backend ativo.
+- Quando `RUN_PRODUCER_ON_START=true`, o smoke verifica:
+   - `net_revenue = revenue - returns`
+   - `net_income = net_revenue - expenses`
+   - `assets.total = total_liabilities_and_equity`
+   - `difference = 0`
 
 ## Versionamento de schema (AVRO)
 

@@ -1,59 +1,42 @@
-import { useEffect, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { fetchFilterOptions, fetchSummary, type DashboardSummary, type EntryFilters } from '../entities/dashboard/api'
+import { useState } from 'react'
+import { type ViewId } from '../shared/config/dashboardViews'
+import { useDashboardSession } from '../processes/dashboard-session/model/useDashboardSession'
 import FilterPanel from '../widgets/filter-panel/FilterPanel'
-import KpiPanel from '../widgets/kpi-panel/KpiPanel'
-import EntriesTable from '../widgets/entries-table/EntriesTable'
+import QueueView from '../widgets/queue-view/QueueView'
+import AccountingView from '../widgets/accounting-view/AccountingView'
+import AccountsView from '../widgets/accounts-view/AccountsView'
+import ProductsView from '../widgets/products-view/ProductsView'
+import ShellMetrics from '../widgets/shell-metrics/ShellMetrics'
+import DashboardHeader from '../widgets/dashboard-header/DashboardHeader'
+import SideRail from '../widgets/side-rail/SideRail'
 
 export default function App() {
-  const [filters, setFilters] = useState<EntryFilters>({})
-
-  const { data } = useQuery({
-    queryKey: ['summary-pinot', filters],
-    queryFn: () => fetchSummary(filters),
-    refetchInterval: 5000
-  })
-
-  const { data: filterOptions } = useQuery({
-    queryKey: ['filter-options-pinot'],
-    queryFn: fetchFilterOptions,
-    staleTime: 30000
-  })
-
-  const [live, setLive] = useState<DashboardSummary | null>(null)
-
-  useEffect(() => {
-    const ws = new WebSocket(`${window.location.origin.replace('http', 'ws')}/ws/metrics`)
-    ws.onmessage = (event) => setLive(JSON.parse(event.data))
-    return () => ws.close()
-  }, [])
-
-  const hasActiveFilters = Object.values(filters).some((value) => Boolean(value))
-  const summary = hasActiveFilters ? data : (live ?? data)
-
-  const setFilter = (name: keyof EntryFilters, value: string) => {
-    setFilters((current: EntryFilters) => ({ ...current, [name]: value }))
-  }
-
-  const clearFilters = () => setFilters({})
+  const [activeView, setActiveView] = useState<ViewId>('queue')
+  const session = useDashboardSession({ defaultBackend: 'pinot', queryKeyPrefix: 'pinot' })
 
   return (
-    <main className="shield-app">
-      <header className="panel shell-header">
-        <div>
-          <div className="meta-label">Synthetic Ledger Control Center</div>
-          <h1>Dashboard Escudo Financeiro - Pinot</h1>
-        </div>
-        <div className="header-time">
-          <div>Atualização: {summary?.timestamp ?? '-'}</div>
-          <div>As Of: {summary?.as_of ?? '-'}</div>
-          <div>Backend: {summary?.backend ?? 'pinot'}</div>
-        </div>
-      </header>
+    <main className="dashboard-shell">
+      <div className="ambient-grid" />
 
-      <FilterPanel filters={filters} filterOptions={filterOptions} setFilter={setFilter} clearFilters={clearFilters} />
-      <KpiPanel summary={summary} />
-      <EntriesTable summary={summary} />
+      <SideRail
+        activeView={activeView}
+        backend={session.backend}
+        setActiveView={setActiveView}
+        workspace={session.workspace}
+        summary={session.summary}
+      />
+
+      <section className="content-column">
+        <DashboardHeader currentFeed={session.currentFeed} workspace={session.workspace} summary={session.summary} />
+
+        <ShellMetrics summary={session.summary} overview={session.overview} backend={session.backend} feedMode={session.currentFeed} />
+
+        {activeView === 'queue' ? <FilterPanel filters={session.filters} filterOptions={session.filterOptions} setFilter={session.setFilter} clearFilters={session.clearFilters} /> : null}
+        {activeView === 'queue' ? <QueueView summary={session.summary} entries={session.entries} /> : null}
+        {activeView === 'accounting' ? <AccountingView summary={session.summary} /> : null}
+        {activeView === 'accounts' ? <AccountsView accounts={session.accounts} /> : null}
+        {activeView === 'products' ? <ProductsView products={session.products} /> : null}
+      </section>
     </main>
   )
 }
