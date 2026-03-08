@@ -20,11 +20,9 @@ type Params = {
 
 export function useDashboardSession({ defaultBackend, queryKeyPrefix, filters, hasActiveFilters = false, viewId, isRealtimePaused = false }: Params) {
   const enableRealtime = viewId === 'queue'
-  const workspaceRefreshInterval = viewId === 'sales'
-    ? 5000
-    : isRealtimePaused
-      ? false
-      : 180000
+  const workspaceRefreshInterval = viewId === 'queue'
+    ? (isRealtimePaused ? false : 180000)
+    : 5000
 
   const summaryQuery = useQuery({
     queryKey: [queryKeyPrefix, 'summary', filters],
