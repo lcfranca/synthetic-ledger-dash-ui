@@ -27,7 +27,7 @@ export default function App() {
       />
 
       <section className="content-column">
-        <DashboardHeader currentFeed={session.currentFeed} workspace={session.workspace} summary={session.summary} />
+        <DashboardHeader currentFeed={session.currentFeed} filters={session.filters} workspace={session.workspace} summary={session.summary} />
 
         <ShellMetrics summary={session.summary} overview={session.overview} backend={session.backend} feedMode={session.currentFeed} />
 

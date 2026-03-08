@@ -63,12 +63,23 @@ class DashboardRepository:
             "needs_restock": needs_restock,
         }
 
-    def _build_where(self, filters: dict[str, str | None], as_of: str | None = None) -> str:
+    def _build_where(
+        self,
+        filters: dict[str, str | None],
+        as_of: str | None = None,
+        start_at: str | None = None,
+        end_at: str | None = None,
+    ) -> str:
         clauses = ["is_current = 1"]
 
-        if as_of:
-            normalized_as_of = as_of.replace("T", " ").replace("+00:00", "")
-            clauses.append(f'"__time" <= TIME_PARSE(\'{self._escape(normalized_as_of)}\')')
+        if start_at:
+            normalized_start_at = start_at.replace("T", " ").replace("+00:00", "")
+            clauses.append(f'"__time" >= TIME_PARSE(\'{self._escape(normalized_start_at)}\')')
+
+        upper_bound = end_at or as_of
+        if upper_bound:
+            normalized_upper_bound = upper_bound.replace("T", " ").replace("+00:00", "")
+            clauses.append(f'"__time" <= TIME_PARSE(\'{self._escape(normalized_upper_bound)}\')')
 
         for field, value in filters.items():
             if not value:
@@ -80,9 +91,16 @@ class DashboardRepository:
 
         return " AND ".join(clauses)
 
-    async def get_summary(self, *, as_of: str | None = None, filters: dict[str, str | None] | None = None) -> dict[str, Any]:
-        cutoff = as_of or datetime.now(timezone.utc).isoformat().replace("T", " ").replace("+00:00", "")
-        where_clause = self._build_where(filters or {}, cutoff)
+    async def get_summary(
+        self,
+        *,
+        as_of: str | None = None,
+        start_at: str | None = None,
+        end_at: str | None = None,
+        filters: dict[str, str | None] | None = None,
+    ) -> dict[str, Any]:
+        cutoff = end_at or as_of or datetime.now(timezone.utc).isoformat().replace("T", " ").replace("+00:00", "")
+        where_clause = self._build_where(filters or {}, as_of=as_of, start_at=start_at, end_at=end_at or cutoff)
 
         sql = f"""
         SELECT
@@ -168,9 +186,11 @@ class DashboardRepository:
         *,
         limit: int = 50,
         as_of: str | None = None,
+        start_at: str | None = None,
+        end_at: str | None = None,
         filters: dict[str, str | None] | None = None,
     ) -> list[dict[str, Any]]:
-        where_clause = self._build_where(filters or {}, as_of)
+        where_clause = self._build_where(filters or {}, as_of=as_of, start_at=start_at, end_at=end_at)
 
         sql = f"""
         SELECT
@@ -362,10 +382,17 @@ class DashboardRepository:
             )
         return rows
 
-    async def get_workspace_snapshot(self) -> dict[str, Any]:
+    async def get_workspace_snapshot(
+        self,
+        *,
+        as_of: str | None = None,
+        start_at: str | None = None,
+        end_at: str | None = None,
+        filters: dict[str, str | None] | None = None,
+    ) -> dict[str, Any]:
         summary, entries, master_data, accounts, products = await asyncio.gather(
-            self.get_summary(),
-            self.get_recent_entries(limit=30),
+            self.get_summary(as_of=as_of, start_at=start_at, end_at=end_at, filters=filters),
+            self.get_recent_entries(limit=30, as_of=as_of, start_at=start_at, end_at=end_at, filters=filters),
             self.get_master_data_overview(),
             self.get_account_catalog(),
             self.get_product_catalog(),

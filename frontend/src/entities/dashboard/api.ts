@@ -63,6 +63,8 @@ export type JournalEntry = {
 
 export type EntryFilters = {
   as_of?: string
+  start_at?: string
+  end_at?: string
   product_name?: string
   product_category?: string
   supplier_name?: string
@@ -211,13 +213,18 @@ export type EntryCreatedEnvelope = {
 
 export type RealtimeEnvelope = DashboardEnvelope | EntryCreatedEnvelope
 
-function toQuery(params: EntryFilters = {}) {
+export function buildFilterSearchParams(params: EntryFilters = {}) {
   const search = new URLSearchParams()
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
       search.set(key, String(value))
     }
   })
+  return search
+}
+
+function toQuery(params: EntryFilters = {}) {
+  const search = buildFilterSearchParams(params)
   const query = search.toString()
   return query ? `?${query}` : ''
 }
@@ -242,8 +249,8 @@ export async function fetchMasterDataOverview(): Promise<MasterDataOverview> {
   return getJson('/api/v1/master-data/overview', 'Falha ao obter visão de dados mestres')
 }
 
-export async function fetchWorkspaceSnapshot(): Promise<WorkspaceSnapshot> {
-  return getJson('/api/v1/dashboard/workspace', 'Falha ao obter workspace em tempo real')
+export async function fetchWorkspaceSnapshot(filters: EntryFilters = {}): Promise<WorkspaceSnapshot> {
+  return getJson(`/api/v1/dashboard/workspace${toQuery(filters)}`, 'Falha ao obter workspace em tempo real')
 }
 
 export async function fetchAccountCatalog(): Promise<{ accounts: AccountCatalogRow[]; count: number; backend: string }> {

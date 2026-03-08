@@ -1,13 +1,24 @@
-import type { DashboardSummary, WorkspaceSnapshot } from '../../entities/dashboard/api'
+import type { DashboardSummary, EntryFilters, WorkspaceSnapshot } from '../../entities/dashboard/api'
 import { shortTs } from '../../shared/lib/time'
 
 type Props = {
   currentFeed: string
+  filters?: EntryFilters
   workspace?: WorkspaceSnapshot
   summary?: DashboardSummary
 }
 
-export default function DashboardHeader({ currentFeed, workspace, summary }: Props) {
+function rangeLabel(filters?: EntryFilters) {
+  if (filters?.start_at || filters?.end_at) {
+    return `${shortTs(filters.start_at)} -> ${shortTs(filters.end_at)}`
+  }
+  if (filters?.as_of) {
+    return `As Of ${shortTs(filters.as_of)}`
+  }
+  return 'Janela aberta em tempo real'
+}
+
+export default function DashboardHeader({ currentFeed, filters, workspace, summary }: Props) {
   return (
     <header className="panel shell-header frame-panel hero-header cinematic-panel">
       <div>
@@ -18,7 +29,7 @@ export default function DashboardHeader({ currentFeed, workspace, summary }: Pro
       <div className="header-time header-cluster">
         <div className="status-row"><span className="status-dot live" />{currentFeed}</div>
         <div>Atualizacao: {shortTs(workspace?.timestamp ?? summary?.timestamp)}</div>
-        <div>As Of: {shortTs(summary?.as_of)}</div>
+        <div>Janela: {rangeLabel(filters)}</div>
       </div>
     </header>
   )

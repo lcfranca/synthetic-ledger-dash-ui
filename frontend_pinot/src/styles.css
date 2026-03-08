@@ -420,6 +420,104 @@ button {
   padding: 10px 12px;
 }
 
+.time-range-panel {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 12px;
+}
+
+.time-range-head,
+.time-range-inputs,
+.time-range-axis {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.time-range-copy,
+.time-range-status,
+.time-range-axis {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.time-range-status {
+  white-space: nowrap;
+}
+
+.time-range-inputs {
+  align-items: stretch;
+}
+
+.time-range-inputs .filter-field {
+  flex: 1;
+}
+
+.time-range-slider-shell {
+  position: relative;
+  height: 30px;
+  display: flex;
+  align-items: center;
+}
+
+.time-range-track,
+.time-range-active {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: 999px;
+}
+
+.time-range-track {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.time-range-active {
+  background: var(--accent);
+}
+
+.time-range-slider {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  margin: 0;
+  background: transparent;
+  pointer-events: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.time-range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  border: 2px solid var(--bg);
+  background: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255, 106, 0, 0.18);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.time-range-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  border: 2px solid var(--bg);
+  background: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255, 106, 0, 0.18);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.time-range-slider::-webkit-slider-runnable-track,
+.time-range-slider::-moz-range-track {
+  background: transparent;
+}
+
 .section-stack {
   display: grid;
   gap: 12px;
@@ -612,6 +710,13 @@ button {
   .filter-grid,
   .accounting-grid {
     grid-template-columns: 1fr;
+  }
+
+  .time-range-head,
+  .time-range-inputs,
+  .time-range-axis {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .title-cluster {

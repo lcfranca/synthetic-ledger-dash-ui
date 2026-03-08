@@ -16,14 +16,20 @@ export function isDashboardEnvelope(payload: RealtimeEnvelope | WorkspaceSnapsho
 }
 
 export function feedLabel(socketStatus: string, liveWorkspace: WorkspaceSnapshot | null, hasActiveFilters: boolean) {
-  if (hasActiveFilters) {
-    return 'Snapshot filtrado'
+  if (socketStatus === 'open' && liveWorkspace && hasActiveFilters) {
+    return 'Push gateway filtrado'
   }
   if (socketStatus === 'open' && liveWorkspace) {
     return 'Push gateway + delta Kafka'
   }
+  if (socketStatus === 'connecting' && hasActiveFilters) {
+    return 'Conectando stream filtrado'
+  }
   if (socketStatus === 'connecting') {
     return 'Conectando ao gateway push'
+  }
+  if (socketStatus === 'error' && hasActiveFilters) {
+    return 'Fallback filtrado por snapshot'
   }
   if (socketStatus === 'error') {
     return 'Fallback por snapshot bootstrap'

@@ -28,18 +28,19 @@ export function useDashboardSession({ defaultBackend, queryKeyPrefix }: Params) 
   })
 
   const workspaceQuery = useQuery({
-    queryKey: [queryKeyPrefix, 'workspace'],
-    queryFn: fetchWorkspaceSnapshot,
+    queryKey: [queryKeyPrefix, 'workspace', filters],
+    queryFn: () => fetchWorkspaceSnapshot(filters),
   })
 
   const { liveWorkspace, socketStatus } = useRealtimeDashboard({
     backend: workspaceQuery.data?.backend ?? defaultBackend,
+    filters,
     initialWorkspace: workspaceQuery.data,
   })
 
   const workspace = liveWorkspace ?? workspaceQuery.data
-  const summary = hasActiveFilters ? summaryQuery.data : workspace?.summary ?? summaryQuery.data
-  const entries = hasActiveFilters ? summaryQuery.data?.entries ?? [] : workspace?.entries ?? summary?.entries ?? []
+  const summary = workspace?.summary ?? summaryQuery.data
+  const entries = workspace?.entries ?? summary?.entries ?? summaryQuery.data?.entries ?? []
   const backend = workspace?.backend ?? summary?.backend ?? defaultBackend
   const currentFeed = feedLabel(socketStatus, liveWorkspace, hasActiveFilters)
 

@@ -29,6 +29,8 @@ async def health() -> dict:
 @app.get("/api/v1/dashboard/summary")
 async def dashboard_summary(
     as_of: str | None = Query(default=None),
+    start_at: str | None = Query(default=None),
+    end_at: str | None = Query(default=None),
     product_name: str | None = Query(default=None),
     product_category: str | None = Query(default=None),
     supplier_name: str | None = Query(default=None),
@@ -41,6 +43,9 @@ async def dashboard_summary(
     channel: str | None = Query(default=None),
 ) -> dict:
     filters = {
+        "as_of": as_of,
+        "start_at": start_at,
+        "end_at": end_at,
         "product_name": product_name,
         "product_category": product_category,
         "supplier_name": supplier_name,
@@ -52,8 +57,20 @@ async def dashboard_summary(
         "ontology_source": ontology_source,
         "channel_name": channel,
     }
-    summary = await repo.get_summary(as_of=as_of, filters=filters)
-    summary["entries"] = await repo.get_recent_entries(limit=30, as_of=as_of, filters=filters)
+    repo_filters = {
+        "product_name": product_name,
+        "product_category": product_category,
+        "supplier_name": supplier_name,
+        "ontology_event_type": event_type,
+        "entry_category": entry_category,
+        "account_code": account_code,
+        "warehouse_id": warehouse_id,
+        "entry_side": entry_side,
+        "ontology_source": ontology_source,
+        "channel_name": channel,
+    }
+    summary = await repo.get_summary(as_of=as_of, start_at=start_at, end_at=end_at, filters=repo_filters)
+    summary["entries"] = await repo.get_recent_entries(limit=30, as_of=as_of, start_at=start_at, end_at=end_at, filters=repo_filters)
     summary["filters"] = filters
     summary["backend"] = "pinot"
     return summary
@@ -63,6 +80,8 @@ async def dashboard_summary(
 async def dashboard_entries(
     limit: int = Query(default=50, ge=1, le=500),
     as_of: str | None = Query(default=None),
+    start_at: str | None = Query(default=None),
+    end_at: str | None = Query(default=None),
     product_name: str | None = Query(default=None),
     product_category: str | None = Query(default=None),
     supplier_name: str | None = Query(default=None),
@@ -75,6 +94,9 @@ async def dashboard_entries(
     channel: str | None = Query(default=None),
 ) -> dict:
     filters = {
+        "as_of": as_of,
+        "start_at": start_at,
+        "end_at": end_at,
         "product_name": product_name,
         "product_category": product_category,
         "supplier_name": supplier_name,
@@ -86,7 +108,19 @@ async def dashboard_entries(
         "ontology_source": ontology_source,
         "channel_name": channel,
     }
-    entries = await repo.get_recent_entries(limit=limit, as_of=as_of, filters=filters)
+    repo_filters = {
+        "product_name": product_name,
+        "product_category": product_category,
+        "supplier_name": supplier_name,
+        "ontology_event_type": event_type,
+        "entry_category": entry_category,
+        "account_code": account_code,
+        "warehouse_id": warehouse_id,
+        "entry_side": entry_side,
+        "ontology_source": ontology_source,
+        "channel_name": channel,
+    }
+    entries = await repo.get_recent_entries(limit=limit, as_of=as_of, start_at=start_at, end_at=end_at, filters=repo_filters)
     return {"entries": entries, "count": len(entries), "as_of": as_of, "filters": filters, "backend": "pinot"}
 
 
@@ -113,8 +147,34 @@ async def dashboard_products_catalog() -> dict:
 
 
 @app.get("/api/v1/dashboard/workspace")
-async def dashboard_workspace() -> dict:
-    payload = await repo.get_workspace_snapshot()
+async def dashboard_workspace(
+    as_of: str | None = Query(default=None),
+    start_at: str | None = Query(default=None),
+    end_at: str | None = Query(default=None),
+    product_name: str | None = Query(default=None),
+    product_category: str | None = Query(default=None),
+    supplier_name: str | None = Query(default=None),
+    event_type: str | None = Query(default=None),
+    entry_category: str | None = Query(default=None),
+    account_code: str | None = Query(default=None),
+    warehouse_id: str | None = Query(default=None),
+    entry_side: str | None = Query(default=None),
+    ontology_source: str | None = Query(default=None),
+    channel: str | None = Query(default=None),
+) -> dict:
+    repo_filters = {
+        "product_name": product_name,
+        "product_category": product_category,
+        "supplier_name": supplier_name,
+        "ontology_event_type": event_type,
+        "entry_category": entry_category,
+        "account_code": account_code,
+        "warehouse_id": warehouse_id,
+        "entry_side": entry_side,
+        "ontology_source": ontology_source,
+        "channel_name": channel,
+    }
+    payload = await repo.get_workspace_snapshot(as_of=as_of, start_at=start_at, end_at=end_at, filters=repo_filters)
     payload["backend"] = "pinot"
     return payload
 

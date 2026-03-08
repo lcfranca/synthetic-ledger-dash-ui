@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 import uuid
+from dataclasses import dataclass
 from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Any
@@ -15,6 +16,91 @@ def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def parse_timestamp(value: Any) -> datetime | None:
+    if not value:
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+    normalized = text.replace("Z", "+00:00")
+    try:
+        return datetime.fromisoformat(normalized)
+    except ValueError:
+        if " " in normalized and "+" not in normalized:
+            try:
+                return datetime.fromisoformat(normalized.replace(" ", "T") + "+00:00")
+            except ValueError:
+                return None
+    return None
+
+
+def normalized_filter_value(value: Any) -> str:
+    return str(value or "").strip().lower()
+
+
+def parse_filters(params: Any) -> dict[str, str]:
+    supported = {
+        "as_of",
+        "start_at",
+        "end_at",
+        "product_name",
+        "product_category",
+        "supplier_name",
+        "event_type",
+        "entry_category",
+        "account_code",
+        "warehouse_id",
+        "entry_side",
+        "ontology_source",
+        "channel",
+    }
+    filters: dict[str, str] = {}
+    for name in supported:
+        value = params.get(name)
+        if value:
+            filters[name] = str(value)
+    return filters
+
+
+def entry_matches_filters(entry: dict[str, Any], filters: dict[str, str]) -> bool:
+    field_map = {
+        "product_name": "product_name",
+        "product_category": "product_category",
+        "supplier_name": "supplier_name",
+        "event_type": "ontology_event_type",
+        "entry_category": "entry_category",
+        "account_code": "account_code",
+        "warehouse_id": "warehouse_id",
+        "entry_side": "entry_side",
+        "ontology_source": "ontology_source",
+        "channel": "channel_name",
+    }
+
+    occurred_at = parse_timestamp(entry.get("occurred_at") or entry.get("ingested_at"))
+    if filters.get("start_at"):
+        start_at = parse_timestamp(filters.get("start_at"))
+        if start_at and occurred_at and occurred_at < start_at:
+            return False
+    upper_bound_raw = filters.get("end_at") or filters.get("as_of")
+    if upper_bound_raw:
+        upper_bound = parse_timestamp(upper_bound_raw)
+        if upper_bound and occurred_at and occurred_at > upper_bound:
+            return False
+
+    for filter_name, entry_field in field_map.items():
+        filter_value = normalized_filter_value(filters.get(filter_name))
+        if filter_value and normalized_filter_value(entry.get(entry_field)) != filter_value:
+            return False
+    return True
+
+
+@dataclass
+class Subscription:
+    websocket: WebSocket
+    backend: str
+    filters: dict[str, str]
+
+
 def parse_backends() -> list[str]:
     configured = os.getenv("ACTIVE_STACKS", "clickhouse,druid,pinot")
     ordered = ["clickhouse", "druid", "pinot"]
@@ -24,13 +110,13 @@ def parse_backends() -> list[str]:
 
 class ConnectionManager:
     def __init__(self) -> None:
-        self._connections: dict[str, dict[str, WebSocket]] = defaultdict(dict)
+        self._connections: dict[str, dict[str, Subscription]] = defaultdict(dict)
         self._lock = asyncio.Lock()
 
-    async def register(self, websocket: WebSocket, backend: str) -> str:
+    async def register(self, websocket: WebSocket, backend: str, filters: dict[str, str]) -> str:
         connection_id = str(uuid.uuid4())
         async with self._lock:
-            self._connections[backend][connection_id] = websocket
+            self._connections[backend][connection_id] = Subscription(websocket=websocket, backend=backend, filters=filters)
         return connection_id
 
     async def disconnect(self, backend: str, connection_id: str) -> None:
@@ -45,14 +131,23 @@ class ConnectionManager:
         async with self._lock:
             return {backend: len(connections) for backend, connections in self._connections.items()}
 
-    async def broadcast(self, backend: str, message: dict[str, Any]) -> None:
+    async def subscription(self, backend: str, connection_id: str) -> Subscription | None:
         async with self._lock:
-            targets = list(self._connections.get(backend, {}).items())
+            return self._connections.get(backend, {}).get(connection_id)
+
+    async def subscriptions(self, backend: str) -> list[tuple[str, Subscription]]:
+        async with self._lock:
+            return list(self._connections.get(backend, {}).items())
+
+    async def broadcast(self, backend: str, message: dict[str, Any], *, matcher: Any | None = None) -> None:
+        targets = await self.subscriptions(backend)
 
         stale_connection_ids: list[str] = []
-        for connection_id, websocket in targets:
+        for connection_id, subscription in targets:
+            if matcher is not None and not matcher(subscription):
+                continue
             try:
-                await websocket.send_json(message)
+                await subscription.websocket.send_json(message)
             except Exception:
                 stale_connection_ids.append(connection_id)
 
@@ -111,12 +206,12 @@ class RealtimeGateway:
         await self.client.aclose()
         await asyncio.to_thread(self.consumer.close)
 
-    async def fetch_workspace(self, backend: str) -> dict[str, Any] | None:
+    async def fetch_workspace(self, backend: str, filters: dict[str, str] | None = None) -> dict[str, Any] | None:
         base_url = self.backend_urls.get(backend)
         if not base_url:
             return None
         try:
-            response = await self.client.get(f"{base_url}/api/v1/dashboard/workspace")
+            response = await self.client.get(f"{base_url}/api/v1/dashboard/workspace", params=filters or None)
             response.raise_for_status()
             payload = response.json()
             if isinstance(payload, dict):
@@ -126,8 +221,14 @@ class RealtimeGateway:
             self.state["last_error"] = f"workspace:{backend}:{exc}"
         return None
 
-    async def send_snapshot(self, backend: str, websocket: WebSocket | None = None) -> None:
-        payload = await self.fetch_workspace(backend)
+    async def send_snapshot(
+        self,
+        backend: str,
+        websocket: WebSocket | None = None,
+        filters: dict[str, str] | None = None,
+        connection_id: str | None = None,
+    ) -> None:
+        payload = await self.fetch_workspace(backend, filters)
         if payload is None:
             return
         message = {
@@ -141,20 +242,29 @@ class RealtimeGateway:
         if websocket is not None:
             await websocket.send_json(message)
             return
+        if connection_id is not None:
+            subscription = await self.manager.subscription(backend, connection_id)
+            if subscription is None:
+                return
+            await subscription.websocket.send_json(message)
+            return
         await self.manager.broadcast(backend, message)
 
-    def schedule_snapshot(self, backend: str) -> None:
+    def schedule_snapshot(self, backend: str, connection_id: str) -> None:
         if backend not in self.active_backends:
             return
-        existing = self.snapshot_tasks.get(backend)
+        task_key = f"{backend}:{connection_id}"
+        existing = self.snapshot_tasks.get(task_key)
         if existing and not existing.done():
             return
-        self.snapshot_tasks[backend] = asyncio.create_task(self._flush_snapshot(backend))
+        self.snapshot_tasks[task_key] = asyncio.create_task(self._flush_snapshot(backend, connection_id, task_key))
 
-    async def _flush_snapshot(self, backend: str) -> None:
+    async def _flush_snapshot(self, backend: str, connection_id: str, task_key: str) -> None:
         await asyncio.sleep(self.coalesce_seconds)
-        if await self.manager.has_backend_subscribers(backend):
-            await self.send_snapshot(backend)
+        subscription = await self.manager.subscription(backend, connection_id)
+        if subscription is not None:
+            await self.send_snapshot(backend, filters=subscription.filters, connection_id=connection_id)
+        self.snapshot_tasks.pop(task_key, None)
 
     async def consume(self) -> None:
         while True:
@@ -181,20 +291,30 @@ class RealtimeGateway:
                 }
 
                 for backend in self.active_backends:
-                    if not await self.manager.has_backend_subscribers(backend):
+                    subscriptions = await self.manager.subscriptions(backend)
+                    if not subscriptions:
+                        continue
+                    message = {
+                        "event_id": entry.get("entry_id") or entry.get("event_id") or str(uuid.uuid4()),
+                        "event_type": "entry.created",
+                        "version": "1.0.0",
+                        "backend": backend,
+                        "ts": str(entry.get("ingested_at") or entry.get("occurred_at") or now_iso()),
+                        "payload": entry,
+                    }
+                    matched_connection_ids: list[str] = []
+                    for connection_id, subscription in subscriptions:
+                        if entry_matches_filters(entry, subscription.filters):
+                            matched_connection_ids.append(connection_id)
+                    if not matched_connection_ids:
                         continue
                     await self.manager.broadcast(
                         backend,
-                        {
-                            "event_id": entry.get("entry_id") or entry.get("event_id") or str(uuid.uuid4()),
-                            "event_type": "entry.created",
-                            "version": "1.0.0",
-                            "backend": backend,
-                            "ts": str(entry.get("ingested_at") or entry.get("occurred_at") or now_iso()),
-                            "payload": entry,
-                        },
+                        message,
+                        matcher=lambda subscription: entry_matches_filters(entry, subscription.filters),
                     )
-                    self.schedule_snapshot(backend)
+                    for connection_id in matched_connection_ids:
+                        self.schedule_snapshot(backend, connection_id)
 
                 await asyncio.to_thread(self.consumer.commit, message=message, asynchronous=False)
             except asyncio.CancelledError:
@@ -237,9 +357,10 @@ async def ws_dashboard(websocket: WebSocket) -> None:
         return
 
     await websocket.accept()
+    filters = parse_filters(websocket.query_params)
     try:
-        await gateway.send_snapshot(requested_backend, websocket)
-        connection_id = await gateway.manager.register(websocket, requested_backend)
+        connection_id = await gateway.manager.register(websocket, requested_backend, filters)
+        await gateway.send_snapshot(requested_backend, websocket, filters)
         while True:
             await websocket.receive_text()
     except WebSocketDisconnect:
