@@ -33,6 +33,18 @@ body {
   letter-spacing: 0.01em;
 }
 
+::selection {
+  background: #000000;
+  color: var(--signal);
+  text-shadow: none;
+}
+
+::-moz-selection {
+  background: #000000;
+  color: var(--signal);
+  text-shadow: none;
+}
+
 button,
 input,
 select,
@@ -104,6 +116,18 @@ a:focus-visible *,
   border: 1px solid var(--line-strong);
   background: var(--bg-panel);
   position: relative;
+}
+
+.panel::selection,
+.panel *::selection {
+  background: #000000;
+  color: var(--signal);
+}
+
+.panel::-moz-selection,
+.panel *::-moz-selection {
+  background: #000000;
+  color: var(--signal);
 }
 
 .frame-panel::before,
@@ -197,12 +221,35 @@ a:focus-visible *,
   text-align: left;
   padding: 14px;
   cursor: pointer;
+  position: relative;
+  transition: border-color 120ms ease, color 120ms ease, box-shadow 120ms ease, background 120ms ease;
 }
 
 .nav-card:hover,
 .nav-card.active {
   border-color: var(--line-hot);
   box-shadow: inset 4px 0 0 var(--signal);
+  background:
+    linear-gradient(90deg, rgba(255, 92, 41, 0.18), rgba(255, 92, 41, 0.04) 22%, transparent 60%),
+    var(--bg-panel-alt);
+}
+
+.nav-card:hover .nav-eyebrow,
+.nav-card:hover .nav-label,
+.nav-card.active .nav-code,
+.nav-card.active .nav-eyebrow,
+.nav-card.active .nav-label {
+  color: var(--signal);
+}
+
+.nav-card.active::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  right: 8px;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, var(--signal), transparent);
 }
 
 .nav-code,
