@@ -45,21 +45,10 @@ export default function SalesView({ salesWorkspace }: Props) {
   const byChannel = salesWorkspace?.by_channel ?? []
   const byProduct = salesWorkspace?.by_product ?? []
   const byStatus = salesWorkspace?.by_status ?? []
+  const byPayment = salesWorkspace?.by_payment ?? []
   const isFallback = salesWorkspace?.data_mode === 'pinot_order_fallback'
-  const margin = sales.reduce((acc, sale) => acc + (sale.net_amount - sale.cmv), 0)
-  const totalDiscount = sales.reduce((acc, sale) => acc + sale.cart_discount, 0)
-  const byPayment = Object.values(sales.reduce<Record<string, SalesBreakdownRow>>((acc, sale) => {
-    const key = sale.payment_method || 'nao_informado'
-    if (!acc[key]) {
-      acc[key] = { label: key, order_count: 0, gross_sales: 0, net_sales: 0, quantity: 0 }
-    }
-    acc[key].order_count += 1
-    acc[key].gross_sales = Number(acc[key].gross_sales ?? 0) + sale.gross_amount
-    acc[key].net_sales += sale.net_amount
-    acc[key].quantity = Number(acc[key].quantity ?? 0) + sale.quantity
-    return acc
-  }, {})).sort((left, right) => right.net_sales - left.net_sales).slice(0, 6)
   const liveTape = sales.slice(0, 6)
+  const leadPayment = byPayment[0]
 
   if (!salesWorkspace || (!sales.length && !kpis?.order_count)) {
     return (
@@ -112,13 +101,13 @@ export default function SalesView({ salesWorkspace }: Props) {
           </article>
           <article className="metric-card panel-surface">
             <div className="metric-label">Margem comercial</div>
-            <div className="metric-value">{money(margin)}</div>
-            <div className="metric-helper">Resultado após CMV do mix vendido</div>
+            <div className="metric-value">{money(kpis?.gross_margin ?? 0)}</div>
+            <div className="metric-helper">Resultado agregado apos CMV no recorte filtrado</div>
           </article>
           <article className="metric-card panel-surface">
-            <div className="metric-label">Desconto capturado</div>
-            <div className="metric-value">{money(totalDiscount)}</div>
-            <div className="metric-helper">Cupom e markdown distribuídos no carrinho</div>
+            <div className="metric-label">Pagamento lider</div>
+            <div className="metric-value small-text">{leadPayment?.label ?? (isFallback ? 'N/D' : '-')}</div>
+            <div className="metric-helper">{leadPayment ? `${money(leadPayment.net_sales)} em ${compact(leadPayment.order_count)} pedidos` : 'Composicao por pagamento indisponivel nesta janela'}</div>
           </article>
         </div>
 

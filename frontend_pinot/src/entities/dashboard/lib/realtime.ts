@@ -75,7 +75,7 @@ export function withRealtimeEntry(workspace: WorkspaceSnapshot | null, entry: Jo
     return workspace
   }
 
-  const nextEntries = [entry, ...workspace.entries.filter((item) => item.entry_id !== entry.entry_id)].slice(0, 30)
+  const nextEntries = [entry, ...workspace.entries.filter((item) => item.entry_id !== entry.entry_id)].slice(0, 180)
 
   const runtimeWorkspace = workspace as RealtimeWorkspace
   const runtime = runtimeWorkspace.__realtime ?? seedRealtimeMetadata(workspace)
@@ -547,12 +547,14 @@ function updateSalesWorkspace(salesWorkspace: SalesWorkspace, entry: JournalEntr
 
   let grossSalesDelta = 0
   let netSalesDelta = 0
+  let grossMarginDelta = 0
   let unitsSoldDelta = 0
 
   switch (entry.account_role) {
     case 'revenue':
       grossSalesDelta = round(entry.unit_price * entry.quantity)
       netSalesDelta = round(entry.amount)
+      grossMarginDelta = round(grossMarginDelta + netSalesDelta)
       unitsSoldDelta = round(entry.quantity, 3)
       nextSale.quantity = round(nextSale.quantity + entry.quantity, 3)
       nextSale.gross_amount = round(nextSale.gross_amount + grossSalesDelta)
@@ -566,6 +568,7 @@ function updateSalesWorkspace(salesWorkspace: SalesWorkspace, entry: JournalEntr
       break
     case 'cogs':
       nextSale.cmv = round(nextSale.cmv + entry.amount)
+      grossMarginDelta = round(grossMarginDelta - entry.amount)
       break
     default:
       break
@@ -588,6 +591,7 @@ function updateSalesWorkspace(salesWorkspace: SalesWorkspace, entry: JournalEntr
 
   const nextGrossSales = round(salesWorkspace.kpis.gross_sales + grossSalesDelta)
   const nextNetSales = round(salesWorkspace.kpis.net_sales + netSalesDelta)
+  const nextGrossMargin = round(salesWorkspace.kpis.gross_margin + grossMarginDelta)
   const nextUnitsSold = round(salesWorkspace.kpis.units_sold + unitsSoldDelta, 3)
   const nextAverageTicket = nextOrderCount > 0 ? round(nextNetSales / nextOrderCount) : 0
   const nextAvgItemsPerOrder = isNewSale && entry.account_role === 'revenue'
@@ -614,6 +618,14 @@ function updateSalesWorkspace(salesWorkspace: SalesWorkspace, entry: JournalEntr
   const nextByStatus = entry.account_role === 'revenue' && entry.order_status
     ? updateBreakdown(salesWorkspace.by_status, entry.order_status, { orderCount: orderDelta, netSales: netSalesDelta }, 'order_count')
     : salesWorkspace.by_status
+  const nextByPayment = entry.account_role === 'revenue'
+    ? updateBreakdown(salesWorkspace.by_payment, entry.payment_method || 'nao_informado', {
+      orderCount: orderDelta,
+      quantity: unitsSoldDelta,
+      grossSales: grossSalesDelta,
+      netSales: netSalesDelta,
+    }, 'net_sales')
+    : salesWorkspace.by_payment
 
   return {
     ...salesWorkspace,
@@ -623,6 +635,7 @@ function updateSalesWorkspace(salesWorkspace: SalesWorkspace, entry: JournalEntr
       unique_customers: nextUniqueCustomers,
       gross_sales: nextGrossSales,
       net_sales: nextNetSales,
+      gross_margin: nextGrossMargin,
       units_sold: nextUnitsSold,
       average_ticket: nextAverageTicket,
       avg_items_per_order: nextAvgItemsPerOrder,
@@ -630,6 +643,7 @@ function updateSalesWorkspace(salesWorkspace: SalesWorkspace, entry: JournalEntr
     by_channel: nextByChannel,
     by_product: nextByProduct,
     by_status: nextByStatus,
+    by_payment: nextByPayment,
   }
 }
 

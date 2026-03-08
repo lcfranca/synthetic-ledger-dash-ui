@@ -209,10 +209,12 @@ export type SalesWorkspace = {
     units_sold: number
     average_ticket: number
     avg_items_per_order: number
+    gross_margin: number
   }
   by_channel: SalesBreakdownRow[]
   by_product: SalesBreakdownRow[]
   by_status: SalesBreakdownRow[]
+  by_payment: SalesBreakdownRow[]
   data_mode?: 'full' | 'pinot_order_fallback'
   data_warning?: string | null
   missing_dimensions?: string[]

@@ -90,6 +90,29 @@ class DashboardRepository:
             return None
         return round((numerator / denominator) * 100.0, digits)
 
+    @staticmethod
+    def _normalize_breakdown_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        normalized: dict[str, dict[str, Any]] = {}
+        for row in rows:
+            raw_label = str(row.get("label") or "").strip()
+            label = raw_label if raw_label and raw_label.lower() != "null" else "nao_informado"
+            bucket = normalized.setdefault(
+                label,
+                {
+                    "label": label,
+                    "order_count": 0,
+                    "quantity": 0.0,
+                    "gross_sales": 0.0,
+                    "net_sales": 0.0,
+                },
+            )
+            bucket["order_count"] += int(row.get("order_count", 0) or 0)
+            bucket["quantity"] = round(float(bucket["quantity"]) + float(row.get("quantity", 0.0) or 0.0), 3)
+            bucket["gross_sales"] = round(float(bucket["gross_sales"]) + float(row.get("gross_sales", 0.0) or 0.0), 2)
+            bucket["net_sales"] = round(float(bucket["net_sales"]) + float(row.get("net_sales", 0.0) or 0.0), 2)
+
+        return sorted(normalized.values(), key=lambda item: float(item.get("net_sales", 0.0)), reverse=True)
+
     def _income_statement_metrics(
         self,
         *,
@@ -336,6 +359,7 @@ class DashboardRepository:
             revision
         FROM {self.table}
         WHERE {where_clause}
+        ORDER BY occurred_at_epoch_ms DESC
         LIMIT {fetch_limit}
         """.strip()
 
@@ -374,6 +398,7 @@ class DashboardRepository:
                 revision
             FROM {self.table}
             WHERE {where_clause}
+            ORDER BY occurred_at_epoch_ms DESC
             LIMIT {fetch_limit}
             """.strip()
             rows = await self._query_rows(fallback_sql)
@@ -512,6 +537,7 @@ class DashboardRepository:
             DISTINCTCOUNT(order_id) AS order_count,
             ROUND(SUM(CASE WHEN account_role = 'revenue' THEN amount ELSE 0 END), 2) AS gross_sales,
             ROUND(SUM(CASE WHEN account_role = 'revenue' THEN amount ELSE 0 END), 2) AS net_sales,
+            ROUND(SUM(CASE WHEN account_role = 'revenue' THEN amount ELSE 0 END) - SUM(CASE WHEN account_role = 'cogs' THEN amount ELSE 0 END), 2) AS gross_margin,
             ROUND(SUM(CASE WHEN account_role = 'revenue' THEN quantity ELSE 0 END), 3) AS units_sold,
             ROUND(AVG(CASE WHEN account_role = 'revenue' THEN quantity ELSE NULL END), 2) AS avg_items_per_order
         FROM {self.table}
@@ -600,10 +626,12 @@ class DashboardRepository:
                 "units_sold": round(float(kpis.get("units_sold", 0.0) or 0.0), 3),
                 "average_ticket": round(gross_sales / order_count, 2) if order_count else 0.0,
                 "avg_items_per_order": round(float(kpis.get("avg_items_per_order", 0.0) or 0.0), 2),
+                "gross_margin": round(float(kpis.get("gross_margin", 0.0) or 0.0), 2),
             },
             "by_channel": by_channel,
             "by_product": by_product,
             "by_status": [],
+            "by_payment": [],
             "data_mode": "pinot_order_fallback",
             "data_warning": "Pinot segue sem materializar sale_id, customer_*, payment_method e order_status neste conjunto. O painel comercial foi degradado para um modo seguro por pedido, produto, canal, quantidade e receita enquanto o broker é saneado.",
             "missing_dimensions": ["sale_id", "customer_name", "customer_email", "customer_segment", "payment_method", "order_status"],
@@ -663,6 +691,7 @@ class DashboardRepository:
             DISTINCTCOUNT(COALESCE(customer_email, customer_id, sale_id)) AS unique_customers,
             ROUND(SUM(gross_amount), 2) AS gross_sales,
             ROUND(SUM(net_amount), 2) AS net_sales,
+            ROUND(SUM(net_amount - inventory_cost_total), 2) AS gross_margin,
             ROUND(SUM(quantity), 3) AS units_sold,
             ROUND(AVG(cart_items_count), 2) AS avg_items_per_order
         FROM {self.table}
@@ -709,16 +738,32 @@ class DashboardRepository:
         LIMIT 6
         """.strip()
 
-        sales, kpi_rows, by_channel, by_product, by_status = await asyncio.gather(
+        payment_sql = f"""
+        SELECT
+            payment_method AS label,
+            DISTINCTCOUNT(sale_id) AS order_count,
+            ROUND(SUM(quantity), 3) AS quantity,
+            ROUND(SUM(gross_amount), 2) AS gross_sales,
+            ROUND(SUM(net_amount), 2) AS net_sales
+        FROM {self.table}
+        WHERE {sales_where_clause}
+        GROUP BY payment_method
+        ORDER BY net_sales DESC
+        LIMIT 12
+        """.strip()
+
+        sales, kpi_rows, by_channel, by_product, by_status, by_payment_rows = await asyncio.gather(
             self._query_rows(sales_sql),
             self._query_rows(kpi_sql),
             self._query_rows(channel_sql),
             self._query_rows(product_sql),
             self._query_rows(status_sql),
+            self._query_rows(payment_sql),
         )
         kpis = kpi_rows[0] if kpi_rows else {}
         order_count = int(kpis.get("order_count", 0) or 0)
         net_sales = round(float(kpis.get("net_sales", 0.0) or 0.0), 2)
+        by_payment = self._normalize_breakdown_rows(by_payment_rows)[:8]
         result = {
             "sales": sales,
             "kpis": {
@@ -729,10 +774,12 @@ class DashboardRepository:
                 "units_sold": round(float(kpis.get("units_sold", 0.0) or 0.0), 3),
                 "average_ticket": round(net_sales / order_count, 2) if order_count else 0.0,
                 "avg_items_per_order": round(float(kpis.get("avg_items_per_order", 0.0) or 0.0), 2),
+                "gross_margin": round(float(kpis.get("gross_margin", 0.0) or 0.0), 2),
             },
             "by_channel": by_channel,
             "by_product": by_product,
             "by_status": by_status,
+            "by_payment": by_payment,
             "data_mode": "full",
             "data_warning": None,
             "missing_dimensions": [],
@@ -901,7 +948,7 @@ class DashboardRepository:
     ) -> dict[str, Any]:
         summary, entries, master_data, accounts, products, sales_workspace = await asyncio.gather(
             self.get_summary(as_of=as_of, start_at=start_at, end_at=end_at, filters=filters),
-            self.get_recent_entries(limit=30, as_of=as_of, start_at=start_at, end_at=end_at, filters=filters),
+            self.get_recent_entries(limit=180, as_of=as_of, start_at=start_at, end_at=end_at, filters=filters),
             self.get_master_data_overview(),
             self.get_account_catalog(),
             self.get_product_catalog(),

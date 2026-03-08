@@ -432,7 +432,7 @@ a:focus-visible *,
 }
 
 .observability-strip {
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .metric-card {
@@ -652,10 +652,20 @@ a:focus-visible *,
   gap: 12px;
 }
 
+.observability-table-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
 .observability-chart-card {
   padding: 0;
   overflow: hidden;
   min-height: 340px;
+}
+
+.observability-table-card {
+  padding: 16px;
 }
 
 .observability-chart-card-wide {
@@ -919,6 +929,7 @@ a:focus-visible *,
   .accounting-grid,
   .sales-charts-grid,
   .observability-grid,
+  .observability-table-grid,
   .observability-readout-grid,
   .queue-filter-grid,
   .sales-filter-grid,
@@ -951,6 +962,7 @@ a:focus-visible *,
   .accounting-grid,
   .sales-charts-grid,
   .observability-grid,
+  .observability-table-grid,
   .observability-readout-grid,
   .queue-filter-grid,
   .sales-filter-grid,
