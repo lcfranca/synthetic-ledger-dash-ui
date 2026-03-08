@@ -15,7 +15,23 @@ class DashboardRepository:
         self.user = os.getenv("CLICKHOUSE_USER", "ledger_app")
         self.password = os.getenv("CLICKHOUSE_PASSWORD", "ledger_app_pass")
         self.master_data_url = os.getenv("MASTER_DATA_URL", "http://master-data:8091")
-        self.client = httpx.AsyncClient(timeout=2.5)
+        clickhouse_timeout = httpx.Timeout(connect=2.5, read=20.0, write=20.0, pool=20.0)
+        clickhouse_limits = httpx.Limits(max_connections=64, max_keepalive_connections=16)
+        master_data_timeout = httpx.Timeout(connect=2.5, read=8.0, write=8.0, pool=8.0)
+        master_data_limits = httpx.Limits(max_connections=16, max_keepalive_connections=8)
+        self.clickhouse_client = httpx.AsyncClient(timeout=clickhouse_timeout, limits=clickhouse_limits)
+        self.master_data_client = httpx.AsyncClient(timeout=master_data_timeout, limits=master_data_limits)
+        self.clickhouse_query_semaphore = asyncio.Semaphore(int(os.getenv("CLICKHOUSE_MAX_CONCURRENT_QUERIES", "12")))
+
+    async def _post_clickhouse(self, sql: str) -> httpx.Response:
+        async with self.clickhouse_query_semaphore:
+            response = await self.clickhouse_client.post(
+                f"{self.base_url}/",
+                params={"database": self.db, "query": sql},
+                auth=(self.user, self.password),
+            )
+        response.raise_for_status()
+        return response
 
     @staticmethod
     def _escape(value: str) -> str:
@@ -86,12 +102,7 @@ class DashboardRepository:
 
     async def _query(self, sql: str) -> str:
         try:
-            response = await self.client.post(
-                f"{self.base_url}/",
-                params={"database": self.db, "query": sql},
-                auth=(self.user, self.password),
-            )
-            response.raise_for_status()
+            response = await self._post_clickhouse(sql)
             return response.text.strip()
         except httpx.HTTPStatusError as exc:
             if self._is_missing_table_error(exc):
@@ -100,12 +111,7 @@ class DashboardRepository:
 
     async def _query_json_rows(self, sql: str) -> list[dict[str, Any]]:
         try:
-            response = await self.client.post(
-                f"{self.base_url}/",
-                params={"database": self.db, "query": sql},
-                auth=(self.user, self.password),
-            )
-            response.raise_for_status()
+            response = await self._post_clickhouse(sql)
             lines = [line.strip() for line in response.text.splitlines() if line.strip()]
             return [json.loads(line) for line in lines]
         except httpx.HTTPStatusError as exc:
@@ -126,7 +132,7 @@ class DashboardRepository:
 
     async def _fetch_json(self, path: str, default: Any) -> Any:
         try:
-            response = await self.client.get(f"{self.master_data_url}{path}")
+            response = await self.master_data_client.get(f"{self.master_data_url}{path}")
             response.raise_for_status()
             payload = response.json()
             return payload if isinstance(payload, type(default)) else default
@@ -436,12 +442,7 @@ class DashboardRepository:
         FORMAT JSONEachRow
         """.strip()
 
-        response = await self.client.post(
-            f"{self.base_url}/",
-            params={"database": self.db, "query": sql},
-            auth=(self.user, self.password),
-        )
-        response.raise_for_status()
+        response = await self._post_clickhouse(sql)
 
         line = next((item for item in response.text.splitlines() if item.strip()), "{}")
         payload = json.loads(line)
@@ -600,14 +601,36 @@ class DashboardRepository:
         FORMAT JSONEachRow
         """.strip()
 
-        sales, kpis, by_channel, by_product, by_status, by_payment_rows = await asyncio.gather(
-            self._query_json_rows(sales_sql),
-            self._query_json_row(kpi_sql),
-            self._query_json_rows(channel_sql),
-            self._query_json_rows(product_sql),
-            self._query_json_rows(status_sql),
-            self._query_json_rows(payment_sql),
-        )
+        try:
+            sales, kpis, by_channel, by_product, by_status, by_payment_rows = await asyncio.gather(
+                self._query_json_rows(sales_sql),
+                self._query_json_row(kpi_sql),
+                self._query_json_rows(channel_sql),
+                self._query_json_rows(product_sql),
+                self._query_json_rows(status_sql),
+                self._query_json_rows(payment_sql),
+            )
+        except Exception:
+            return {
+                "sales": [],
+                "kpis": {
+                    "order_count": 0,
+                    "unique_customers": 0,
+                    "gross_sales": 0.0,
+                    "net_sales": 0.0,
+                    "units_sold": 0.0,
+                    "average_ticket": 0.0,
+                    "avg_items_per_order": 0.0,
+                    "gross_margin": 0.0,
+                },
+                "by_channel": [],
+                "by_product": [],
+                "by_status": [],
+                "by_payment": [],
+                "data_mode": "full",
+                "data_warning": "sales_workspace_unavailable_for_current_filter",
+                "missing_dimensions": ["sales_workspace"],
+            }
 
         order_count = int(kpis.get("order_count", 0) or 0)
         net_sales = round(float(kpis.get("net_sales", 0.0) or 0.0), 2)
