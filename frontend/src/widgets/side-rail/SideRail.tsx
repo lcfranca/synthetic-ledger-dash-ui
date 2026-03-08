@@ -16,9 +16,9 @@ export default function SideRail({ activeView, backend, setActiveView, workspace
   return (
     <aside className="side-rail panel frame-panel">
       <div className="rail-head">
-        <div className="meta-label">Synthetic ledger / shield mode</div>
-        <h1>Build block</h1>
-        <p className="rail-copy">Interface tecnica, preta, branca e laranja, com rastro contábil vivo e leitura operacional sem ruído.</p>
+        <div className="meta-label">Synthetic ledger / command deck</div>
+        <h1>Commerce block</h1>
+        <p className="rail-copy">Blocos densos, linhas retas, tipografia industrial e operacao viva de vendas, estoque e contabilidade.</p>
       </div>
 
       <nav className="side-nav" aria-label="Dashboards">

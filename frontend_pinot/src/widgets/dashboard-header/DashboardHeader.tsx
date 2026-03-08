@@ -22,9 +22,9 @@ export default function DashboardHeader({ currentFeed, filters, workspace, summa
   return (
     <header className="panel shell-header frame-panel hero-header cinematic-panel">
       <div>
-        <div className="meta-label">Templates / simple workflow template</div>
-        <h2>Painel espelhado entre stacks</h2>
-        <div className="hero-subline">Branco de alto contraste, acento laranja, contorno seco e comportamento push-ready.</div>
+        <div className="meta-label">Agent data overview / commerce control</div>
+        <h2>Painel espelhado entre stacks com venda, razao e streaming no mesmo trilho</h2>
+        <div className="hero-subline">Visual brutalista, alto contraste, leitura seca e push-first para fila, vendas e demonstracoes contabeis.</div>
       </div>
       <div className="header-time header-cluster">
         <div className="status-row"><span className="status-dot live" />{currentFeed}</div>

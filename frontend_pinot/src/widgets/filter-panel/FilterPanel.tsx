@@ -1,5 +1,6 @@
 import type { ChangeEvent } from 'react'
-import type { EntryFilters, FilterOptions } from '../../entities/dashboard/api'
+import { useQuery } from '@tanstack/react-query'
+import { fetchFilterSearch, type EntryFilters, type FilterOptions } from '../../entities/dashboard/api'
 
 const TIMELINE_WINDOW_HOURS = 72
 const TIMELINE_STEPS = 1000
@@ -59,6 +60,14 @@ type FilterSelectProps = {
   allLabel?: string
 }
 
+type SearchableFilterProps = {
+  label: string
+  field: 'customer_name' | 'customer_cpf' | 'customer_email' | 'sale_id' | 'order_id'
+  value: string
+  placeholder: string
+  onChange: (value: string) => void
+}
+
 function FilterSelect({ label, value, onChange, options, allLabel = 'Todos' }: FilterSelectProps) {
   const handleChange = (event: ChangeEvent<HTMLSelectElement>) => onChange(event.target.value)
 
@@ -71,6 +80,28 @@ function FilterSelect({ label, value, onChange, options, allLabel = 'Todos' }: F
           <option key={item} value={item}>{item}</option>
         ))}
       </select>
+    </div>
+  )
+}
+
+function SearchableFilter({ label, field, value, placeholder, onChange }: SearchableFilterProps) {
+  const suggestionsQuery = useQuery({
+    queryKey: ['filter-search', field, value],
+    queryFn: () => fetchFilterSearch(field, value),
+    enabled: value.trim().length >= 2,
+    staleTime: 10000,
+  })
+  const listId = `search-${field}`
+
+  return (
+    <div className="filter-field panel-chip search-chip">
+      <label>{label}</label>
+      <input list={listId} type="search" value={value} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} />
+      <datalist id={listId}>
+        {(suggestionsQuery.data ?? []).map((item) => (
+          <option key={item} value={item} />
+        ))}
+      </datalist>
     </div>
   )
 }
@@ -155,6 +186,11 @@ export default function FilterPanel({ filters, filterOptions, setFilter, clearFi
         <FilterSelect label="Conta Contábil" value={filters.account_code ?? ''} onChange={(value) => setFilter('account_code', value)} options={filterOptions?.account_codes ?? []} allLabel="Todas" />
         <FilterSelect label="Armazém" value={filters.warehouse_id ?? ''} onChange={(value) => setFilter('warehouse_id', value)} options={filterOptions?.warehouse_ids ?? []} />
         <div className="filter-field">
+          <SearchableFilter label="Cliente" field="customer_name" value={filters.customer_name ?? ''} placeholder="Nome do comprador" onChange={(value) => setFilter('customer_name', value)} />
+          <SearchableFilter label="CPF" field="customer_cpf" value={filters.customer_cpf ?? ''} placeholder="000.000.000-00" onChange={(value) => setFilter('customer_cpf', value)} />
+          <SearchableFilter label="Email" field="customer_email" value={filters.customer_email ?? ''} placeholder="cliente@gmail.com" onChange={(value) => setFilter('customer_email', value)} />
+          <SearchableFilter label="Sale ID" field="sale_id" value={filters.sale_id ?? ''} placeholder="SAL-0000001" onChange={(value) => setFilter('sale_id', value)} />
+          <SearchableFilter label="Pedido" field="order_id" value={filters.order_id ?? ''} placeholder="SO-0000001" onChange={(value) => setFilter('order_id', value)} />
           <label>Tipo Lançamento</label>
           <select value={filters.entry_side ?? ''} onChange={handleEntrySideChange}>
             <option value="">Todos</option>
@@ -164,6 +200,9 @@ export default function FilterPanel({ filters, filterOptions, setFilter, clearFi
         </div>
         <FilterSelect label="Fonte Ontológica" value={filters.ontology_source ?? ''} onChange={(value) => setFilter('ontology_source', value)} options={filterOptions?.ontology_sources ?? []} allLabel="Todas" />
         <FilterSelect label="Canal de Venda" value={filters.channel ?? ''} onChange={(value) => setFilter('channel', value)} options={filterOptions?.channels ?? []} />
+          <FilterSelect label="Segmento cliente" value={filters.customer_segment ?? ''} onChange={(value) => setFilter('customer_segment', value)} options={filterOptions?.customer_segments ?? []} />
+          <FilterSelect label="Status do pedido" value={filters.order_status ?? ''} onChange={(value) => setFilter('order_status', value)} options={filterOptions?.order_statuses ?? []} />
+          <FilterSelect label="Pagamento" value={filters.payment_method ?? ''} onChange={(value) => setFilter('payment_method', value)} options={filterOptions?.payment_methods ?? []} />
         <div className="time-range-panel panel-chip">
           <div className="time-range-head">
             <div>

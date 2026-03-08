@@ -56,6 +56,7 @@ export function useDashboardSession({ defaultBackend, queryKeyPrefix }: Params) 
     overview: workspace?.master_data,
     accounts: workspace?.account_catalog ?? [],
     products: workspace?.product_catalog ?? [],
+    salesWorkspace: workspace?.sales_workspace,
     backend,
     currentFeed,
   }

@@ -41,6 +41,14 @@ async def dashboard_summary(
     entry_side: str | None = Query(default=None),
     ontology_source: str | None = Query(default=None),
     channel: str | None = Query(default=None),
+    customer_name: str | None = Query(default=None),
+    customer_cpf: str | None = Query(default=None),
+    customer_email: str | None = Query(default=None),
+    customer_segment: str | None = Query(default=None),
+    sale_id: str | None = Query(default=None),
+    order_id: str | None = Query(default=None),
+    order_status: str | None = Query(default=None),
+    payment_method: str | None = Query(default=None),
 ) -> dict:
     filters = {
         "as_of": as_of,
@@ -56,6 +64,14 @@ async def dashboard_summary(
         "entry_side": entry_side,
         "ontology_source": ontology_source,
         "channel_name": channel,
+        "customer_name": customer_name,
+        "customer_cpf": customer_cpf,
+        "customer_email": customer_email,
+        "customer_segment": customer_segment,
+        "sale_id": sale_id,
+        "order_id": order_id,
+        "order_status": order_status,
+        "payment_method": payment_method,
     }
     repo_filters = {
         "product_name": product_name,
@@ -68,6 +84,14 @@ async def dashboard_summary(
         "entry_side": entry_side,
         "ontology_source": ontology_source,
         "channel_name": channel,
+        "customer_name": customer_name,
+        "customer_cpf": customer_cpf,
+        "customer_email": customer_email,
+        "customer_segment": customer_segment,
+        "sale_id": sale_id,
+        "order_id": order_id,
+        "order_status": order_status,
+        "payment_method": payment_method,
     }
     summary = await repo.get_summary(as_of=as_of, start_at=start_at, end_at=end_at, filters=repo_filters)
     summary["entries"] = await repo.get_recent_entries(limit=30, as_of=as_of, start_at=start_at, end_at=end_at, filters=repo_filters)
@@ -92,6 +116,14 @@ async def dashboard_entries(
     entry_side: str | None = Query(default=None),
     ontology_source: str | None = Query(default=None),
     channel: str | None = Query(default=None),
+    customer_name: str | None = Query(default=None),
+    customer_cpf: str | None = Query(default=None),
+    customer_email: str | None = Query(default=None),
+    customer_segment: str | None = Query(default=None),
+    sale_id: str | None = Query(default=None),
+    order_id: str | None = Query(default=None),
+    order_status: str | None = Query(default=None),
+    payment_method: str | None = Query(default=None),
 ) -> dict:
     filters = {
         "as_of": as_of,
@@ -107,6 +139,14 @@ async def dashboard_entries(
         "entry_side": entry_side,
         "ontology_source": ontology_source,
         "channel_name": channel,
+        "customer_name": customer_name,
+        "customer_cpf": customer_cpf,
+        "customer_email": customer_email,
+        "customer_segment": customer_segment,
+        "sale_id": sale_id,
+        "order_id": order_id,
+        "order_status": order_status,
+        "payment_method": payment_method,
     }
     repo_filters = {
         "product_name": product_name,
@@ -119,6 +159,14 @@ async def dashboard_entries(
         "entry_side": entry_side,
         "ontology_source": ontology_source,
         "channel_name": channel,
+        "customer_name": customer_name,
+        "customer_cpf": customer_cpf,
+        "customer_email": customer_email,
+        "customer_segment": customer_segment,
+        "sale_id": sale_id,
+        "order_id": order_id,
+        "order_status": order_status,
+        "payment_method": payment_method,
     }
     entries = await repo.get_recent_entries(limit=limit, as_of=as_of, start_at=start_at, end_at=end_at, filters=repo_filters)
     return {"entries": entries, "count": len(entries), "as_of": as_of, "filters": filters, "backend": "druid"}
@@ -127,6 +175,16 @@ async def dashboard_entries(
 @app.get("/api/v1/dashboard/filter-options")
 async def dashboard_filter_options() -> dict:
     return await repo.get_filter_options()
+
+
+@app.get("/api/v1/dashboard/filter-search")
+async def dashboard_filter_search(
+    field: str = Query(...),
+    query: str = Query(..., min_length=1),
+    limit: int = Query(default=20, ge=1, le=50),
+) -> dict:
+    matches = await repo.search_filter_values(field=field, query=query, limit=limit)
+    return {"field": field, "query": query, "matches": matches, "count": len(matches), "backend": "druid"}
 
 
 @app.get("/api/v1/master-data/overview")
@@ -161,6 +219,14 @@ async def dashboard_workspace(
     entry_side: str | None = Query(default=None),
     ontology_source: str | None = Query(default=None),
     channel: str | None = Query(default=None),
+    customer_name: str | None = Query(default=None),
+    customer_cpf: str | None = Query(default=None),
+    customer_email: str | None = Query(default=None),
+    customer_segment: str | None = Query(default=None),
+    sale_id: str | None = Query(default=None),
+    order_id: str | None = Query(default=None),
+    order_status: str | None = Query(default=None),
+    payment_method: str | None = Query(default=None),
 ) -> dict:
     repo_filters = {
         "product_name": product_name,
@@ -173,6 +239,14 @@ async def dashboard_workspace(
         "entry_side": entry_side,
         "ontology_source": ontology_source,
         "channel_name": channel,
+        "customer_name": customer_name,
+        "customer_cpf": customer_cpf,
+        "customer_email": customer_email,
+        "customer_segment": customer_segment,
+        "sale_id": sale_id,
+        "order_id": order_id,
+        "order_status": order_status,
+        "payment_method": payment_method,
     }
     payload = await repo.get_workspace_snapshot(as_of=as_of, start_at=start_at, end_at=end_at, filters=repo_filters)
     payload["backend"] = "druid"

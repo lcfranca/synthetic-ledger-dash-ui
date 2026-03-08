@@ -225,6 +225,8 @@ class DashboardRepository:
             account_role,
             amount,
             signed_amount,
+            quantity,
+            unit_price,
             currency,
             ontology_event_type,
             ontology_description,
@@ -236,12 +238,31 @@ class DashboardRepository:
             supplier_id,
             supplier_name,
             customer_id,
+            customer_name,
+            customer_cpf,
+            customer_email,
+            customer_segment,
             warehouse_id,
             warehouse_name,
             channel,
             channel_name,
             entry_category,
+            sale_id,
             order_id,
+            order_status,
+            order_origin,
+            payment_method,
+            payment_installments,
+            coupon_code,
+            device_type,
+            sales_region,
+            freight_service,
+            cart_items_count,
+            cart_quantity,
+            cart_gross_amount,
+            cart_discount,
+            cart_net_amount,
+            sale_line_index,
             source_payload_hash,
             occurred_at,
             ingested_at,
@@ -293,6 +314,162 @@ class DashboardRepository:
             "channels": await self._distinct("channel_name"),
             "entry_sides": await self._distinct("entry_side"),
             "ontology_sources": await self._distinct("ontology_source"),
+            "payment_methods": await self._distinct("payment_method"),
+            "order_statuses": await self._distinct("order_status"),
+            "customer_segments": await self._distinct("customer_segment"),
+        }
+
+    async def search_filter_values(self, field: str, query: str, limit: int = 20) -> list[str]:
+        field_map = {
+            "customer_name": "customer_name",
+            "customer_cpf": "customer_cpf",
+            "customer_email": "customer_email",
+            "customer_id": "customer_id",
+            "order_id": "order_id",
+            "sale_id": "sale_id",
+        }
+        column = field_map.get(field)
+        normalized_query = query.strip()
+        if not column or not normalized_query:
+            return []
+        escaped = self._escape(normalized_query.lower())
+        sql = f"""
+        SELECT {column} AS value
+        FROM {self.table}
+        WHERE {column} IS NOT NULL
+            AND {column} != 'null'
+            AND LOWER({column}) LIKE '%{escaped}%'
+        GROUP BY {column}
+        ORDER BY {column}
+        LIMIT {int(limit)}
+        """.strip()
+        rows = await self._query_rows(sql)
+        return [str(item.get("value")) for item in rows if item.get("value")]
+
+    async def get_sales_workspace(
+        self,
+        *,
+        as_of: str | None = None,
+        start_at: str | None = None,
+        end_at: str | None = None,
+        filters: dict[str, str | None] | None = None,
+    ) -> dict[str, Any]:
+        where_clause = self._build_where(filters or {}, as_of=as_of, start_at=start_at, end_at=end_at)
+        sales_where_clause = f"{where_clause} AND ontology_event_type = 'sale' AND account_role = 'revenue'"
+
+        sales_sql = f"""
+        SELECT
+            sale_id,
+            MAX(order_id) AS order_id,
+            MAX(occurred_at) AS occurred_at,
+            MAX(customer_id) AS customer_id,
+            MAX(customer_name) AS customer_name,
+            MAX(customer_cpf) AS customer_cpf,
+            MAX(customer_email) AS customer_email,
+            MAX(customer_segment) AS customer_segment,
+            MAX(channel) AS channel,
+            MAX(channel_name) AS channel_name,
+            MAX(payment_method) AS payment_method,
+            MAX(payment_installments) AS payment_installments,
+            MAX(order_status) AS order_status,
+            MAX(order_origin) AS order_origin,
+            MAX(coupon_code) AS coupon_code,
+            MAX(device_type) AS device_type,
+            MAX(sales_region) AS sales_region,
+            MAX(freight_service) AS freight_service,
+            MAX(product_name) AS lead_product,
+            DISTINCTCOUNT(product_id) AS product_mix,
+            MAX(cart_items_count) AS cart_items_count,
+            ROUND(SUM(quantity), 3) AS quantity,
+            ROUND(SUM(gross_amount), 2) AS gross_amount,
+            ROUND(SUM(net_amount), 2) AS net_amount,
+            MAX(cart_discount) AS cart_discount,
+            ROUND(SUM(tax_amount), 2) AS tax_amount,
+            ROUND(SUM(marketplace_fee_amount), 2) AS marketplace_fee_amount,
+            ROUND(SUM(inventory_cost_total), 2) AS cmv
+        FROM {self.realtime_table}
+        WHERE {sales_where_clause} AND sale_id != 'null' AND sale_id != ''
+        GROUP BY sale_id
+        ORDER BY occurred_at DESC
+        LIMIT 40
+        """.strip()
+
+        kpi_sql = f"""
+        SELECT
+            DISTINCTCOUNT(sale_id) AS order_count,
+            DISTINCTCOUNT(COALESCE(customer_email, customer_id, sale_id)) AS unique_customers,
+            ROUND(SUM(gross_amount), 2) AS gross_sales,
+            ROUND(SUM(net_amount), 2) AS net_sales,
+            ROUND(SUM(quantity), 3) AS units_sold,
+            ROUND(AVG(cart_items_count), 2) AS avg_items_per_order
+        FROM {self.realtime_table}
+        WHERE {sales_where_clause} AND sale_id != 'null' AND sale_id != ''
+        """.strip()
+
+        channel_sql = f"""
+        SELECT
+            channel_name AS label,
+            DISTINCTCOUNT(sale_id) AS order_count,
+            ROUND(SUM(quantity), 3) AS quantity,
+            ROUND(SUM(gross_amount), 2) AS gross_sales,
+            ROUND(SUM(net_amount), 2) AS net_sales
+        FROM {self.realtime_table}
+        WHERE {sales_where_clause}
+        GROUP BY channel_name
+        ORDER BY net_sales DESC
+        LIMIT 8
+        """.strip()
+
+        product_sql = f"""
+        SELECT
+            product_name AS label,
+            DISTINCTCOUNT(sale_id) AS order_count,
+            ROUND(SUM(quantity), 3) AS quantity,
+            ROUND(SUM(gross_amount), 2) AS gross_sales,
+            ROUND(SUM(net_amount), 2) AS net_sales
+        FROM {self.realtime_table}
+        WHERE {sales_where_clause}
+        GROUP BY product_name
+        ORDER BY net_sales DESC
+        LIMIT 8
+        """.strip()
+
+        status_sql = f"""
+        SELECT
+            order_status AS label,
+            DISTINCTCOUNT(sale_id) AS order_count,
+            ROUND(SUM(net_amount), 2) AS net_sales
+        FROM {self.realtime_table}
+        WHERE {sales_where_clause} AND order_status != 'null' AND order_status != ''
+        GROUP BY order_status
+        ORDER BY order_count DESC
+        LIMIT 6
+        """.strip()
+
+        sales, kpi_rows, by_channel, by_product, by_status = await asyncio.gather(
+            self._query_rows(sales_sql),
+            self._query_rows(kpi_sql),
+            self._query_rows(channel_sql),
+            self._query_rows(product_sql),
+            self._query_rows(status_sql),
+        )
+        kpis = kpi_rows[0] if kpi_rows else {}
+        order_count = int(kpis.get("order_count", 0) or 0)
+        net_sales = round(float(kpis.get("net_sales", 0.0) or 0.0), 2)
+        return {
+            "sales": sales,
+            "kpis": {
+                "order_count": order_count,
+                "unique_customers": int(kpis.get("unique_customers", 0) or 0),
+                "gross_sales": round(float(kpis.get("gross_sales", 0.0) or 0.0), 2),
+                "net_sales": net_sales,
+                "units_sold": round(float(kpis.get("units_sold", 0.0) or 0.0), 3),
+                "average_ticket": round(net_sales / order_count, 2) if order_count else 0.0,
+                "avg_items_per_order": round(float(kpis.get("avg_items_per_order", 0.0) or 0.0), 2),
+            },
+            "by_channel": by_channel,
+            "by_product": by_product,
+            "by_status": by_status,
         }
 
     async def get_master_data_overview(self) -> dict[str, Any]:
@@ -424,12 +601,13 @@ class DashboardRepository:
         end_at: str | None = None,
         filters: dict[str, str | None] | None = None,
     ) -> dict[str, Any]:
-        summary, entries, master_data, accounts, products = await asyncio.gather(
+        summary, entries, master_data, accounts, products, sales_workspace = await asyncio.gather(
             self.get_summary(as_of=as_of, start_at=start_at, end_at=end_at, filters=filters),
             self.get_recent_entries(limit=30, as_of=as_of, start_at=start_at, end_at=end_at, filters=filters),
             self.get_master_data_overview(),
             self.get_account_catalog(),
             self.get_product_catalog(),
+            self.get_sales_workspace(as_of=as_of, start_at=start_at, end_at=end_at, filters=filters),
         )
         return {
             "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -438,4 +616,5 @@ class DashboardRepository:
             "master_data": master_data,
             "account_catalog": accounts,
             "product_catalog": products,
+            "sales_workspace": sales_workspace,
         }

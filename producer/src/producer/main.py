@@ -30,6 +30,10 @@ class AccountingEvent(BaseModel):
     supplier_id: str | None = None
     supplier_name: str | None = None
     customer_id: str | None = None
+    customer_name: str | None = None
+    customer_cpf: str | None = None
+    customer_email: str | None = None
+    customer_segment: str | None = None
     warehouse_id: str
     warehouse_name: str
     quantity: float
@@ -46,7 +50,22 @@ class AccountingEvent(BaseModel):
     credit_account: str
     channel: str
     channel_name: str
+    sale_id: str | None = None
     order_id: str
+    order_status: str | None = None
+    order_origin: str | None = None
+    payment_method: str | None = None
+    payment_installments: int = 1
+    coupon_code: str | None = None
+    device_type: str | None = None
+    sales_region: str | None = None
+    freight_service: str | None = None
+    cart_items_count: int = 1
+    cart_quantity: float = 0.0
+    cart_gross_amount: float = 0.0
+    cart_discount: float = 0.0
+    cart_net_amount: float = 0.0
+    sale_line_index: int = 1
 
 
 def now_iso() -> str:
@@ -77,6 +96,10 @@ def build_event_from_scenario(catalog: Catalog, company_id: str, scenario: dict)
         supplier_id=supplier.supplier_id if scenario["event_type"] == "purchase" else None,
         supplier_name=supplier.supplier_name if scenario["event_type"] == "purchase" else None,
         customer_id=scenario["customer_id"],
+        customer_name=scenario.get("customer_name"),
+        customer_cpf=scenario.get("customer_cpf"),
+        customer_email=scenario.get("customer_email"),
+        customer_segment=scenario.get("customer_segment"),
         warehouse_id=warehouse.warehouse_id,
         warehouse_name=warehouse.warehouse_name,
         quantity=scenario["quantity"],
@@ -92,7 +115,22 @@ def build_event_from_scenario(catalog: Catalog, company_id: str, scenario: dict)
         credit_account=credit,
         channel=channel.channel_id,
         channel_name=channel.channel_name,
+        sale_id=scenario.get("sale_id"),
         order_id=str(scenario.get("order_id", f"{scenario['event_type'][:2].upper()}-{uuid.uuid4().hex[:12]}")),
+        order_status=scenario.get("order_status"),
+        order_origin=scenario.get("order_origin"),
+        payment_method=scenario.get("payment_method"),
+        payment_installments=int(scenario.get("payment_installments", 1) or 1),
+        coupon_code=scenario.get("coupon_code"),
+        device_type=scenario.get("device_type"),
+        sales_region=scenario.get("sales_region"),
+        freight_service=scenario.get("freight_service"),
+        cart_items_count=int(scenario.get("cart_items_count", 1) or 1),
+        cart_quantity=float(scenario.get("cart_quantity", scenario.get("quantity", 0.0)) or 0.0),
+        cart_gross_amount=float(scenario.get("cart_gross_amount", scenario.get("gross_amount", 0.0)) or 0.0),
+        cart_discount=float(scenario.get("cart_discount", scenario.get("discount", 0.0)) or 0.0),
+        cart_net_amount=float(scenario.get("cart_net_amount", scenario.get("net_amount", 0.0)) or 0.0),
+        sale_line_index=int(scenario.get("sale_line_index", 1) or 1),
     )
 
 

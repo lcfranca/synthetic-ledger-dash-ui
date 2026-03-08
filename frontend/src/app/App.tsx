@@ -3,6 +3,7 @@ import { type ViewId } from '../shared/config/dashboardViews'
 import { useDashboardSession } from '../processes/dashboard-session/model/useDashboardSession'
 import FilterPanel from '../widgets/filter-panel/FilterPanel'
 import QueueView from '../widgets/queue-view/QueueView'
+import SalesView from '../widgets/sales-view/SalesView'
 import AccountingView from '../widgets/accounting-view/AccountingView'
 import AccountsView from '../widgets/accounts-view/AccountsView'
 import ProductsView from '../widgets/products-view/ProductsView'
@@ -36,7 +37,7 @@ export default function App() {
           feedMode={session.currentFeed}
         />
 
-        {activeView === 'queue' ? (
+        {activeView === 'queue' || activeView === 'sales' ? (
           <FilterPanel
             filters={session.filters}
             filterOptions={session.filterOptions}
@@ -45,6 +46,7 @@ export default function App() {
           />
         ) : null}
         {activeView === 'queue' ? <QueueView summary={session.summary} entries={session.entries} /> : null}
+        {activeView === 'sales' ? <SalesView salesWorkspace={session.salesWorkspace} /> : null}
         {activeView === 'accounting' ? <AccountingView summary={session.summary} /> : null}
         {activeView === 'accounts' ? <AccountsView accounts={session.accounts} /> : null}
         {activeView === 'products' ? <ProductsView products={session.products} /> : null}

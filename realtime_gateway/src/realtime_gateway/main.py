@@ -53,6 +53,14 @@ def parse_filters(params: Any) -> dict[str, str]:
         "entry_side",
         "ontology_source",
         "channel",
+        "customer_name",
+        "customer_cpf",
+        "customer_email",
+        "customer_segment",
+        "sale_id",
+        "order_id",
+        "order_status",
+        "payment_method",
     }
     filters: dict[str, str] = {}
     for name in supported:
@@ -74,6 +82,14 @@ def entry_matches_filters(entry: dict[str, Any], filters: dict[str, str]) -> boo
         "entry_side": "entry_side",
         "ontology_source": "ontology_source",
         "channel": "channel_name",
+        "customer_name": "customer_name",
+        "customer_cpf": "customer_cpf",
+        "customer_email": "customer_email",
+        "customer_segment": "customer_segment",
+        "sale_id": "sale_id",
+        "order_id": "order_id",
+        "order_status": "order_status",
+        "payment_method": "payment_method",
     }
 
     occurred_at = parse_timestamp(entry.get("occurred_at") or entry.get("ingested_at"))

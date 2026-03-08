@@ -46,6 +46,7 @@ export default function QueueView({ summary, entries }: Props) {
               <th>Horario</th>
               <th>Evento</th>
               <th>Pedido</th>
+              <th>Cliente</th>
               <th>Produto</th>
               <th>Canal</th>
               <th>Conta</th>
@@ -65,7 +66,11 @@ export default function QueueView({ summary, entries }: Props) {
                 </td>
                 <td>
                   <strong>{entry.order_id || '-'}</strong>
-                  <div className="cell-meta hash-line">{entry.trace_id}</div>
+                  <div className="cell-meta hash-line">{entry.sale_id || entry.trace_id}</div>
+                </td>
+                <td>
+                  <strong>{entry.customer_name || entry.customer_email || entry.customer_id || '-'}</strong>
+                  <div className="cell-meta">{entry.customer_cpf || '-'} · {entry.payment_method || '-'}</div>
                 </td>
                 <td>
                   <strong>{entry.product_name || entry.product_id || '-'}</strong>

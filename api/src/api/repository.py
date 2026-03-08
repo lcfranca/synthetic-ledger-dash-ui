@@ -67,6 +67,10 @@ class DashboardRepository:
         lines = [line.strip() for line in response.text.splitlines() if line.strip()]
         return [json.loads(line) for line in lines]
 
+    async def _query_json_row(self, sql: str) -> dict[str, Any]:
+        rows = await self._query_json_rows(sql)
+        return rows[0] if rows else {}
+
     async def _fetch_json(self, path: str, default: Any) -> Any:
         try:
             response = await self.client.get(f"{self.master_data_url}{path}")
@@ -228,12 +232,31 @@ class DashboardRepository:
             supplier_id,
             supplier_name,
             customer_id,
+            customer_name,
+            customer_cpf,
+            customer_email,
+            customer_segment,
             warehouse_id,
             warehouse_name,
             channel,
             channel_name,
             entry_category,
+            sale_id,
             order_id,
+            order_status,
+            order_origin,
+            payment_method,
+            payment_installments,
+            coupon_code,
+            device_type,
+            sales_region,
+            freight_service,
+            cart_items_count,
+            cart_quantity,
+            cart_gross_amount,
+            cart_discount,
+            cart_net_amount,
+            sale_line_index,
             source_payload_hash,
             occurred_at,
             ingested_at,
@@ -259,7 +282,10 @@ class DashboardRepository:
             groupUniqArrayIf(warehouse_id, warehouse_id != '') AS warehouse_ids,
             groupUniqArrayIf(channel_name, channel_name != '') AS channels,
             groupUniqArrayIf(entry_side, entry_side != '') AS entry_sides,
-            groupUniqArrayIf(ontology_source, ontology_source != '') AS ontology_sources
+            groupUniqArrayIf(ontology_source, ontology_source != '') AS ontology_sources,
+            groupUniqArrayIf(payment_method, payment_method IS NOT NULL AND payment_method != '') AS payment_methods,
+            groupUniqArrayIf(order_status, order_status IS NOT NULL AND order_status != '') AS order_statuses,
+            groupUniqArrayIf(customer_segment, customer_segment IS NOT NULL AND customer_segment != '') AS customer_segments
         FROM ledger.entries
         WHERE is_current = 1
         FORMAT JSONEachRow
@@ -275,6 +301,170 @@ class DashboardRepository:
         line = next((item for item in response.text.splitlines() if item.strip()), "{}")
         payload = json.loads(line)
         return {key: sorted(set(value or [])) for key, value in payload.items()}
+
+    async def search_filter_values(self, field: str, query: str, limit: int = 20) -> list[str]:
+        field_map = {
+            "customer_name": "customer_name",
+            "customer_cpf": "customer_cpf",
+            "customer_email": "customer_email",
+            "customer_id": "customer_id",
+            "order_id": "order_id",
+            "sale_id": "sale_id",
+        }
+        column = field_map.get(field)
+        normalized_query = query.strip()
+        if not column or not normalized_query:
+            return []
+        escaped_query = self._escape(normalized_query)
+        sql = f"""
+        SELECT DISTINCT {column} AS value
+        FROM ledger.entries
+        WHERE is_current = 1
+            AND {column} IS NOT NULL
+            AND {column} != ''
+            AND positionCaseInsensitive({column}, '{escaped_query}') > 0
+        ORDER BY value
+        LIMIT {int(limit)}
+        FORMAT JSONEachRow
+        """.strip()
+        rows = await self._query_json_rows(sql)
+        return [str(item.get("value")) for item in rows if item.get("value")]
+
+    async def get_sales_workspace(
+        self,
+        *,
+        as_of: str | None = None,
+        start_at: str | None = None,
+        end_at: str | None = None,
+        filters: dict[str, str | None] | None = None,
+    ) -> dict[str, Any]:
+        where_clause = self._build_filters(filters or {}, as_of=as_of, start_at=start_at, end_at=end_at)
+        sales_where_clause = f"{where_clause} AND ontology_event_type = 'sale' AND account_role = 'revenue'"
+
+        sales_sql = f"""
+        SELECT
+            sale_id,
+            any(order_id) AS order_id,
+            max(occurred_at) AS occurred_at,
+            any(customer_id) AS customer_id,
+            any(customer_name) AS customer_name,
+            any(customer_cpf) AS customer_cpf,
+            any(customer_email) AS customer_email,
+            any(customer_segment) AS customer_segment,
+            any(channel) AS channel,
+            any(channel_name) AS channel_name,
+            any(payment_method) AS payment_method,
+            max(payment_installments) AS payment_installments,
+            any(order_status) AS order_status,
+            any(order_origin) AS order_origin,
+            any(coupon_code) AS coupon_code,
+            any(device_type) AS device_type,
+            any(sales_region) AS sales_region,
+            any(freight_service) AS freight_service,
+            any(product_name) AS lead_product,
+            uniqExact(product_id) AS product_mix,
+            max(cart_items_count) AS cart_items_count,
+            round(sum(quantity), 3) AS quantity,
+            round(sum(gross_amount), 2) AS gross_amount,
+            round(sum(net_amount), 2) AS net_amount,
+            max(cart_discount) AS cart_discount,
+            round(sum(tax_amount), 2) AS tax_amount,
+            round(sum(marketplace_fee_amount), 2) AS marketplace_fee_amount,
+            round(sum(inventory_cost_total), 2) AS cmv
+        FROM ledger.entries
+        WHERE {sales_where_clause} AND sale_id IS NOT NULL AND sale_id != ''
+        GROUP BY sale_id
+        ORDER BY occurred_at DESC
+        LIMIT 40
+        FORMAT JSONEachRow
+        """.strip()
+
+        kpi_sql = f"""
+        SELECT
+            uniqExact(sale_id) AS order_count,
+            uniqExact(ifNull(customer_email, ifNull(customer_id, sale_id))) AS unique_customers,
+            round(sum(gross_amount), 2) AS gross_sales,
+            round(sum(net_amount), 2) AS net_sales,
+            round(sum(quantity), 3) AS units_sold,
+            round(avg(cart_items_count), 2) AS avg_items_per_order
+        FROM ledger.entries
+        WHERE {sales_where_clause} AND sale_id IS NOT NULL AND sale_id != ''
+        FORMAT JSONEachRow
+        """.strip()
+
+        channel_sql = f"""
+        SELECT
+            channel_name AS label,
+            uniqExact(sale_id) AS order_count,
+            round(sum(quantity), 3) AS quantity,
+            round(sum(gross_amount), 2) AS gross_sales,
+            round(sum(net_amount), 2) AS net_sales
+        FROM ledger.entries
+        WHERE {sales_where_clause}
+        GROUP BY channel_name
+        ORDER BY net_sales DESC
+        LIMIT 8
+        FORMAT JSONEachRow
+        """.strip()
+
+        product_sql = f"""
+        SELECT
+            product_name AS label,
+            uniqExact(sale_id) AS order_count,
+            round(sum(quantity), 3) AS quantity,
+            round(sum(gross_amount), 2) AS gross_sales,
+            round(sum(net_amount), 2) AS net_sales
+        FROM ledger.entries
+        WHERE {sales_where_clause}
+        GROUP BY product_name
+        ORDER BY net_sales DESC
+        LIMIT 8
+        FORMAT JSONEachRow
+        """.strip()
+
+        status_sql = f"""
+        SELECT
+            order_status AS label,
+            uniqExact(sale_id) AS order_count,
+            round(sum(net_amount), 2) AS net_sales
+        FROM ledger.entries
+        WHERE {sales_where_clause} AND order_status IS NOT NULL AND order_status != ''
+        GROUP BY order_status
+        ORDER BY order_count DESC
+        LIMIT 6
+        FORMAT JSONEachRow
+        """.strip()
+
+        sales, kpis, by_channel, by_product, by_status = await asyncio.gather(
+            self._query_json_rows(sales_sql),
+            self._query_json_row(kpi_sql),
+            self._query_json_rows(channel_sql),
+            self._query_json_rows(product_sql),
+            self._query_json_rows(status_sql),
+        )
+
+        order_count = int(kpis.get("order_count", 0) or 0)
+        net_sales = round(float(kpis.get("net_sales", 0.0) or 0.0), 2)
+        gross_sales = round(float(kpis.get("gross_sales", 0.0) or 0.0), 2)
+        units_sold = round(float(kpis.get("units_sold", 0.0) or 0.0), 3)
+        avg_items_per_order = round(float(kpis.get("avg_items_per_order", 0.0) or 0.0), 2)
+        average_ticket = round(net_sales / order_count, 2) if order_count else 0.0
+
+        return {
+            "sales": sales,
+            "kpis": {
+                "order_count": order_count,
+                "unique_customers": int(kpis.get("unique_customers", 0) or 0),
+                "gross_sales": gross_sales,
+                "net_sales": net_sales,
+                "units_sold": units_sold,
+                "average_ticket": average_ticket,
+                "avg_items_per_order": avg_items_per_order,
+            },
+            "by_channel": by_channel,
+            "by_product": by_product,
+            "by_status": by_status,
+        }
 
     async def get_master_data_overview(self) -> dict[str, Any]:
         health, company, products, accounts, channels = await asyncio.gather(
@@ -408,12 +598,13 @@ class DashboardRepository:
         end_at: str | None = None,
         filters: dict[str, str | None] | None = None,
     ) -> dict[str, Any]:
-        summary, entries, master_data, accounts, products = await asyncio.gather(
+        summary, entries, master_data, accounts, products, sales_workspace = await asyncio.gather(
             self.get_summary(as_of=as_of, start_at=start_at, end_at=end_at, filters=filters),
             self.get_recent_entries(limit=30, as_of=as_of, start_at=start_at, end_at=end_at, filters=filters),
             self.get_master_data_overview(),
             self.get_account_catalog(),
             self.get_product_catalog(),
+            self.get_sales_workspace(as_of=as_of, start_at=start_at, end_at=end_at, filters=filters),
         )
         return {
             "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -422,4 +613,5 @@ class DashboardRepository:
             "master_data": master_data,
             "account_catalog": accounts,
             "product_catalog": products,
+            "sales_workspace": sales_workspace,
         }

@@ -49,12 +49,31 @@ export type JournalEntry = {
   supplier_id: string | null
   supplier_name: string | null
   customer_id: string | null
+  customer_name: string | null
+  customer_cpf: string | null
+  customer_email: string | null
+  customer_segment: string | null
   warehouse_id: string
   warehouse_name: string
   channel: string
   channel_name: string
   entry_category: string
+  sale_id: string | null
   order_id: string
+  order_status: string | null
+  order_origin: string | null
+  payment_method: string | null
+  payment_installments: number
+  coupon_code: string | null
+  device_type: string | null
+  sales_region: string | null
+  freight_service: string | null
+  cart_items_count: number
+  cart_quantity: number
+  cart_gross_amount: number
+  cart_discount: number
+  cart_net_amount: number
+  sale_line_index: number
   source_payload_hash: string
   occurred_at: string
   ingested_at: string
@@ -75,6 +94,14 @@ export type EntryFilters = {
   entry_side?: 'debit' | 'credit' | ''
   ontology_source?: string
   channel?: string
+  customer_name?: string
+  customer_cpf?: string
+  customer_email?: string
+  customer_segment?: string
+  sale_id?: string
+  order_id?: string
+  order_status?: string
+  payment_method?: string
 }
 
 export type FilterOptions = {
@@ -88,6 +115,64 @@ export type FilterOptions = {
   channels: string[]
   entry_sides: string[]
   ontology_sources: string[]
+  payment_methods: string[]
+  order_statuses: string[]
+  customer_segments: string[]
+}
+
+export type SaleRecord = {
+  sale_id: string
+  order_id: string
+  occurred_at: string
+  customer_id: string | null
+  customer_name: string | null
+  customer_cpf: string | null
+  customer_email: string | null
+  customer_segment: string | null
+  channel: string
+  channel_name: string
+  payment_method: string | null
+  payment_installments: number
+  order_status: string | null
+  order_origin: string | null
+  coupon_code: string | null
+  device_type: string | null
+  sales_region: string | null
+  freight_service: string | null
+  lead_product: string | null
+  product_mix: number
+  cart_items_count: number
+  quantity: number
+  gross_amount: number
+  net_amount: number
+  cart_discount: number
+  tax_amount: number
+  marketplace_fee_amount: number
+  cmv: number
+}
+
+export type SalesBreakdownRow = {
+  label: string
+  order_count: number
+  quantity?: number
+  gross_sales?: number
+  net_sales: number
+}
+
+export type SalesWorkspace = {
+  sales: SaleRecord[]
+  kpis: {
+    order_count: number
+    unique_customers: number
+    gross_sales: number
+    net_sales: number
+    units_sold: number
+    average_ticket: number
+    avg_items_per_order: number
+  }
+  by_channel: SalesBreakdownRow[]
+  by_product: SalesBreakdownRow[]
+  by_status: SalesBreakdownRow[]
 }
 
 export type MasterDataCompany = {
@@ -190,6 +275,7 @@ export type WorkspaceSnapshot = {
   master_data: MasterDataOverview
   account_catalog: AccountCatalogRow[]
   product_catalog: ProductCatalogRow[]
+  sales_workspace: SalesWorkspace
   backend?: string
 }
 
@@ -243,6 +329,12 @@ export async function fetchSummary(filters: EntryFilters = {}): Promise<Dashboar
 
 export async function fetchFilterOptions(): Promise<FilterOptions> {
   return getJson('/api/v1/dashboard/filter-options', 'Falha ao obter opções de filtro')
+}
+
+export async function fetchFilterSearch(field: string, query: string): Promise<string[]> {
+  const search = new URLSearchParams({ field, query })
+  const payload = await getJson<{ matches: string[] }>(`/api/v1/dashboard/filter-search?${search.toString()}`, 'Falha ao buscar filtro')
+  return payload.matches ?? []
 }
 
 export async function fetchMasterDataOverview(): Promise<MasterDataOverview> {
