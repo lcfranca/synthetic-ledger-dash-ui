@@ -9,6 +9,7 @@ import QueueView from '../widgets/queue-view/QueueView'
 import SalesView from '../widgets/sales-view/SalesView'
 import AccountingView from '../widgets/accounting-view/AccountingView'
 import AccountsView from '../widgets/accounts-view/AccountsView'
+import ObservabilityView from '../widgets/observability-view/ObservabilityView'
 import ProductsView from '../widgets/products-view/ProductsView'
 import ShellMetrics from '../widgets/shell-metrics/ShellMetrics'
 import DashboardHeader from '../widgets/dashboard-header/DashboardHeader'
@@ -54,6 +55,7 @@ export default function App() {
         {activeView === 'accounting' ? <AccountingView summary={session.summary} /> : null}
         {activeView === 'accounts' ? <AccountsView accounts={session.accounts} /> : null}
         {activeView === 'products' ? <ProductsView products={session.products} /> : null}
+        {activeView === 'observability' ? <ObservabilityView summary={session.summary} entries={session.entries} accounts={session.accounts} products={session.products} salesWorkspace={session.salesWorkspace} /> : null}
       </section>
     </main>
   )

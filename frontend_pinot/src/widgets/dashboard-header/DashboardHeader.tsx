@@ -36,6 +36,11 @@ const headerByView: Record<ViewId, { eyebrow: string; title: string; subline: st
     title: 'Catalogo de produtos e cobertura',
     subline: 'Demanda, cobertura, giro e reposicao em leitura unica de abastecimento.',
   },
+  observability: {
+    eyebrow: 'Observabilidade executiva',
+    title: 'Radar analitico de performance e risco',
+    subline: 'Giros, pressao operacional, qualidade de margem e pulso transacional em graficos de gestao.',
+  },
 }
 
 function rangeLabel(filters?: EntryFilters) {

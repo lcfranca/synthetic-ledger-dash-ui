@@ -1,4 +1,4 @@
-export type ViewId = 'queue' | 'sales' | 'accounting' | 'accounts' | 'products'
+export type ViewId = 'queue' | 'sales' | 'accounting' | 'accounts' | 'products' | 'observability'
 
 export const dashboardViews: Array<{ id: ViewId; label: string; eyebrow: string; code: string }> = [
   { id: 'queue', label: 'Lancamentos Contabeis', eyebrow: 'Escrituracao', code: '01' },
@@ -6,4 +6,5 @@ export const dashboardViews: Array<{ id: ViewId; label: string; eyebrow: string;
   { id: 'accounting', label: 'Balanco e Resultado', eyebrow: 'Financeiro', code: '03' },
   { id: 'accounts', label: 'Plano de Contas', eyebrow: 'Estrutura', code: '04' },
   { id: 'products', label: 'Produtos e Cobertura', eyebrow: 'Abastecimento', code: '05' },
+  { id: 'observability', label: 'Observabilidade Executiva', eyebrow: 'Telemetry', code: '06' },
 ]

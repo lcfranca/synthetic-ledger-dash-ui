@@ -431,6 +431,10 @@ a:focus-visible *,
   grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
+.observability-strip {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
 .metric-card {
   padding: 14px;
   min-height: 110px;
@@ -640,6 +644,45 @@ a:focus-visible *,
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+}
+
+.observability-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.observability-chart-card {
+  padding: 0;
+  overflow: hidden;
+  min-height: 340px;
+}
+
+.observability-chart-card-wide {
+  grid-column: 1 / -1;
+}
+
+.observability-chart {
+  width: 100%;
+  height: 100%;
+  min-height: 340px;
+}
+
+.observability-readout-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.observability-readout-card {
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.observability-readout-card strong {
+  font-size: 24px;
+  line-height: 1.1;
 }
 
 .breakdown-row {
@@ -852,6 +895,7 @@ a:focus-visible *,
 
 @media (max-width: 1320px) {
   .audit-strip,
+  .observability-strip,
   .sales-strip,
   .queue-filter-grid,
   .sales-filter-grid,
@@ -874,6 +918,8 @@ a:focus-visible *,
   .dual-insight-grid,
   .accounting-grid,
   .sales-charts-grid,
+  .observability-grid,
+  .observability-readout-grid,
   .queue-filter-grid,
   .sales-filter-grid,
   .sales-ticker-strip {
@@ -904,6 +950,8 @@ a:focus-visible *,
   .dual-insight-grid,
   .accounting-grid,
   .sales-charts-grid,
+  .observability-grid,
+  .observability-readout-grid,
   .queue-filter-grid,
   .sales-filter-grid,
   .sales-ticker-strip {
