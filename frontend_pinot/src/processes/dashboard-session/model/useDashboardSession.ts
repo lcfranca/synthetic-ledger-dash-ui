@@ -21,7 +21,7 @@ type Params = {
 export function useDashboardSession({ defaultBackend, queryKeyPrefix, filters, hasActiveFilters = false, viewId, isRealtimePaused = false }: Params) {
   const enableRealtime = true
   const realtimeMode = 'mixed'
-  const usesRealtimeBootstrap = defaultBackend === 'clickhouse'
+  const usesRealtimeBootstrap = defaultBackend === 'clickhouse' || defaultBackend === 'druid'
 
   const summaryQuery = useQuery({
     queryKey: [queryKeyPrefix, 'summary', filters],

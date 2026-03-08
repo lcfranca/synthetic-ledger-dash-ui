@@ -167,3 +167,21 @@ Para a introducao correta do Materialize neste repositorio:
 5. expandir o benchmark com metricas de lag incremental, retractions e custo de view maintenance
 
 Sem essas mudancas, Materialize entraria no benchmark de forma conceitualmente injusta e arquiteturalmente subutilizada.
+
+## 10. Plano de Implementacao em Checklist
+
+- [ ] 1. Criar a pista paralela de infraestrutura do Materialize no `docker-compose.yaml`, com `materialized`, `api-materialize` e `frontend-materialize`, portas dedicadas e limites de memoria/CPU separados dos stacks analiticos.
+- [ ] 2. Expandir `scripts/stack-selection.sh`, `Makefile` e variaveis de ambiente para aceitar `materialize` em `ACTIVE_STACKS`, resolvendo services, health checks, smoke tests e frontend dedicado sem afetar ClickHouse, Druid e Pinot.
+- [ ] 3. Definir um namespace isolado de configuracao no `.env.example` para Materialize: broker Kafka, URL SQL, usuario/senha, database, schema, lag targets e tuning de compaction/checkpoint apropriados ao ambiente local.
+- [ ] 4. Implementar um adapter de bootstrap em `storage_writer` com papel proprio para Materialize: criar conexoes Kafka, sources, tables de staging, views materializadas e contratos de idempotencia/replay em vez de escrever snapshots finais linha a linha.
+- [ ] 5. Modelar uma trilha canonica `ledger-entries-v1` para Materialize com envelope, deduplicacao por `entry_id` e semantica de upsert/retraction para returns, ajustes e revisoes financeiras.
+- [ ] 6. Criar `api_materialize/` como backend dedicado, com queries desenhadas para ler views incrementais especializadas de `summary`, `entries`, `sales_workspace`, `accounts_catalog` e `products_catalog`, sem adaptar Materialize como se fosse apenas mais um SQL backend generico.
+- [ ] 7. Expor no `api_materialize` metricas de prontidao e observabilidade especificas: lag entre offset Kafka e visibilidade SQL, idade da ultima atualizacao por view, hidracao inicial, retractions pendentes e custo de refresh incremental.
+- [ ] 8. Estender `realtime_gateway` para suportar `materialize` como backend autoritativo streaming-first, com snapshots incrementais de alta frequencia, telemetria propria e filtros suportados alinhados as views realmente materializadas.
+- [ ] 9. Criar um frontend proprio `frontend-materialize` ou um modo dedicado no frontend compartilhado com identidade explicita de `materialize-authoritative`, exibindo ao usuario quando o painel esta ancorado em incremental views e quando esta apenas em projecao local temporaria.
+- [ ] 10. Espalhar o modo Materialize nos frontends das outras stacks como opcao comparativa, preservando a mesma taxonomia visual de feed, lag, authoritative snapshot e observabilidade para que a avaliacao entre paradigmas seja justa.
+- [ ] 11. Implementar health/smoke/verify especificos no `Makefile`: `health-materialize`, `smoke-materialize`, `verify-stream-materialize` e `verify-projection-materialize`, com probes de websocket e de SQL incremental.
+- [ ] 12. Criar um conjunto de objetos SQL state-of-the-art no Materialize: sources Kafka, tables de normalizacao, materialized views por dominio contabil e indices apropriados aos filtros usados nos dashboards.
+- [ ] 13. Projetar cenarios de benchmark dedicados ao paradigma incremental: alta ingestao, alta cardinalidade, joins incrementais entre ledger e master data, retractions por devolucao e pressao de replay de offsets antigos.
+- [ ] 14. Registrar no benchmark metadados por backend para comparacao justa: categoria do motor, mecanismo dominante de convergencia visual, custo operacional, custo cognitivo e robustez a replay/cold start.
+- [ ] 15. Validar o Materialize no seu maximo potencial antes da comparacao final: ajustar topologia de views, reduzir consultas ad hoc na API, usar snapshots incrementais autoritativos no gateway e eliminar qualquer dependencia desnecessaria de polling REST.

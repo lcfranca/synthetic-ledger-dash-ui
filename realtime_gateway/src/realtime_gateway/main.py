@@ -219,11 +219,17 @@ class RealtimeGateway:
         self.snapshot_refresh_tasks: dict[str, asyncio.Task[dict[str, Any] | None]] = {}
         self.snapshot_lock = asyncio.Lock()
         self.background_tasks: set[asyncio.Task[Any]] = set()
-        self.authoritative_projection_backends = {
-            backend.strip()
-            for backend in os.getenv("REALTIME_GATEWAY_AUTHORITATIVE_BACKENDS", "clickhouse").split(",")
-            if backend.strip()
-        }
+        authoritative_backends = os.getenv("REALTIME_GATEWAY_AUTHORITATIVE_BACKENDS", "").strip()
+        if authoritative_backends:
+            self.authoritative_projection_backends = {
+                backend.strip()
+                for backend in authoritative_backends.split(",")
+                if backend.strip()
+            }
+        else:
+            self.authoritative_projection_backends = {
+                backend for backend in self.active_backends if backend in {"clickhouse", "druid"}
+            }
         self.authoritative_supported_filters = {
             "as_of",
             "start_at",

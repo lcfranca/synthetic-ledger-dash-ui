@@ -63,8 +63,10 @@ def direct_write_enabled(name: str) -> bool:
 
 
 def kafka_fanout_target_names() -> list[str]:
-    enabled_csv = os.getenv("KAFKA_FANOUT_TARGET_BACKENDS") or os.getenv("TARGET_BACKENDS") or os.getenv("ACTIVE_STACKS") or "clickhouse"
-    configured = [item.strip() for item in enabled_csv.split(",") if item.strip()]
+    configured_csv = os.getenv("KAFKA_FANOUT_TARGET_BACKENDS")
+    if configured_csv is None:
+        configured_csv = "clickhouse"
+    configured = [item.strip() for item in configured_csv.split(",") if item.strip()]
     return [name for name in configured if name in adapters]
 
 

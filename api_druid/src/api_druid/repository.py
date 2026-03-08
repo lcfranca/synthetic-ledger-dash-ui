@@ -6,12 +6,34 @@ from typing import Any
 import httpx
 
 
+class DruidQueryError(RuntimeError):
+    def __init__(self, operation: str, message: str, *, sql: str | None = None) -> None:
+        super().__init__(message)
+        self.operation = operation
+        self.sql = sql
+
+    def to_dict(self) -> dict[str, Any]:
+        payload = {
+            "error": "druid_query_failed",
+            "operation": self.operation,
+            "message": str(self),
+        }
+        if self.sql:
+            payload["sql"] = self.sql
+        return payload
+
+
 class DashboardRepository:
     def __init__(self) -> None:
         self.router_url = os.getenv("DRUID_ROUTER_URL", "http://druid-router:8888")
         self.datasource = os.getenv("DRUID_DATASOURCE", "ledger_events")
         self.master_data_url = os.getenv("MASTER_DATA_URL", "http://master-data:8091")
-        self.client = httpx.AsyncClient(timeout=4.0)
+        self.druid_client = httpx.AsyncClient(
+            timeout=httpx.Timeout(8.0, connect=2.0),
+            limits=httpx.Limits(max_connections=12, max_keepalive_connections=6),
+        )
+        self.master_data_client = httpx.AsyncClient(timeout=httpx.Timeout(5.0, connect=2.0))
+        self.query_semaphore = asyncio.Semaphore(max(int(os.getenv("DRUID_API_QUERY_CONCURRENCY", "3") or 3), 1))
 
     @staticmethod
     def _escape(value: str) -> str:
@@ -27,27 +49,77 @@ class DashboardRepository:
     def _normalize_time(value: str) -> str:
         return value.replace("T", " ").replace("Z", "").replace("+00:00", "")
 
-    async def _query_rows(self, sql: str) -> list[dict[str, Any]]:
-        try:
-            response = await self.client.post(
-                f"{self.router_url}/druid/v2/sql",
-                json={"query": sql},
-                headers={"Content-Type": "application/json"},
-            )
-            response.raise_for_status()
-            payload = response.json()
-            return payload if isinstance(payload, list) else []
-        except Exception:
-            return []
+    @staticmethod
+    def _is_transient_query_failure(detail: str) -> bool:
+        normalized = detail.lower()
+        transient_signatures = (
+            "channel disconnected",
+            "faulty channel in resource pool",
+            "no available brokers",
+            "connection reset by peer",
+            "server disconnected without sending a response",
+        )
+        return any(signature in normalized for signature in transient_signatures)
+
+    async def _query_rows(self, sql: str, *, operation: str) -> list[dict[str, Any]]:
+        max_attempts = 3
+        last_error: DruidQueryError | None = None
+
+        for attempt in range(1, max_attempts + 1):
+            try:
+                async with self.query_semaphore:
+                    response = await self.druid_client.post(
+                        f"{self.router_url}/druid/v2/sql",
+                        json={"query": sql},
+                        headers={"Content-Type": "application/json"},
+                    )
+                    response.raise_for_status()
+                    payload = response.json()
+                if not isinstance(payload, list):
+                    raise DruidQueryError(operation, f"Druid SQL returned unexpected payload type: {type(payload).__name__}", sql=sql)
+                return payload
+            except httpx.HTTPStatusError as exc:
+                detail = exc.response.text.strip() or str(exc)
+                last_error = DruidQueryError(operation, f"Druid SQL HTTP {exc.response.status_code}: {detail[:400]}", sql=sql)
+                if attempt < max_attempts and self._is_transient_query_failure(detail):
+                    await asyncio.sleep(0.2 * attempt)
+                    continue
+                raise last_error from exc
+            except DruidQueryError as exc:
+                last_error = exc
+                raise
+            except Exception as exc:
+                detail = str(exc)
+                last_error = DruidQueryError(operation, f"Druid SQL transport failure: {detail}", sql=sql)
+                if attempt < max_attempts and self._is_transient_query_failure(detail):
+                    await asyncio.sleep(0.2 * attempt)
+                    continue
+                raise last_error from exc
+
+        if last_error is not None:
+            raise last_error
+        raise DruidQueryError(operation, "Druid SQL failed with an unknown error", sql=sql)
 
     async def _fetch_json(self, path: str, default: Any) -> Any:
         try:
-            response = await self.client.get(f"{self.master_data_url}{path}")
+            response = await self.master_data_client.get(f"{self.master_data_url}{path}")
             response.raise_for_status()
             payload = response.json()
             return payload if isinstance(payload, type(default)) else default
         except Exception:
             return default
+
+    async def ensure_query_ready(self) -> dict[str, Any]:
+        rows = await self._query_rows(
+            f'SELECT COUNT(*) AS c FROM "{self.datasource}"',
+            operation="healthcheck.count_datasource",
+        )
+        row = rows[0] if rows else {}
+        return {
+            "router_url": self.router_url,
+            "datasource": self.datasource,
+            "row_count": int(row.get("c", 0) or 0),
+        }
 
     @staticmethod
     def _supply_plan(product: dict[str, Any], current_stock_quantity: float, sold_quantity: float) -> dict[str, Any]:
@@ -209,7 +281,7 @@ class DashboardRepository:
         WHERE {where_clause}
         """.strip()
 
-        rows = await self._query_rows(sql)
+        rows = await self._query_rows(sql, operation="summary")
         row = rows[0] if rows else {}
 
         cash = round(float(row.get("cash", 0.0)), 2)
@@ -365,8 +437,9 @@ class DashboardRepository:
         LIMIT {fetch_limit}
         """.strip()
 
-        rows = await self._query_rows(sql)
-        if not rows:
+        try:
+            rows = await self._query_rows(sql, operation="recent_entries.primary")
+        except DruidQueryError:
             fallback_sql = f"""
             SELECT
                 entry_id,
@@ -403,7 +476,7 @@ class DashboardRepository:
             ORDER BY "__time" DESC
             LIMIT {fetch_limit}
             """.strip()
-            rows = await self._query_rows(fallback_sql)
+            rows = await self._query_rows(fallback_sql, operation="recent_entries.fallback")
         if not isinstance(rows, list):
             return []
         normalized_rows = []
@@ -457,7 +530,7 @@ class DashboardRepository:
         ORDER BY {field}
         LIMIT 2000
         """.strip()
-        rows = await self._query_rows(sql)
+        rows = await self._query_rows(sql, operation=f"distinct.{field}")
         return [str(item.get("value")) for item in rows if item.get("value") is not None]
 
     @staticmethod
@@ -541,7 +614,7 @@ class DashboardRepository:
         ORDER BY {column}
         LIMIT {int(limit)}
         """.strip()
-        rows = await self._query_rows(sql)
+        rows = await self._query_rows(sql, operation=f"search_filter_values.{field}")
         matches = [str(item.get("value")) for item in rows if item.get("value")]
         if matches:
             return matches
@@ -635,10 +708,10 @@ class DashboardRepository:
         """.strip()
 
         sales_rows, kpi_rows, by_channel, by_product = await asyncio.gather(
-            self._query_rows(sales_sql),
-            self._query_rows(kpi_sql),
-            self._query_rows(channel_sql),
-            self._query_rows(product_sql),
+            self._query_rows(sales_sql, operation="sales_workspace_fallback.sales"),
+            self._query_rows(kpi_sql, operation="sales_workspace_fallback.kpis"),
+            self._query_rows(channel_sql, operation="sales_workspace_fallback.channels"),
+            self._query_rows(product_sql, operation="sales_workspace_fallback.products"),
         )
         kpis = kpi_rows[0] if kpi_rows else {}
         order_count = int(kpis.get("order_count", 0) or 0)
@@ -814,14 +887,17 @@ class DashboardRepository:
         LIMIT 12
         """.strip()
 
-        sales, kpi_rows, by_channel, by_product, by_status, by_payment_rows = await asyncio.gather(
-            self._query_rows(sales_sql),
-            self._query_rows(kpi_sql),
-            self._query_rows(channel_sql),
-            self._query_rows(product_sql),
-            self._query_rows(status_sql),
-            self._query_rows(payment_sql),
-        )
+        try:
+            sales, kpi_rows, by_channel, by_product, by_status, by_payment_rows = await asyncio.gather(
+                self._query_rows(sales_sql, operation="sales_workspace.sales"),
+                self._query_rows(kpi_sql, operation="sales_workspace.kpis"),
+                self._query_rows(channel_sql, operation="sales_workspace.channels"),
+                self._query_rows(product_sql, operation="sales_workspace.products"),
+                self._query_rows(status_sql, operation="sales_workspace.status"),
+                self._query_rows(payment_sql, operation="sales_workspace.payment"),
+            )
+        except DruidQueryError:
+            return await self._get_sales_workspace_fallback(as_of=as_of, start_at=start_at, end_at=end_at, filters=filters)
         kpis = kpi_rows[0] if kpi_rows else {}
         order_count = int(kpis.get("order_count", 0) or 0)
         net_sales = round(float(kpis.get("net_sales", 0.0) or 0.0), 2)
@@ -905,6 +981,7 @@ class DashboardRepository:
                 ORDER BY account_code
                 LIMIT 500
                 """.strip()
+                , operation="account_catalog.balances"
             ),
         )
         balances_by_code = {item["account_code"]: item for item in balances}
@@ -947,6 +1024,7 @@ class DashboardRepository:
                 ORDER BY product_id
                 LIMIT 2000
                 """.strip()
+                , operation="product_catalog.aggregates"
             ),
         )
         channel_map = {item.get("channel_id"): item.get("channel_name") for item in channels if isinstance(item, dict)}

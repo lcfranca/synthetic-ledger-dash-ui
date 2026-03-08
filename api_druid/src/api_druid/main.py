@@ -3,10 +3,11 @@ import os
 from datetime import datetime, timezone
 
 from fastapi import FastAPI, Query, WebSocket
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.websockets import WebSocketDisconnect, WebSocketState
 
-from api_druid.repository import DashboardRepository
+from api_druid.repository import DashboardRepository, DruidQueryError
 
 app = FastAPI(title="synthetic-ledger-api-druid", version="0.1.0")
 repo = DashboardRepository()
@@ -21,9 +22,18 @@ app.add_middleware(
 )
 
 
+@app.exception_handler(DruidQueryError)
+async def handle_druid_query_error(_, exc: DruidQueryError) -> JSONResponse:
+    return JSONResponse(status_code=503, content=exc.to_dict())
+
+
 @app.get("/health")
 async def health() -> dict:
-    return {"status": "ok", "backend": "druid"}
+    try:
+        query_layer = await repo.ensure_query_ready()
+        return {"status": "ok", "backend": "druid", "query_layer": query_layer}
+    except DruidQueryError as exc:
+        return {"status": "warming_up", "backend": "druid", "query_layer_error": exc.to_dict()}
 
 
 @app.get("/api/v1/dashboard/summary")
