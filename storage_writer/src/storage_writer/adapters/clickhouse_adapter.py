@@ -171,22 +171,32 @@ class ClickHouseAdapter(StorageAdapter):
             return False
 
     async def write_event(self, event: dict) -> None:
+        await self.write_events([event])
+
+    async def write_events(self, events: list[dict]) -> None:
+        if not events:
+            return
+
         await self._ensure_schema()
         query = """
             INSERT INTO ledger.entries FORMAT JSONEachRow
         """.strip()
-        for field in ("occurred_at", "ingested_at", "valid_from", "created_at"):
-            value = event.get(field)
-            if isinstance(value, str):
-                normalized = value.replace("T", " ")
-                if normalized.endswith("Z"):
-                    normalized = normalized[:-1]
-                if normalized.endswith("+00:00"):
-                    normalized = normalized[:-6]
-                event[field] = normalized
+        normalized_events: list[dict] = []
+        for event in events:
+            normalized_event = dict(event)
+            for field in ("occurred_at", "ingested_at", "valid_from", "created_at"):
+                value = normalized_event.get(field)
+                if isinstance(value, str):
+                    normalized = value.replace("T", " ")
+                    if normalized.endswith("Z"):
+                        normalized = normalized[:-1]
+                    if normalized.endswith("+00:00"):
+                        normalized = normalized[:-6]
+                    normalized_event[field] = normalized
+            normalized_events.append(normalized_event)
         response = await self.client.post(
             f"{self.base_url}/?database={self.db}&query={query}",
-            content=orjson.dumps(event) + b"\n",
+            content=b"\n".join(orjson.dumps(event) for event in normalized_events) + b"\n",
             auth=(self.user, self.password),
         )
         if response.status_code >= 400:

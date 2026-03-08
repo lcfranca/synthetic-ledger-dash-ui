@@ -3,6 +3,7 @@ import time
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 from fastavro import parse_schema
 from fastavro.validation import validate
@@ -72,6 +73,10 @@ def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def scenario_has_material_impact(scenario: dict[str, Any]) -> bool:
+    return RetailSimulation.event_has_material_impact(scenario)
+
+
 def build_event_from_scenario(catalog: Catalog, company_id: str, scenario: dict) -> AccountingEvent:
     product = scenario["product"]
     supplier = scenario["supplier"]
@@ -135,7 +140,12 @@ def build_event_from_scenario(catalog: Catalog, company_id: str, scenario: dict)
 
 
 def build_event(simulation: RetailSimulation, catalog: Catalog, company_id: str) -> AccountingEvent:
-    return build_event_from_scenario(catalog, company_id, simulation.next_event())
+    for _ in range(8):
+        scenario = simulation.next_event()
+        if scenario_has_material_impact(scenario):
+            return build_event_from_scenario(catalog, company_id, scenario)
+
+    raise RuntimeError("Producer failed to build a material accounting event after repeated attempts")
 
 
 def delivery_report(err, msg):

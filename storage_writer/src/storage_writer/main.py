@@ -47,6 +47,10 @@ def ledger_entries_topic() -> str:
     return os.getenv("LEDGER_ENTRIES_KAFKA_TOPIC", os.getenv("DRUID_KAFKA_TOPIC", "ledger-entries-v1"))
 
 
+def clickhouse_fanout_batch_size() -> int:
+    return max(int(os.getenv("CLICKHOUSE_FANOUT_BATCH_SIZE", "250") or 250), 1)
+
+
 def direct_write_enabled(name: str) -> bool:
     if name == "clickhouse":
         default = "false" if is_true("KAFKA_FANOUT_CONSUMER_ENABLED", "true") else "true"
@@ -64,6 +68,25 @@ def kafka_fanout_target_names() -> list[str]:
     return [name for name in configured if name in adapters]
 
 
+def event_has_material_impact(event: dict[str, Any]) -> bool:
+    quantity = abs(float(event.get("quantity", 0.0) or 0.0))
+    gross_amount = abs(float(event.get("gross_amount", 0.0) or 0.0))
+    net_amount = abs(float(event.get("net_amount", 0.0) or 0.0))
+    tax_amount = abs(float(event.get("tax", event.get("tax_amount", 0.0)) or 0.0))
+    marketplace_fee = abs(float(event.get("marketplace_fee", event.get("marketplace_fee_amount", 0.0)) or 0.0))
+    cmv = abs(float(event.get("cmv", event.get("inventory_cost_total", 0.0)) or 0.0))
+    cart_net_amount = abs(float(event.get("cart_net_amount", 0.0) or 0.0))
+
+    if any(value >= 0.01 for value in (gross_amount, net_amount, tax_amount, marketplace_fee, cmv, cart_net_amount)):
+        return True
+
+    event_type = str(event.get("event_type") or event.get("ontology_event_type") or "")
+    if event_type in {"sale", "purchase", "return", "freight"} and quantity > 0.0:
+        return True
+
+    return False
+
+
 def build_entries_kafka_producer() -> Producer | None:
     if not is_true("LEDGER_ENTRIES_KAFKA_PUBLISH_ENABLED", os.getenv("DRUID_KAFKA_PUBLISH_ENABLED", "true")):
         return None
@@ -78,8 +101,8 @@ def build_entries_kafka_consumer() -> Consumer | None:
     if not targets:
         return None
     bootstrap = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
-    group_id = os.getenv("KAFKA_FANOUT_GROUP_ID", "ledger-fanout-clickhouse-v1")
-    offset_reset = os.getenv("KAFKA_FANOUT_AUTO_OFFSET_RESET", "latest")
+    group_id = os.getenv("KAFKA_FANOUT_GROUP_ID", "ledger-fanout-clickhouse-v3")
+    offset_reset = os.getenv("KAFKA_FANOUT_AUTO_OFFSET_RESET", "earliest")
     consumer = Consumer(
         {
             "bootstrap.servers": bootstrap,
@@ -143,7 +166,42 @@ async def consume_entries_from_kafka() -> None:
                 await asyncio.sleep(1)
                 continue
 
-            payload = json.loads(message.value().decode("utf-8"))
+            batch_messages = [message]
+            while len(batch_messages) < clickhouse_fanout_batch_size():
+                next_message = await asyncio.to_thread(entries_kafka_consumer.poll, 0.0)
+                if next_message is None:
+                    break
+                if next_message.error():
+                    kafka_fanout_status.update({"state": "error", "error": str(next_message.error())})
+                    break
+                batch_messages.append(next_message)
+
+            material_payloads: list[dict[str, Any]] = []
+            last_event_id = None
+            last_message = batch_messages[-1]
+            for batch_message in batch_messages:
+                payload = json.loads(batch_message.value().decode("utf-8"))
+                last_event_id = payload.get("event_id")
+                if event_has_material_impact(payload):
+                    material_payloads.append(payload)
+
+            if not material_payloads:
+                await asyncio.to_thread(entries_kafka_consumer.commit, message=last_message, asynchronous=False)
+                kafka_fanout_status.update(
+                    {
+                        "state": "running",
+                        "messages_processed": kafka_fanout_status.get("messages_processed", 0) + len(batch_messages),
+                        "last_event_id": last_event_id,
+                        "last_offsets": {
+                            "topic": last_message.topic(),
+                            "partition": last_message.partition(),
+                            "offset": last_message.offset(),
+                        },
+                        "last_backend_errors": {},
+                    }
+                )
+                continue
+
             successful_targets: list[str] = []
             backend_errors: dict[str, str] = {}
             for name in targets:
@@ -151,9 +209,9 @@ async def consume_entries_from_kafka() -> None:
                 if adapter is None:
                     continue
                 try:
-                    await adapter.write_event(dict(payload))
+                    await adapter.write_events([dict(payload) for payload in material_payloads])
                     successful_targets.append(name)
-                    kafka_fanout_status["backend_writes"][name] = kafka_fanout_status["backend_writes"].get(name, 0) + 1
+                    kafka_fanout_status["backend_writes"][name] = kafka_fanout_status["backend_writes"].get(name, 0) + len(material_payloads)
                 except Exception as exc:
                     backend_errors[name] = str(exc)
 
@@ -168,16 +226,16 @@ async def consume_entries_from_kafka() -> None:
                 await asyncio.sleep(1)
                 continue
 
-            await asyncio.to_thread(entries_kafka_consumer.commit, message=message, asynchronous=False)
+            await asyncio.to_thread(entries_kafka_consumer.commit, message=last_message, asynchronous=False)
             kafka_fanout_status.update(
                 {
                     "state": "running",
-                    "messages_processed": kafka_fanout_status.get("messages_processed", 0) + 1,
-                    "last_event_id": payload.get("event_id"),
+                    "messages_processed": kafka_fanout_status.get("messages_processed", 0) + len(batch_messages),
+                    "last_event_id": last_event_id,
                     "last_offsets": {
-                        "topic": message.topic(),
-                        "partition": message.partition(),
-                        "offset": message.offset(),
+                        "topic": last_message.topic(),
+                        "partition": last_message.partition(),
+                        "offset": last_message.offset(),
                     },
                     "last_backend_errors": {},
                 }
@@ -765,6 +823,9 @@ def make_entry(
 
 
 def event_to_journal_entries(event: dict[str, Any]) -> list[dict[str, Any]]:
+    if not event_has_material_impact(event):
+        return []
+
     gross = round(float(event.get("gross_amount", 0.0) or 0.0), 2)
     discount = round(float(event.get("discount", 0.0) or 0.0), 2)
     net_amount = round(float(event.get("net_amount", max(gross - discount, 0.0)) or 0.0), 2)

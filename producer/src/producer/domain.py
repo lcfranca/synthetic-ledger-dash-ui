@@ -334,6 +334,25 @@ class RetailSimulation:
     def available_liquidity(self) -> float:
         return round(self.liquidity["cash"] + self.liquidity["bank_accounts"], 2)
 
+    @staticmethod
+    def event_has_material_impact(event: dict[str, Any]) -> bool:
+        quantity = abs(float(event.get("quantity", 0.0) or 0.0))
+        gross_amount = abs(float(event.get("gross_amount", 0.0) or 0.0))
+        net_amount = abs(float(event.get("net_amount", 0.0) or 0.0))
+        tax_amount = abs(float(event.get("tax", 0.0) or 0.0))
+        marketplace_fee = abs(float(event.get("marketplace_fee", 0.0) or 0.0))
+        cmv = abs(float(event.get("cmv", 0.0) or 0.0))
+        cart_net_amount = abs(float(event.get("cart_net_amount", 0.0) or 0.0))
+
+        if any(value >= 0.01 for value in (gross_amount, net_amount, tax_amount, marketplace_fee, cmv, cart_net_amount)):
+            return True
+
+        event_type = str(event.get("event_type") or "")
+        if event_type in {"sale", "purchase", "return", "freight"} and quantity > 0.0:
+            return True
+
+        return False
+
     def distributable_liquidity(self) -> float:
         return round(max(self.available_liquidity() - self.minimum_operating_reserve(), 0.0), 2)
 
@@ -1185,6 +1204,18 @@ class RetailSimulation:
         )
 
     def next_event(self) -> dict[str, Any]:
+        for _ in range(8):
+            event = self._next_event_candidate()
+            if self.event_has_material_impact(event):
+                return event
+
+        fallback_event = self.next_sale() if self.available_products() else self.next_purchase()
+        if self.event_has_material_impact(fallback_event):
+            return fallback_event
+
+        raise RuntimeError("RetailSimulation generated non-material events repeatedly")
+
+    def _next_event_candidate(self) -> dict[str, Any]:
         self.current_tick += 1
         self._update_market_state()
         self.schedule_procurement()
