@@ -59,7 +59,8 @@ def direct_write_enabled(name: str) -> bool:
 
 
 def kafka_fanout_target_names() -> list[str]:
-    configured = [item.strip() for item in os.getenv("KAFKA_FANOUT_TARGET_BACKENDS", "clickhouse").split(",") if item.strip()]
+    enabled_csv = os.getenv("KAFKA_FANOUT_TARGET_BACKENDS") or os.getenv("TARGET_BACKENDS") or os.getenv("ACTIVE_STACKS") or "clickhouse"
+    configured = [item.strip() for item in enabled_csv.split(",") if item.strip()]
     return [name for name in configured if name in adapters]
 
 
@@ -246,7 +247,6 @@ async def ensure_druid_kafka_supervisor() -> None:
                         "order_status",
                         "order_origin",
                         "payment_method",
-                        "payment_installments",
                         "coupon_code",
                         "device_type",
                         "sales_region",
@@ -836,6 +836,94 @@ def event_to_journal_entries(event: dict[str, Any]) -> list[dict[str, Any]]:
             ),
         ]
 
+    if event_type == "treasury_transfer":
+        debit_account_code = str(canonical_event.get("debit_account", account_code_for_role("bank_accounts")))
+        credit_account_code = str(canonical_event.get("credit_account", account_code_for_role("cash")))
+        return [
+            make_entry(
+                event=canonical_event,
+                entry_side="debit",
+                account_code=debit_account_code,
+                amount=net_amount,
+                ontology_description="Transferencia interna de liquidez entre caixa operacional e conta bancaria.",
+                payload_hash=payload_hash,
+            ),
+            make_entry(
+                event=canonical_event,
+                entry_side="credit",
+                account_code=credit_account_code,
+                amount=net_amount,
+                ontology_description="Saida do caixa de origem para recompor a tesouraria bancaria.",
+                payload_hash=payload_hash,
+            ),
+        ]
+
+    if event_type == "working_capital_loan":
+        settlement_account_code = str(canonical_event.get("debit_account", account_code_for_role("bank_accounts")))
+        liability_account_code = str(canonical_event.get("credit_account", account_code_for_role("short_term_loans")))
+        return [
+            make_entry(
+                event=canonical_event,
+                entry_side="debit",
+                account_code=settlement_account_code,
+                amount=net_amount,
+                ontology_description="Entrada de recursos de capital de giro para sustentar a liquidez operacional.",
+                payload_hash=payload_hash,
+            ),
+            make_entry(
+                event=canonical_event,
+                entry_side="credit",
+                account_code=liability_account_code,
+                amount=net_amount,
+                ontology_description="Reconhecimento do passivo financeiro de curto prazo contratado pela tesouraria.",
+                payload_hash=payload_hash,
+            ),
+        ]
+
+    if event_type == "working_capital_repayment":
+        liability_account_code = str(canonical_event.get("debit_account", account_code_for_role("short_term_loans")))
+        settlement_account_code = str(canonical_event.get("credit_account", account_code_for_role("bank_accounts")))
+        return [
+            make_entry(
+                event=canonical_event,
+                entry_side="debit",
+                account_code=liability_account_code,
+                amount=net_amount,
+                ontology_description="Amortizacao do principal do capital de giro com sobra de caixa operacional.",
+                payload_hash=payload_hash,
+            ),
+            make_entry(
+                event=canonical_event,
+                entry_side="credit",
+                account_code=settlement_account_code,
+                amount=net_amount,
+                ontology_description="Saida bancaria para liquidacao do passivo de capital de giro.",
+                payload_hash=payload_hash,
+            ),
+        ]
+
+    if event_type == "working_capital_interest_payment":
+        expense_account_code = str(canonical_event.get("debit_account", account_code_for_role("interest_expense")))
+        settlement_account_code = str(canonical_event.get("credit_account", account_code_for_role("bank_accounts")))
+        return [
+            make_entry(
+                event=canonical_event,
+                entry_side="debit",
+                account_code=expense_account_code,
+                amount=net_amount,
+                ontology_description="Reconhecimento e pagamento dos juros do capital de giro contratado pela tesouraria.",
+                payload_hash=payload_hash,
+            ),
+            make_entry(
+                event=canonical_event,
+                entry_side="credit",
+                account_code=settlement_account_code,
+                amount=net_amount,
+                ontology_description="Saida de caixa ou bancos para liquidacao dos juros do capital de giro.",
+                payload_hash=payload_hash,
+            ),
+        ]
+
     if event_type == "sale":
         settlement_account_code = str(canonical_event.get("debit_account", account_code_for_role("cash")))
         settlement_amount = round(net_amount + tax_amount - marketplace_fee, 2)
@@ -1042,6 +1130,9 @@ async def debug_kafka_fanout() -> dict[str, Any]:
 
 @app.on_event("startup")
 async def startup_tasks() -> None:
+    clickhouse_adapter = adapters.get("clickhouse")
+    if clickhouse_adapter is not None and hasattr(clickhouse_adapter, "ensure_ready"):
+        await clickhouse_adapter.ensure_ready()
     asyncio.create_task(bootstrap_druid_supervisor_task())
     asyncio.create_task(bootstrap_pinot_realtime_task())
     asyncio.create_task(consume_entries_from_kafka())

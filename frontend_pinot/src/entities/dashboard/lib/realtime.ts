@@ -20,6 +20,27 @@ type RealtimeWorkspace = WorkspaceSnapshot & {
 
 type RealtimeMetadata = NonNullable<RealtimeWorkspace['__realtime']>
 
+export type PendingRealtimeEntry = {
+  eventId: string
+  backend: string
+  ts: string
+  receivedAt: number
+  payload: JournalEntry
+}
+
+export type PendingRealtimeTransaction = {
+  transactionKey: string
+  backend: string
+  eventType: string
+  firstReceivedAt: number
+  lastReceivedAt: number
+  entries: PendingRealtimeEntry[]
+}
+
+const SNAPSHOT_ACK_GRACE_MS = 5000
+const MAX_PENDING_ENTRY_AGE_MS = 45000
+const MAX_PENDING_ENTRIES = 512
+
 export function isEntryCreatedEnvelope(payload: RealtimeEnvelope | WorkspaceSnapshot): payload is EntryCreatedEnvelope {
   return 'event_type' in payload && payload.event_type === 'entry.created'
 }
@@ -111,6 +132,204 @@ export function preferIncomingSnapshot(current: WorkspaceSnapshot | null, incomi
   return incoming
 }
 
+export function appendPendingRealtimeEntry(
+  pendingEntries: PendingRealtimeEntry[],
+  envelope: EntryCreatedEnvelope,
+  receivedAt = Date.now(),
+) {
+  const nextPendingEntry: PendingRealtimeEntry = {
+    eventId: envelope.event_id,
+    backend: envelope.backend,
+    ts: envelope.ts,
+    receivedAt,
+    payload: envelope.payload,
+  }
+
+  const nextPendingEntries = [
+    nextPendingEntry,
+    ...pendingEntries.filter((item) => item.payload.entry_id !== envelope.payload.entry_id && item.eventId !== envelope.event_id),
+  ]
+
+  return nextPendingEntries.slice(0, MAX_PENDING_ENTRIES)
+}
+
+export function transactionKeyForEntry(entry: JournalEntry) {
+  return entry.trace_id || entry.event_id || entry.entry_id
+}
+
+export function upsertPendingRealtimeTransaction(
+  transactions: PendingRealtimeTransaction[],
+  envelope: EntryCreatedEnvelope,
+  receivedAt = Date.now(),
+) {
+  const transactionKey = transactionKeyForEntry(envelope.payload)
+  const nextEntry: PendingRealtimeEntry = {
+    eventId: envelope.event_id,
+    backend: envelope.backend,
+    ts: envelope.ts,
+    receivedAt,
+    payload: envelope.payload,
+  }
+
+  const existing = transactions.find((item) => item.transactionKey === transactionKey)
+  const nextEntries = [
+    nextEntry,
+    ...(existing?.entries ?? []).filter((item) => item.payload.entry_id !== envelope.payload.entry_id && item.eventId !== envelope.event_id),
+  ].sort((left, right) => {
+    const leftTs = Date.parse(left.ts || left.payload.ingested_at || left.payload.occurred_at)
+    const rightTs = Date.parse(right.ts || right.payload.ingested_at || right.payload.occurred_at)
+    if (Number.isFinite(leftTs) && Number.isFinite(rightTs) && leftTs !== rightTs) {
+      return leftTs - rightTs
+    }
+    return left.payload.entry_id.localeCompare(right.payload.entry_id)
+  })
+
+  const nextTransaction: PendingRealtimeTransaction = {
+    transactionKey,
+    backend: envelope.backend,
+    eventType: envelope.payload.ontology_event_type,
+    firstReceivedAt: existing?.firstReceivedAt ?? receivedAt,
+    lastReceivedAt: receivedAt,
+    entries: nextEntries,
+  }
+
+  const remainingTransactions = transactions.filter((item) => item.transactionKey !== transactionKey)
+  return [nextTransaction, ...remainingTransactions].slice(0, MAX_PENDING_ENTRIES)
+}
+
+export function projectRealtimeWorkspace(baseWorkspace: WorkspaceSnapshot | null, pendingEntries: PendingRealtimeEntry[]) {
+  if (!baseWorkspace) {
+    return baseWorkspace
+  }
+
+  return pendingEntries.reduce<WorkspaceSnapshot | null>(
+    (workspace, pendingEntry) => withRealtimeEntry(workspace, pendingEntry.payload, pendingEntry.backend, pendingEntry.ts),
+    baseWorkspace,
+  )
+}
+
+export function reconcilePendingRealtimeEntries(
+  baseWorkspace: WorkspaceSnapshot | null,
+  pendingEntries: PendingRealtimeEntry[],
+  now = Date.now(),
+) {
+  if (pendingEntries.length === 0) {
+    return pendingEntries
+  }
+
+  if (!baseWorkspace) {
+    return pendingEntries.filter((item) => now - item.receivedAt <= MAX_PENDING_ENTRY_AGE_MS).slice(0, MAX_PENDING_ENTRIES)
+  }
+
+  const acknowledgedIds = snapshotAcknowledgedIds(baseWorkspace)
+  const snapshotWatermark = snapshotWatermarkMs(baseWorkspace)
+  const snapshotWindowSaturated = baseWorkspace.entries.length >= 180
+
+  return pendingEntries.filter((pendingEntry) => {
+    if (acknowledgedIds.has(pendingEntry.payload.entry_id) || acknowledgedIds.has(pendingEntry.eventId) || acknowledgedIds.has(pendingEntry.payload.event_id)) {
+      return false
+    }
+
+    const pendingAgeMs = now - pendingEntry.receivedAt
+    if (pendingAgeMs > MAX_PENDING_ENTRY_AGE_MS) {
+      return false
+    }
+
+    const entryWatermark = entryWatermarkMs(pendingEntry)
+    if (!Number.isFinite(entryWatermark)) {
+      return true
+    }
+
+    if (snapshotWatermark >= entryWatermark + SNAPSHOT_ACK_GRACE_MS && snapshotWindowSaturated) {
+      return false
+    }
+
+    return true
+  }).slice(0, MAX_PENDING_ENTRIES)
+}
+
+export function reconcilePendingRealtimeTransactions(
+  baseWorkspace: WorkspaceSnapshot | null,
+  transactions: PendingRealtimeTransaction[],
+  now = Date.now(),
+) {
+  if (transactions.length === 0) {
+    return transactions
+  }
+
+  const acknowledgedIds = baseWorkspace ? snapshotAcknowledgedIds(baseWorkspace) : new Set<string>()
+
+  return transactions
+    .map((transaction) => ({
+      ...transaction,
+      entries: transaction.entries.filter((entry) => {
+        if (acknowledgedIds.has(entry.payload.entry_id) || acknowledgedIds.has(entry.eventId) || acknowledgedIds.has(entry.payload.event_id)) {
+          return false
+        }
+        return now - entry.receivedAt <= MAX_PENDING_ENTRY_AGE_MS
+      }),
+    }))
+    .filter((transaction) => transaction.entries.length > 0)
+    .slice(0, MAX_PENDING_ENTRIES)
+}
+
+export function releaseMatureRealtimeTransactions(
+  transactions: PendingRealtimeTransaction[],
+  holdbackMs: number,
+  now = Date.now(),
+) {
+  const ready: PendingRealtimeTransaction[] = []
+  const waiting: PendingRealtimeTransaction[] = []
+
+  for (const transaction of transactions) {
+    if (now - transaction.lastReceivedAt >= holdbackMs) {
+      ready.push(transaction)
+      continue
+    }
+    waiting.push(transaction)
+  }
+
+  ready.sort((left, right) => left.firstReceivedAt - right.firstReceivedAt)
+  return { ready, waiting }
+}
+
+function snapshotAcknowledgedIds(workspace: WorkspaceSnapshot) {
+  const ids = new Set<string>()
+
+  for (const entry of workspace.entries) {
+    if (entry.entry_id) {
+      ids.add(entry.entry_id)
+    }
+    if (entry.event_id) {
+      ids.add(entry.event_id)
+    }
+  }
+
+  return ids
+}
+
+function snapshotWatermarkMs(workspace: WorkspaceSnapshot) {
+  const timestamps = [
+    workspace.timestamp,
+    workspace.summary.timestamp,
+    ...workspace.entries.flatMap((entry) => [entry.ingested_at, entry.occurred_at]),
+  ]
+
+  return timestamps.reduce((maxValue, value) => {
+    const parsed = Date.parse(value)
+    return Number.isFinite(parsed) ? Math.max(maxValue, parsed) : maxValue
+  }, 0)
+}
+
+function entryWatermarkMs(pendingEntry: PendingRealtimeEntry) {
+  const timestamps = [pendingEntry.ts, pendingEntry.payload.ingested_at, pendingEntry.payload.occurred_at]
+
+  return timestamps.reduce((maxValue, value) => {
+    const parsed = Date.parse(value)
+    return Number.isFinite(parsed) ? Math.max(maxValue, parsed) : maxValue
+  }, Number.NEGATIVE_INFINITY)
+}
+
 function seedRealtimeMetadata(workspace: WorkspaceSnapshot) {
   const customerKeys: Record<string, true> = {}
   const saleProducts: Record<string, Record<string, true>> = {}
@@ -145,13 +364,14 @@ function incomeStatementMetrics(values: {
   marketplaceFees: number
   freightOut: number
   bankFees: number
+  financialExpenses: number
   otherExpenses: number
   cmv: number
 }) {
   const netRevenue = round(values.revenue - values.returns)
   const grossProfit = round(netRevenue - values.cmv)
   const operatingExpenses = round(values.marketplaceFees + values.freightOut + values.bankFees + values.otherExpenses)
-  const expenses = round(operatingExpenses + values.cmv)
+  const expenses = round(operatingExpenses + values.financialExpenses + values.cmv)
   const netIncome = round(netRevenue - expenses)
   return {
     netRevenue,
@@ -198,12 +418,14 @@ function updateSummary(summary: DashboardSummary, entry: JournalEntry, backend: 
   const recoverableTax = summary.balance_sheet.assets.recoverable_tax
   const inventory = summary.balance_sheet.assets.inventory
   const accountsPayableRaw = -summary.balance_sheet.liabilities.accounts_payable
+  const shortTermLoansRaw = -summary.balance_sheet.liabilities.short_term_loans
   const taxPayableRaw = -summary.balance_sheet.liabilities.tax_payable
   const revenueRaw = -summary.income_statement.revenue
   const returnsRaw = summary.income_statement.returns
   const marketplaceFeesRaw = summary.income_statement.marketplace_fees
   const freightOutRaw = summary.income_statement.freight_out
   const bankFeesRaw = summary.income_statement.bank_fees
+  const financialExpensesRaw = summary.income_statement.financial_expenses
   const otherExpensesRaw = summary.income_statement.other_expenses
   const cmvRaw = summary.income_statement.cmv
 
@@ -212,12 +434,14 @@ function updateSummary(summary: DashboardSummary, entry: JournalEntry, backend: 
   let nextRecoverableTax = recoverableTax
   let nextInventory = inventory
   let nextAccountsPayableRaw = accountsPayableRaw
+  let nextShortTermLoansRaw = shortTermLoansRaw
   let nextTaxPayableRaw = taxPayableRaw
   let nextRevenueRaw = revenueRaw
   let nextReturnsRaw = returnsRaw
   let nextMarketplaceFeesRaw = marketplaceFeesRaw
   let nextFreightOutRaw = freightOutRaw
   let nextBankFeesRaw = bankFeesRaw
+  let nextFinancialExpensesRaw = financialExpensesRaw
   let nextOtherExpensesRaw = otherExpensesRaw
   let nextCmvRaw = cmvRaw
 
@@ -237,6 +461,9 @@ function updateSummary(summary: DashboardSummary, entry: JournalEntry, backend: 
     case 'accounts_payable':
       nextAccountsPayableRaw = round(nextAccountsPayableRaw + entry.signed_amount)
       break
+    case 'short_term_loans':
+      nextShortTermLoansRaw = round(nextShortTermLoansRaw + entry.signed_amount)
+      break
     case 'tax_payable':
       nextTaxPayableRaw = round(nextTaxPayableRaw + entry.signed_amount)
       break
@@ -255,6 +482,9 @@ function updateSummary(summary: DashboardSummary, entry: JournalEntry, backend: 
     case 'bank_fees':
       nextBankFeesRaw = round(nextBankFeesRaw + entry.signed_amount)
       break
+    case 'interest_expense':
+      nextFinancialExpensesRaw = round(nextFinancialExpensesRaw + entry.signed_amount)
+      break
     case 'cogs':
       nextCmvRaw = round(nextCmvRaw + entry.signed_amount)
       break
@@ -265,12 +495,14 @@ function updateSummary(summary: DashboardSummary, entry: JournalEntry, backend: 
   }
 
   const accountsPayable = round(Math.abs(nextAccountsPayableRaw))
+  const shortTermLoans = round(Math.abs(nextShortTermLoansRaw))
   const taxPayable = round(Math.abs(nextTaxPayableRaw))
   const revenue = round(Math.abs(nextRevenueRaw))
   const returns = round(nextReturnsRaw)
   const marketplaceFees = round(nextMarketplaceFeesRaw)
   const freightOut = round(nextFreightOutRaw)
   const bankFees = round(nextBankFeesRaw)
+  const financialExpenses = round(nextFinancialExpensesRaw)
   const otherExpenses = round(nextOtherExpensesRaw)
   const cmv = round(nextCmvRaw)
   const metrics = incomeStatementMetrics({
@@ -279,17 +511,19 @@ function updateSummary(summary: DashboardSummary, entry: JournalEntry, backend: 
     marketplaceFees,
     freightOut,
     bankFees,
+    financialExpenses,
     otherExpenses,
     cmv,
   })
-  const liabilitiesTotal = round(accountsPayable + taxPayable)
+  const liabilitiesTotal = round(accountsPayable + shortTermLoans + taxPayable)
   const netRevenue = metrics.netRevenue
   const grossProfit = metrics.grossProfit
   const operatingExpenses = metrics.operatingExpenses
   const expenses = metrics.expenses
   const netIncome = metrics.netIncome
   const assetsTotal = round(nextCash + nextBankAccounts + nextRecoverableTax + nextInventory)
-  const totalLiabilitiesAndEquity = round(liabilitiesTotal + netIncome)
+  const equityTotal = round(assetsTotal - liabilitiesTotal)
+  const totalLiabilitiesAndEquity = round(liabilitiesTotal + equityTotal)
   const difference = round(assetsTotal - totalLiabilitiesAndEquity)
 
   return {
@@ -307,11 +541,13 @@ function updateSummary(summary: DashboardSummary, entry: JournalEntry, backend: 
       },
       liabilities: {
         accounts_payable: accountsPayable,
+        short_term_loans: shortTermLoans,
         tax_payable: taxPayable,
         total: liabilitiesTotal,
       },
       equity: {
         current_earnings: netIncome,
+        total: equityTotal,
       },
       total_liabilities_and_equity: totalLiabilitiesAndEquity,
       difference,
@@ -323,6 +559,7 @@ function updateSummary(summary: DashboardSummary, entry: JournalEntry, backend: 
       marketplace_fees: marketplaceFees,
       freight_out: freightOut,
       bank_fees: bankFees,
+      financial_expenses: financialExpenses,
       other_expenses: otherExpenses,
       operating_expenses: operatingExpenses,
       expenses,
@@ -392,11 +629,11 @@ function updateProducts(products: ProductCatalogRow[], entry: JournalEntry) {
   let netSoldQuantity = current.net_sold_quantity
   let returnedQuantity = current.returned_quantity
   let averagePurchasePrice = current.average_purchase_price
-  let averageSalePrice = current.average_sale_price
-  let revenueAmount = current.revenue_amount
-  let returnAmount = current.return_amount
-  let cogsAmount = current.cogs_amount
-  let sellingExpensesAmount = current.selling_expenses_amount
+  const averageSalePrice = current.average_sale_price
+  const revenueAmount = current.revenue_amount
+  const returnAmount = current.return_amount
+  const cogsAmount = current.cogs_amount
+  const sellingExpensesAmount = current.selling_expenses_amount
 
   if (entry.account_role === 'inventory') {
     const stockDelta = entry.entry_side === 'debit' ? entry.quantity : -entry.quantity
@@ -415,25 +652,6 @@ function updateProducts(products: ProductCatalogRow[], entry: JournalEntry) {
     averagePurchasePrice = entry.ontology_event_type === 'purchase'
       ? round((current.average_purchase_price + entry.unit_price) / 2, 2)
       : current.average_purchase_price
-    averageSalePrice = entry.ontology_event_type === 'sale'
-      ? round((current.average_sale_price + entry.unit_price) / 2, 2)
-      : current.average_sale_price
-  }
-
-  if (entry.account_role === 'revenue' && entry.ontology_event_type === 'sale') {
-    revenueAmount = round(current.revenue_amount + entry.amount)
-  }
-
-  if (entry.account_role === 'returns' && entry.ontology_event_type === 'return') {
-    returnAmount = round(current.return_amount + entry.amount)
-  }
-
-  if (entry.account_role === 'cogs') {
-    cogsAmount = round(current.cogs_amount + entry.signed_amount)
-  }
-
-  if (entry.account_role === 'marketplace_fees' || entry.account_role === 'outbound_freight' || entry.account_role === 'bank_fees') {
-    sellingExpensesAmount = round(current.selling_expenses_amount + entry.signed_amount)
   }
 
   let nextProduct = enrichProductMetrics({
@@ -446,11 +664,11 @@ function updateProducts(products: ProductCatalogRow[], entry: JournalEntry) {
     average_sale_price: averageSalePrice,
     revenue_amount: revenueAmount,
     return_amount: returnAmount,
-    net_revenue_amount: round(revenueAmount - returnAmount),
+    net_revenue_amount: current.net_revenue_amount,
     cogs_amount: cogsAmount,
     selling_expenses_amount: sellingExpensesAmount,
-    gross_profit_amount: round(revenueAmount - returnAmount - cogsAmount),
-    net_profit_amount: round(revenueAmount - returnAmount - cogsAmount - sellingExpensesAmount),
+    gross_profit_amount: current.gross_profit_amount,
+    net_profit_amount: current.net_profit_amount,
   })
   nextProduct = { ...nextProduct, ...supplyPlanForProduct(nextProduct) }
 

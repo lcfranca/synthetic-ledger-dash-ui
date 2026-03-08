@@ -72,10 +72,11 @@ function buildWaterfallOption(summary?: DashboardSummary): EChartsOption {
   const revenue = income?.revenue ?? 0
   const returns = -(income?.returns ?? 0)
   const cmv = -(income?.cmv ?? 0)
-  const expenses = -(income?.operating_expenses ?? 0)
+  const operatingExpenses = -(income?.operating_expenses ?? 0)
+  const financialExpenses = -(income?.financial_expenses ?? 0)
   const netIncome = income?.net_income ?? 0
-  const deltas = [revenue, returns, cmv, expenses, netIncome]
-  const labels = ['Receita', 'Devolucoes', 'CMV', 'Despesas', 'Lucro']
+  const deltas = [revenue, returns, cmv, operatingExpenses, financialExpenses, netIncome]
+  const labels = ['Receita', 'Devolucoes', 'CMV', 'Opex', 'Juros', 'Lucro']
 
   const bases: number[] = []
   let cursor = 0
@@ -249,6 +250,7 @@ function buildBalanceOption(summary?: DashboardSummary): EChartsOption {
   const assets = summary?.balance_sheet.assets
   const liabilities = summary?.balance_sheet.liabilities
   const equity = summary?.balance_sheet.equity
+  const equityTotal = equity?.total ?? equity?.current_earnings ?? 0
   return {
     ...chartBase(),
     title: {
@@ -287,7 +289,8 @@ function buildBalanceOption(summary?: DashboardSummary): EChartsOption {
           { value: assets?.inventory ?? 0, name: 'Estoque', itemStyle: { color: '#f4f1ea' } },
           { value: liabilities?.tax_payable ?? 0, name: 'Tributos', itemStyle: { color: '#8a8176' } },
           { value: liabilities?.accounts_payable ?? 0, name: 'Fornecedores', itemStyle: { color: '#6f675d' } },
-          { value: equity?.current_earnings ?? 0, name: 'Patrimonio', itemStyle: { color: '#b6b0a5' } },
+          { value: liabilities?.short_term_loans ?? 0, name: 'Capital de giro', itemStyle: { color: '#4f5d75' } },
+          { value: equityTotal, name: 'Patrimonio', itemStyle: { color: '#b6b0a5' } },
         ],
       },
     ],
@@ -470,6 +473,11 @@ export default function ObservabilityView({ summary, entries, accounts, products
             <div className="metric-label">Liquidez operacional</div>
             <div className="metric-value">{money(operationalLiquidity)}</div>
             <div className="metric-helper">Caixa + bancos frente a settle, frete e fornecedores</div>
+          </article>
+          <article className="metric-card panel-surface">
+            <div className="metric-label">Capital de giro</div>
+            <div className="metric-value">{money(summary?.balance_sheet.liabilities.short_term_loans ?? 0)}</div>
+            <div className="metric-helper">Juros correntes {money(summary?.income_statement.financial_expenses ?? 0)}</div>
           </article>
           <article className="metric-card panel-surface">
             <div className="metric-label">SKUs em tensao</div>

@@ -15,21 +15,32 @@ import ShellMetrics from '../widgets/shell-metrics/ShellMetrics'
 import DashboardHeader from '../widgets/dashboard-header/DashboardHeader'
 import SideRail from '../widgets/side-rail/SideRail'
 
+function resolveBackendConfig() {
+  const configuredBackend = (import.meta.env.VITE_DASHBOARD_BACKEND ?? 'pinot').trim().toLowerCase()
+
+  if (configuredBackend === 'druid' || configuredBackend === 'clickhouse') {
+    return { defaultBackend: configuredBackend, queryKeyPrefix: configuredBackend }
+  }
+
+  return { defaultBackend: 'pinot', queryKeyPrefix: 'pinot' }
+}
+
 export default function App() {
   const [activeView, setActiveView] = useState<ViewId>('queue')
   const [isRealtimePaused, setIsRealtimePaused] = useState(false)
   const queueFiltersState = useEntryFilters<QueueFilters>()
   const salesFiltersState = useEntryFilters<SalesFilters>()
+  const backendConfig = resolveBackendConfig()
 
-  const activeFilters: EntryFilters = activeView === 'sales'
+  const usesSalesFilters = activeView === 'sales'
+
+  const activeFilters: EntryFilters = usesSalesFilters
     ? { ...salesFiltersState.filters }
-    : activeView === 'queue'
-      ? { ...queueFiltersState.filters }
-      : {}
+    : { ...queueFiltersState.filters }
 
-  const activeHasFilters = activeView === 'sales' ? salesFiltersState.hasActiveFilters : activeView === 'queue' ? queueFiltersState.hasActiveFilters : false
+  const activeHasFilters = usesSalesFilters ? salesFiltersState.hasActiveFilters : queueFiltersState.hasActiveFilters
 
-  const session = useDashboardSession({ defaultBackend: 'pinot', queryKeyPrefix: 'pinot', filters: activeFilters, hasActiveFilters: activeHasFilters, viewId: activeView, isRealtimePaused })
+  const session = useDashboardSession({ defaultBackend: backendConfig.defaultBackend, queryKeyPrefix: backendConfig.queryKeyPrefix, filters: activeFilters, hasActiveFilters: activeHasFilters, viewId: activeView, isRealtimePaused })
 
   return (
     <main className="dashboard-shell">
@@ -48,7 +59,7 @@ export default function App() {
 
         <ShellMetrics summary={session.summary} overview={session.overview} backend={session.backend} feedMode={session.currentFeed} isRealtimePaused={isRealtimePaused} pendingRealtimeEvents={session.bufferedEventCount} onToggleRealtime={() => setIsRealtimePaused((current) => !current)} />
 
-        {activeView === 'queue' ? <QueueFilterPanel filters={queueFiltersState.filters} filterOptions={session.filterOptions} setFilter={queueFiltersState.setFilter} clearFilters={queueFiltersState.clearFilters} /> : null}
+        {activeView !== 'sales' ? <QueueFilterPanel filters={queueFiltersState.filters} filterOptions={session.filterOptions} setFilter={queueFiltersState.setFilter} clearFilters={queueFiltersState.clearFilters} /> : null}
         {activeView === 'sales' ? <SalesFilterPanel filters={salesFiltersState.filters} filterOptions={session.filterOptions} setFilter={salesFiltersState.setFilter} clearFilters={salesFiltersState.clearFilters} /> : null}
         {activeView === 'queue' ? <QueueView summary={session.summary} entries={session.entries} isRealtimePaused={isRealtimePaused} bufferedEventCount={session.bufferedEventCount} onToggleRealtime={() => setIsRealtimePaused((current) => !current)} /> : null}
         {activeView === 'sales' ? <SalesView salesWorkspace={session.salesWorkspace} /> : null}

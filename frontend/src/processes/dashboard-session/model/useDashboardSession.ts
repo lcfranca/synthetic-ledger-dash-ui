@@ -19,12 +19,12 @@ type Params = {
 }
 
 export function useDashboardSession({ defaultBackend, queryKeyPrefix, filters, hasActiveFilters = false, viewId, isRealtimePaused = false }: Params) {
-  const workspaceRefreshInterval = isRealtimePaused ? false : 180000
-
   const summaryQuery = useQuery({
     queryKey: [queryKeyPrefix, 'summary', filters],
     queryFn: () => fetchSummary(filters),
+    staleTime: Infinity,
     refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   })
 
   const filterOptionsQuery = useQuery({
@@ -37,10 +37,11 @@ export function useDashboardSession({ defaultBackend, queryKeyPrefix, filters, h
   const workspaceQuery = useQuery({
     queryKey: [queryKeyPrefix, 'workspace', filters],
     queryFn: () => fetchWorkspaceSnapshot(filters),
-    staleTime: viewId === 'queue' ? 0 : 4000,
-    refetchInterval: workspaceRefreshInterval,
+    staleTime: Infinity,
+    refetchInterval: false,
     refetchIntervalInBackground: false,
     refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   })
 
   const { liveWorkspace, socketStatus, bufferedEventCount } = useRealtimeDashboard({

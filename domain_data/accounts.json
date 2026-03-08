@@ -55,6 +55,17 @@
     "financial_statement_group": "BP"
   },
   {
+    "account_code": "2.1.02.01",
+    "account_name": "Emprestimos de Capital de Giro",
+    "statement_section": "liability",
+    "normal_side": "credit",
+    "entry_category": "financiamento",
+    "account_role": "short_term_loans",
+    "documentation": "Obrigacoes financeiras de curto prazo contratadas para sustentar liquidez operacional e recompor capital de giro.",
+    "usage_notes": "Movimentada apenas por eventos explicitos de funding e amortizacao de tesouraria.",
+    "financial_statement_group": "BP"
+  },
+  {
     "account_code": "2.1.03.01",
     "account_name": "Tributos sobre Vendas a Recolher",
     "statement_section": "liability",
@@ -129,6 +140,17 @@
     "account_role": "bank_fees",
     "documentation": "Tarifas financeiras incidentes em pagamentos operacionais e conciliacoes bancarias.",
     "usage_notes": "Usada principalmente na liquidacao de fretes e cobrancas diretas.",
+    "financial_statement_group": "DRE"
+  },
+  {
+    "account_code": "4.1.05.01",
+    "account_name": "Juros sobre Capital de Giro",
+    "statement_section": "expense",
+    "normal_side": "debit",
+    "entry_category": "despesas_financeiras",
+    "account_role": "interest_expense",
+    "documentation": "Encargo financeiro cobrado sobre o saldo utilizado de capital de giro contratado pela tesouraria.",
+    "usage_notes": "Movimentada apenas por eventos explicitos de pagamento de juros do capital de giro.",
     "financial_statement_group": "DRE"
   }
 ]

@@ -181,7 +181,6 @@ class RealtimeGateway:
         self.bootstrap_servers = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
         self.group_id = os.getenv("REALTIME_GATEWAY_GROUP_ID", "realtime-gateway-v1")
         self.offset_reset = os.getenv("REALTIME_GATEWAY_AUTO_OFFSET_RESET", "latest")
-        self.coalesce_seconds = max(int(os.getenv("REALTIME_GATEWAY_COALESCE_MS", "250")), 50) / 1000
         self.active_backends = parse_backends()
         self.backend_urls = {
             "clickhouse": os.getenv("REALTIME_GATEWAY_CLICKHOUSE_API_URL", "http://api:8080"),
@@ -199,11 +198,11 @@ class RealtimeGateway:
             }
         )
         self.consumer.subscribe([self.topic])
-        self.snapshot_tasks: dict[str, asyncio.Task[Any]] = {}
         self.consumer_task: asyncio.Task[Any] | None = None
         self.state: dict[str, Any] = {
             "state": "idle",
             "topic": self.topic,
+            "delivery_mode": "push-only",
             "messages_processed": 0,
             "last_event_id": None,
             "last_offsets": None,
@@ -217,8 +216,6 @@ class RealtimeGateway:
                 await self.consumer_task
             except asyncio.CancelledError:
                 pass
-        for task in self.snapshot_tasks.values():
-            task.cancel()
         await self.client.aclose()
         await asyncio.to_thread(self.consumer.close)
 
@@ -265,22 +262,6 @@ class RealtimeGateway:
             await subscription.websocket.send_json(message)
             return
         await self.manager.broadcast(backend, message)
-
-    def schedule_snapshot(self, backend: str, connection_id: str) -> None:
-        if backend not in self.active_backends:
-            return
-        task_key = f"{backend}:{connection_id}"
-        existing = self.snapshot_tasks.get(task_key)
-        if existing and not existing.done():
-            return
-        self.snapshot_tasks[task_key] = asyncio.create_task(self._flush_snapshot(backend, connection_id, task_key))
-
-    async def _flush_snapshot(self, backend: str, connection_id: str, task_key: str) -> None:
-        await asyncio.sleep(self.coalesce_seconds)
-        subscription = await self.manager.subscription(backend, connection_id)
-        if subscription is not None:
-            await self.send_snapshot(backend, filters=subscription.filters, connection_id=connection_id)
-        self.snapshot_tasks.pop(task_key, None)
 
     async def consume(self) -> None:
         while True:
@@ -330,8 +311,6 @@ class RealtimeGateway:
                         outbound_message,
                         matcher=lambda subscription: entry_matches_filters(entry, subscription.filters),
                     )
-                    for connection_id in matched_connection_ids:
-                        self.schedule_snapshot(backend, connection_id)
                 await asyncio.to_thread(self.consumer.commit, message=kafka_message, asynchronous=False)
             except asyncio.CancelledError:
                 raise

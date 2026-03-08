@@ -3,8 +3,8 @@ export type DashboardSummary = {
   as_of: string
   balance_sheet: {
     assets: { cash: number; bank_accounts: number; recoverable_tax: number; inventory: number; total: number }
-    liabilities: { accounts_payable: number; tax_payable: number; total: number }
-    equity: { current_earnings: number }
+    liabilities: { accounts_payable: number; short_term_loans: number; tax_payable: number; total: number }
+    equity: { current_earnings: number; total?: number }
     total_liabilities_and_equity: number
     difference: number
   }
@@ -15,6 +15,7 @@ export type DashboardSummary = {
     marketplace_fees: number
     freight_out: number
     bank_fees: number
+    financial_expenses: number
     other_expenses: number
     operating_expenses: number
     expenses: number

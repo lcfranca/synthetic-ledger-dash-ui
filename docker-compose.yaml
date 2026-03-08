@@ -334,6 +334,22 @@ services:
       master-data:
         condition: service_started
 
+  kafka-ui:
+    image: provectuslabs/kafka-ui:v0.7.2
+    restart: unless-stopped
+    mem_limit: ${KAFKA_UI_MEM_LIMIT:-256m}
+    cpus: ${KAFKA_UI_CPU_LIMIT:-0.5}
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_READONLY: "true"
+      DYNAMIC_CONFIG_ENABLED: "false"
+    ports:
+      - "8090:8080"
+    depends_on:
+      kafka:
+        condition: service_healthy
+
   storage-writer:
     build:
       context: .
@@ -348,7 +364,7 @@ services:
       TARGET_BACKENDS: ${TARGET_BACKENDS:-}
       KAFKA_FANOUT_TARGET_BACKENDS: ${KAFKA_FANOUT_TARGET_BACKENDS:-}
     ports:
-      - "8090:8090"
+      - "8092:8090"
     depends_on:
       kafka:
         condition: service_healthy
@@ -420,7 +436,9 @@ services:
       - pinot-broker
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend_pinot
+      dockerfile: Dockerfile.clickhouse
     mem_limit: ${FRONTEND_MEM_LIMIT:-192m}
     cpus: ${FRONTEND_CPU_LIMIT:-0.5}
     restart: unless-stopped
@@ -431,7 +449,7 @@ services:
 
   frontend-druid:
     build:
-      context: ./frontend
+      context: ./frontend_pinot
       dockerfile: Dockerfile.druid
     mem_limit: ${FRONTEND_DRUID_MEM_LIMIT:-192m}
     cpus: ${FRONTEND_DRUID_CPU_LIMIT:-0.5}

@@ -104,6 +104,7 @@ fi
 
 service_set[zookeeper]=1
 service_set[kafka]=1
+service_set[kafka-ui]=1
 service_set[master-data]=1
 service_set[storage-writer]=1
 service_set[realtime-gateway]=1
@@ -146,6 +147,7 @@ fi
 ordered_services=(
 	zookeeper
 	kafka
+	kafka-ui
 	clickhouse
 	druid-postgres
 	druid-coordinator

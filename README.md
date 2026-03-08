@@ -45,10 +45,11 @@ Cada painel é isolado em sua própria API e frontend, mas todos compartilham o 
 
 ### Endpoints de debug do fan-out
 
-- Último OTLP processado: `http://localhost:8090/debug/last-otlp`
-- Fan-out Kafka para backends diretos: `http://localhost:8090/debug/kafka-fanout`
-- Supervisor Kafka do Druid: `http://localhost:8090/debug/druid-supervisor`
-- Bootstrap realtime do Pinot: `http://localhost:8090/debug/pinot-realtime`
+- Kafka UI: `http://localhost:8090`
+- Último OTLP processado: `http://localhost:8092/debug/last-otlp`
+- Fan-out Kafka para backends diretos: `http://localhost:8092/debug/kafka-fanout`
+- Supervisor Kafka do Druid: `http://localhost:8092/debug/druid-supervisor`
+- Bootstrap realtime do Pinot: `http://localhost:8092/debug/pinot-realtime`
 
 ## Primeiros passos
 
@@ -109,7 +110,9 @@ O alvo `run` cria `.env` automaticamente a partir de `.env.example` se necessár
 
 1. `make health-clickhouse`
 2. `make smoke-clickhouse`
-3. Conexão analítica:
+3. `node scripts/verify_realtime_stream.mjs clickhouse 5173`
+4. `node scripts/verify_realtime_projection.mjs clickhouse 5173`
+5. Conexão analítica:
    - Host `localhost`
    - HTTP `8123`
    - Native `9000`
@@ -130,7 +133,7 @@ O alvo `run` cria `.env` automaticamente a partir de `.env.example` se necessár
 
 - Backend de leitura: Apache Druid
 - Alimentação: supervisor Kafka no datasource `ledger_events`
-- Debug: `http://localhost:8090/debug/druid-supervisor`
+- Debug: `http://localhost:8092/debug/druid-supervisor`
 
 ### Verificações rápidas
 
@@ -140,6 +143,8 @@ O alvo `run` cria `.env` automaticamente a partir de `.env.example` se necessár
    - `docker compose ps druid-router druid-broker druid-coordinator druid-overlord druid-middlemanager`
 4. Testar SQL:
    - `curl -X POST http://localhost:8889/druid/v2/sql -H 'Content-Type: application/json' -d '{"query":"SELECT COUNT(*) AS c FROM \"ledger_events\""}'`
+5. Validar stream push do frontend:
+   - `node scripts/verify_realtime_stream.mjs druid 5174`
 
 ### Troubleshooting comum
 
@@ -151,7 +156,7 @@ O alvo `run` cria `.env` automaticamente a partir de `.env.example` se necessár
       - `docker compose restart druid-broker druid-router`
 - Supervisor em `retrying` no writer:
    - Aguarde retries automáticos e confira:
-      - `curl http://localhost:8090/debug/druid-supervisor`
+      - `curl http://localhost:8092/debug/druid-supervisor`
    - Se necessário, reinicie writer após Druid estabilizar:
       - `docker compose restart storage-writer`
 
@@ -169,7 +174,7 @@ O alvo `run` cria `.env` automaticamente a partir de `.env.example` se necessár
 
 - Backend de leitura: Apache Pinot
 - Alimentação: tabela realtime Kafka `ledger_events`
-- Debug: `http://localhost:8090/debug/pinot-realtime`
+- Debug: `http://localhost:8092/debug/pinot-realtime`
 - Catálogo operacional agregado: `http://localhost:8082/api/v1/master-data/overview`
 
 ### Verificações rápidas
@@ -182,6 +187,8 @@ O alvo `run` cria `.env` automaticamente a partir de `.env.example` se necessár
    - `curl -X POST http://localhost:8099/query/sql -H 'Content-Type: application/json' -d '{"sql":"SELECT COUNT(*) AS c FROM ledger_events"}'`
 5. Conferir eventos explícitos novos:
    - `curl -fsS 'http://localhost:8082/api/v1/dashboard/entries?limit=80' | grep 'ontology_event_type'`
+6. Validar stream push do frontend:
+   - `node scripts/verify_realtime_stream.mjs pinot 5175`
 
 ### Master data e plano de contas
 

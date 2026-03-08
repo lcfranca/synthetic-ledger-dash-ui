@@ -121,13 +121,14 @@ class DashboardRepository:
         marketplace_fees: float,
         freight_out: float,
         bank_fees: float,
+        financial_expenses: float,
         other_expenses: float,
         cmv: float,
     ) -> dict[str, float | None]:
         net_revenue = round(revenue - returns, 2)
         gross_profit = round(net_revenue - cmv, 2)
         operating_expenses = round(marketplace_fees + freight_out + bank_fees + other_expenses, 2)
-        expenses_total = round(operating_expenses + cmv, 2)
+        expenses_total = round(operating_expenses + financial_expenses + cmv, 2)
         net_income = round(net_revenue - expenses_total, 2)
         return {
             "net_revenue": net_revenue,
@@ -197,18 +198,21 @@ class DashboardRepository:
             COALESCE(SUM(CASE WHEN account_role = 'recoverable_tax' THEN signed_amount ELSE 0 END), 0) AS recoverable_tax,
             COALESCE(SUM(CASE WHEN account_role = 'inventory' THEN signed_amount ELSE 0 END), 0) AS inventory,
             ABS(COALESCE(SUM(CASE WHEN account_role = 'accounts_payable' THEN signed_amount ELSE 0 END), 0)) AS accounts_payable,
+            ABS(COALESCE(SUM(CASE WHEN account_role = 'short_term_loans' THEN signed_amount ELSE 0 END), 0)) AS short_term_loans,
             ABS(COALESCE(SUM(CASE WHEN account_role = 'tax_payable' THEN signed_amount ELSE 0 END), 0)) AS tax_payable,
             ABS(COALESCE(SUM(CASE WHEN account_role = 'revenue' THEN signed_amount ELSE 0 END), 0)) AS revenue,
             COALESCE(SUM(CASE WHEN account_role = 'returns' THEN signed_amount ELSE 0 END), 0) AS returns,
             COALESCE(SUM(CASE WHEN account_role = 'marketplace_fees' THEN signed_amount ELSE 0 END), 0) AS marketplace_fees,
             COALESCE(SUM(CASE WHEN account_role = 'outbound_freight' THEN signed_amount ELSE 0 END), 0) AS freight_out,
             COALESCE(SUM(CASE WHEN account_role = 'bank_fees' THEN signed_amount ELSE 0 END), 0) AS bank_fees,
+            COALESCE(SUM(CASE WHEN account_role = 'interest_expense' THEN signed_amount ELSE 0 END), 0) AS financial_expenses,
             COALESCE(SUM(CASE WHEN account_role = 'cogs' THEN signed_amount ELSE 0 END), 0) AS cmv,
             COALESCE(SUM(CASE WHEN statement_section = 'expense'
                 AND account_role != 'cogs'
                 AND account_role != 'marketplace_fees'
                 AND account_role != 'outbound_freight'
                 AND account_role != 'bank_fees'
+                AND account_role != 'interest_expense'
             THEN signed_amount ELSE 0 END), 0) AS other_expenses
         FROM {self.table}
         WHERE {where_clause}
@@ -222,12 +226,14 @@ class DashboardRepository:
         recoverable_tax = round(float(row.get("recoverable_tax", 0.0)), 2)
         inventory = round(float(row.get("inventory", 0.0)), 2)
         accounts_payable = round(float(row.get("accounts_payable", 0.0)), 2)
+        short_term_loans = round(float(row.get("short_term_loans", 0.0)), 2)
         tax_payable = round(float(row.get("tax_payable", 0.0)), 2)
         revenue = round(float(row.get("revenue", 0.0)), 2)
         returns = round(float(row.get("returns", 0.0)), 2)
         marketplace_fees = round(float(row.get("marketplace_fees", 0.0)), 2)
         freight_out = round(float(row.get("freight_out", 0.0)), 2)
         bank_fees = round(float(row.get("bank_fees", 0.0)), 2)
+        financial_expenses = round(float(row.get("financial_expenses", 0.0)), 2)
         cmv = round(float(row.get("cmv", 0.0)), 2)
         other_expenses = round(float(row.get("other_expenses", 0.0)), 2)
         metrics = self._income_statement_metrics(
@@ -236,17 +242,19 @@ class DashboardRepository:
             marketplace_fees=marketplace_fees,
             freight_out=freight_out,
             bank_fees=bank_fees,
+            financial_expenses=financial_expenses,
             other_expenses=other_expenses,
             cmv=cmv,
         )
-        liabilities_total = round(accounts_payable + tax_payable, 2)
+        liabilities_total = round(accounts_payable + short_term_loans + tax_payable, 2)
         net_revenue = round(float(metrics["net_revenue"] or 0.0), 2)
         gross_profit = round(float(metrics["gross_profit"] or 0.0), 2)
         operating_expenses = round(float(metrics["operating_expenses"] or 0.0), 2)
         expenses_total = round(float(metrics["expenses"] or 0.0), 2)
         net_income = round(float(metrics["net_income"] or 0.0), 2)
         assets_total = round(cash + bank_accounts + recoverable_tax + inventory, 2)
-        liabilities_and_equity = round(liabilities_total + net_income, 2)
+        equity_total = round(assets_total - liabilities_total, 2)
+        liabilities_and_equity = round(liabilities_total + equity_total, 2)
         difference = round(assets_total - liabilities_and_equity, 2)
 
         return {
@@ -262,11 +270,13 @@ class DashboardRepository:
                 },
                 "liabilities": {
                     "accounts_payable": accounts_payable,
+                    "short_term_loans": short_term_loans,
                     "tax_payable": tax_payable,
                     "total": liabilities_total,
                 },
                 "equity": {
                     "current_earnings": net_income,
+                    "total": equity_total,
                 },
                 "total_liabilities_and_equity": liabilities_and_equity,
                 "difference": difference,
@@ -278,6 +288,7 @@ class DashboardRepository:
                 "marketplace_fees": marketplace_fees,
                 "freight_out": freight_out,
                 "bank_fees": bank_fees,
+                "financial_expenses": financial_expenses,
                 "other_expenses": other_expenses,
                 "operating_expenses": operating_expenses,
                 "expenses": expenses_total,
@@ -866,7 +877,7 @@ class DashboardRepository:
                 f"""
                 SELECT
                     product_id,
-                    ROUND(SUM(CASE WHEN account_role = 'inventory' THEN CASE WHEN entry_side = 'debit' THEN quantity ELSE 0 - quantity END ELSE 0 END), 3) AS stock_quantity,
+                    ROUND(SUM(CASE WHEN account_role = 'inventory' AND (order_id IS NULL OR order_id NOT LIKE 'BOOT-%') THEN CASE WHEN entry_side = 'debit' THEN quantity ELSE 0 - quantity END ELSE 0 END), 3) AS stock_delta_quantity,
                     ROUND(SUM(CASE WHEN ontology_event_type = 'sale' AND account_role = 'inventory' THEN quantity ELSE 0 END), 3) AS sold_quantity,
                     ROUND(SUM(CASE WHEN ontology_event_type = 'return' AND account_role = 'inventory' THEN quantity ELSE 0 END), 3) AS returned_quantity,
                     ROUND(SUM(CASE WHEN account_role = 'revenue' THEN amount ELSE 0 END), 2) AS revenue_amount,
@@ -897,7 +908,8 @@ class DashboardRepository:
             average_purchase_price = round(float(aggregate.get("purchase_price_sum", 0.0)) / purchase_event_count, 2) if purchase_event_count else round(float(product.get("base_cost", 0.0)), 2)
             average_sale_price = round(float(aggregate.get("sale_price_sum", 0.0)) / sale_event_count, 2) if sale_event_count else round(float(product.get("base_price", 0.0)), 2)
             opening_stock_quantity = round(sum(float(value) for value in (product.get("initial_stock") or {}).values()), 3)
-            stock_quantity = round(max(float(aggregate.get("stock_quantity", 0.0)), 0.0), 3)
+            stock_delta_quantity = float(aggregate.get("stock_delta_quantity", 0.0) or 0.0)
+            stock_quantity = round(max(opening_stock_quantity + stock_delta_quantity, 0.0), 3)
             sold_quantity = round(float(aggregate.get("sold_quantity", 0.0)), 3)
             returned_quantity = round(float(aggregate.get("returned_quantity", 0.0)), 3)
             net_sold_quantity = round(max(sold_quantity - returned_quantity, 0.0), 3)

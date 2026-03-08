@@ -1,12 +1,20 @@
 import { startTransition, useCallback, useEffect, useRef, useState } from 'react'
 import { buildFilterSearchParams, type EntryFilters, type RealtimeEnvelope, type WorkspaceSnapshot } from '../../../entities/dashboard/api'
 import {
+  appendPendingRealtimeEntry,
   isDashboardEnvelope,
   isEntryCreatedEnvelope,
   preferIncomingSnapshot,
+  projectRealtimeWorkspace,
+  reconcilePendingRealtimeTransactions,
+  reconcilePendingRealtimeEntries,
+  releaseMatureRealtimeTransactions,
+  upsertPendingRealtimeTransaction,
   withRealtimeEntry,
 } from '../../../entities/dashboard/lib/realtime'
 import { useReconnectSession } from '../../reconnect-session/model/useReconnectSession'
+
+const TRANSACTION_HOLDBACK_MS = 120
 
 type Params = {
   backend: string
@@ -22,30 +30,99 @@ export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPau
   const [socketStatus, setSocketStatus] = useState<'idle' | 'connecting' | 'open' | 'closed' | 'error'>('idle')
   const [bufferedEventCount, setBufferedEventCount] = useState(0)
   const seedWorkspaceRef = useRef<WorkspaceSnapshot | null>(initialWorkspace ?? null)
+  const baseWorkspaceRef = useRef<WorkspaceSnapshot | null>(initialWorkspace ?? null)
   const websocketRef = useRef<WebSocket | null>(null)
   const cancelledRef = useRef(false)
   const pausedRef = useRef(isPaused)
   const bufferedMessagesRef = useRef<Array<RealtimeEnvelope | WorkspaceSnapshot>>([])
+  const pendingEntriesRef = useRef<ReturnType<typeof appendPendingRealtimeEntry>>([])
+  const pendingTransactionsRef = useRef<ReturnType<typeof upsertPendingRealtimeTransaction>>([])
+  const transactionFlushTimerRef = useRef<number | null>(null)
+  const keepaliveTimerRef = useRef<number | null>(null)
   const connectionSerialRef = useRef(0)
   const filterQuery = buildFilterSearchParams(filters).toString()
 
   const { scheduleReconnect, clearReconnect } = useReconnectSession({ delayMs: 1500 })
+
+  const rebuildProjectedWorkspace = useCallback(() => {
+    const projectedBase = baseWorkspaceRef.current ?? seedWorkspaceRef.current
+    return projectRealtimeWorkspace(projectedBase, pendingEntriesRef.current)
+  }, [])
+
+  const flushMatureTransactions = useCallback(() => {
+    transactionFlushTimerRef.current = null
+    pendingTransactionsRef.current = reconcilePendingRealtimeTransactions(
+      baseWorkspaceRef.current ?? seedWorkspaceRef.current,
+      pendingTransactionsRef.current,
+    )
+
+    const { ready, waiting } = releaseMatureRealtimeTransactions(pendingTransactionsRef.current, TRANSACTION_HOLDBACK_MS)
+    pendingTransactionsRef.current = waiting
+
+    if (ready.length > 0) {
+      let nextPendingEntries = pendingEntriesRef.current
+      for (const transaction of ready) {
+        for (const entry of transaction.entries) {
+          nextPendingEntries = appendPendingRealtimeEntry(nextPendingEntries, {
+            event_id: entry.eventId,
+            event_type: 'entry.created',
+            version: '1.0.0',
+            backend: entry.backend,
+            ts: entry.ts,
+            payload: entry.payload,
+          }, entry.receivedAt)
+        }
+      }
+      pendingEntriesRef.current = reconcilePendingRealtimeEntries(baseWorkspaceRef.current ?? seedWorkspaceRef.current, nextPendingEntries)
+    }
+
+    if (pendingTransactionsRef.current.length > 0) {
+      transactionFlushTimerRef.current = window.setTimeout(flushMatureTransactions, TRANSACTION_HOLDBACK_MS)
+    }
+
+    const nextWorkspace = rebuildProjectedWorkspace()
+    startTransition(() => {
+      setLiveWorkspace(nextWorkspace)
+    })
+
+    return nextWorkspace
+  }, [rebuildProjectedWorkspace])
+
+  const scheduleTransactionFlush = useCallback(() => {
+    if (transactionFlushTimerRef.current !== null) {
+      return
+    }
+    transactionFlushTimerRef.current = window.setTimeout(flushMatureTransactions, TRANSACTION_HOLDBACK_MS)
+  }, [flushMatureTransactions])
 
   const applyEnvelope = useCallback((current: WorkspaceSnapshot | null, parsed: RealtimeEnvelope | WorkspaceSnapshot) => {
     if (isEntryCreatedEnvelope(parsed)) {
       if (mode === 'snapshot-only') {
         return current ?? seedWorkspaceRef.current
       }
-      return withRealtimeEntry(current ?? seedWorkspaceRef.current, parsed.payload, parsed.backend, parsed.ts)
+
+      pendingTransactionsRef.current = upsertPendingRealtimeTransaction(pendingTransactionsRef.current, parsed)
+      scheduleTransactionFlush()
+      return current ?? rebuildProjectedWorkspace()
     }
+
     if (isDashboardEnvelope(parsed)) {
-      return preferIncomingSnapshot(current, { ...parsed.payload, backend: parsed.backend })
+      const nextBase = preferIncomingSnapshot(baseWorkspaceRef.current ?? seedWorkspaceRef.current, { ...parsed.payload, backend: parsed.backend })
+      baseWorkspaceRef.current = nextBase
+      pendingEntriesRef.current = reconcilePendingRealtimeEntries(nextBase, pendingEntriesRef.current)
+      pendingTransactionsRef.current = reconcilePendingRealtimeTransactions(nextBase, pendingTransactionsRef.current)
+      return projectRealtimeWorkspace(nextBase, pendingEntriesRef.current)
     }
+
     if ('event_type' in parsed) {
       return current
     }
-    return parsed
-  }, [mode])
+
+    baseWorkspaceRef.current = parsed
+    pendingEntriesRef.current = reconcilePendingRealtimeEntries(parsed, pendingEntriesRef.current)
+    pendingTransactionsRef.current = reconcilePendingRealtimeTransactions(parsed, pendingTransactionsRef.current)
+    return projectRealtimeWorkspace(parsed, pendingEntriesRef.current)
+  }, [mode, rebuildProjectedWorkspace, scheduleTransactionFlush])
 
   const flushBufferedMessages = useCallback(() => {
     if (bufferedMessagesRef.current.length === 0) {
@@ -72,8 +149,15 @@ export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPau
     bufferedMessagesRef.current = []
     setBufferedEventCount(0)
     seedWorkspaceRef.current = initialWorkspace ?? null
+    baseWorkspaceRef.current = initialWorkspace ?? null
+    pendingEntriesRef.current = []
+    pendingTransactionsRef.current = []
+    if (transactionFlushTimerRef.current !== null) {
+      window.clearTimeout(transactionFlushTimerRef.current)
+      transactionFlushTimerRef.current = null
+    }
     startTransition(() => {
-      setLiveWorkspace(initialWorkspace ?? null)
+      setLiveWorkspace(projectRealtimeWorkspace(initialWorkspace ?? null, pendingEntriesRef.current))
     })
   }, [backend, filterQuery, initialWorkspace])
 
@@ -82,6 +166,10 @@ export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPau
       return
     }
     setSocketStatus('idle')
+    if (keepaliveTimerRef.current !== null) {
+      window.clearInterval(keepaliveTimerRef.current)
+      keepaliveTimerRef.current = null
+    }
     websocketRef.current?.close()
     websocketRef.current = null
   }, [enabled])
@@ -108,10 +196,22 @@ export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPau
         return
       }
       setSocketStatus('open')
+      if (keepaliveTimerRef.current !== null) {
+        window.clearInterval(keepaliveTimerRef.current)
+      }
+      keepaliveTimerRef.current = window.setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send('ping')
+        }
+      }, 15000)
     }
     ws.onclose = () => {
       if (connectionSerialRef.current !== connectionSerial) {
         return
+      }
+      if (keepaliveTimerRef.current !== null) {
+        window.clearInterval(keepaliveTimerRef.current)
+        keepaliveTimerRef.current = null
       }
       if (cancelledRef.current) {
         return
@@ -122,6 +222,10 @@ export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPau
     ws.onerror = () => {
       if (connectionSerialRef.current !== connectionSerial) {
         return
+      }
+      if (keepaliveTimerRef.current !== null) {
+        window.clearInterval(keepaliveTimerRef.current)
+        keepaliveTimerRef.current = null
       }
       setSocketStatus('error')
       ws.close()
@@ -146,6 +250,10 @@ export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPau
       if (connectionSerialRef.current === connectionSerial) {
         connectionSerialRef.current += 1
       }
+      if (keepaliveTimerRef.current !== null) {
+        window.clearInterval(keepaliveTimerRef.current)
+        keepaliveTimerRef.current = null
+      }
       ws.close()
     }
   }, [applyEnvelope, backend, clearReconnect, enabled, filterQuery, scheduleReconnect])
@@ -162,6 +270,15 @@ export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPau
       websocketRef.current = null
       bufferedMessagesRef.current = []
       setBufferedEventCount(0)
+      pendingTransactionsRef.current = []
+      if (keepaliveTimerRef.current !== null) {
+        window.clearInterval(keepaliveTimerRef.current)
+        keepaliveTimerRef.current = null
+      }
+      if (transactionFlushTimerRef.current !== null) {
+        window.clearTimeout(transactionFlushTimerRef.current)
+        transactionFlushTimerRef.current = null
+      }
     }
   }, [clearReconnect, connect])
 

@@ -143,6 +143,12 @@ class SupplierPayable:
     unit_cost: float
 
 
+@dataclass
+class WorkingCapitalSnapshot:
+    accrued_since_tick: int
+    next_interest_due_tick: int | None
+
+
 class Catalog:
     def __init__(self) -> None:
         self.company = self._load_json("company_profile.json")
@@ -190,6 +196,8 @@ class RetailSimulation:
         self.pending_supplier_payments: list[SupplierPayable] = []
         self.current_tick = 0
         self.market_temperature = 1.0
+        self.outstanding_working_capital = 0.0
+        self.working_capital = WorkingCapitalSnapshot(accrued_since_tick=0, next_interest_due_tick=None)
         self.demand_state = {
             product.product_id: {
                 "level": self.random.uniform(0.88, 1.12),
@@ -199,6 +207,23 @@ class RetailSimulation:
         }
         self.liquidity = {"cash": 0.0, "bank_accounts": 0.0}
         self.document_sequence = 0
+        treasury_warehouse_id = next(iter(catalog.warehouses))
+        self.treasury_product = Product(
+            product_id="FIN-WC-001",
+            product_name="Capital de Giro",
+            product_category="Tesouraria",
+            product_brand="Aurora Treasury",
+            preferred_supplier_id=next(iter(catalog.suppliers)),
+            default_warehouse_id=treasury_warehouse_id,
+            base_cost=1.0,
+            base_price=1.0,
+            tax_rate=0.0,
+            reorder_point=0,
+            target_stock=0,
+            demand_weight=0.0,
+            initial_stock={treasury_warehouse_id: 0},
+            channel_ids=["b2b_procurement"],
+        )
         for product in catalog.products.values():
             for warehouse_id, quantity in product.initial_stock.items():
                 self.inventory[(product.product_id, warehouse_id)] = {
@@ -278,6 +303,12 @@ class RetailSimulation:
             return self.account_code("bank_accounts")
         return self.account_code("cash")
 
+    def treasury_warehouse(self) -> Warehouse:
+        return self.catalog.warehouses[self.treasury_product.default_warehouse_id]
+
+    def treasury_channel(self) -> Channel:
+        return self.catalog.channels["b2b_procurement"]
+
     def _update_market_state(self) -> None:
         self.market_temperature = max(0.82, min(1.24, (self.market_temperature * 0.92) + (self.random.uniform(0.88, 1.14) * 0.08)))
         for state in self.demand_state.values():
@@ -302,6 +333,274 @@ class RetailSimulation:
 
     def available_liquidity(self) -> float:
         return round(self.liquidity["cash"] + self.liquidity["bank_accounts"], 2)
+
+    def distributable_liquidity(self) -> float:
+        return round(max(self.available_liquidity() - self.minimum_operating_reserve(), 0.0), 2)
+
+    def target_bank_liquidity(self) -> float:
+        due_freights = len([item for item in self.pending_freights if int(item.get("due_tick", self.current_tick)) <= self.current_tick + 2])
+        due_payables_amount = sum(item.outstanding_amount for item in self.pending_supplier_payments if item.due_tick <= self.current_tick + 4)
+        target = max(900.0, min(7000.0, due_freights * 24.0 + (due_payables_amount * 0.18)))
+        return round(target, 2)
+
+    def minimum_operating_reserve(self) -> float:
+        due_payables_amount = sum(item.outstanding_amount for item in self.pending_supplier_payments if item.due_tick <= self.current_tick + 6)
+        due_freights = len([item for item in self.pending_freights if int(item.get("due_tick", self.current_tick)) <= self.current_tick + 2])
+        returnable_sales = self.returnable_sales()
+        expected_refund_buffer = 0.0
+        for sale in returnable_sales[:24]:
+            quantity = max(float(sale.get("quantity", 0.0)), 1.0)
+            refundable_total = float(sale.get("net_amount", 0.0)) + float(sale.get("tax", 0.0))
+            expected_refund_buffer += (refundable_total / quantity) * min(float(sale.get("returnable_quantity", 0.0)), 1.0)
+        reserve = max(1200.0, min(9000.0, due_freights * 18.0 + (due_payables_amount * 0.08) + (expected_refund_buffer * 0.35)))
+        return round(reserve, 2)
+
+    def choose_settlement_account(self, amount: float, *, preferred_role: str = "bank_accounts") -> str:
+        bank_code = self.account_code("bank_accounts")
+        cash_code = self.account_code("cash")
+        available_bank = self.liquidity["bank_accounts"]
+        available_cash = self.liquidity["cash"]
+
+        if preferred_role == "bank_accounts" and available_bank >= amount:
+            return bank_code
+        if preferred_role == "cash" and available_cash >= amount:
+            return cash_code
+        if available_bank >= amount:
+            return bank_code
+        if available_cash >= amount:
+            return cash_code
+        return bank_code if available_bank >= available_cash else cash_code
+
+    def next_treasury_transfer(self, amount: float) -> dict[str, Any]:
+        transfer_amount = round(max(amount, 0.0), 2)
+        self.update_liquidity(self.account_code("cash"), -transfer_amount)
+        self.update_liquidity(self.account_code("bank_accounts"), transfer_amount)
+        warehouse = self.treasury_warehouse()
+        return {
+            "event_type": "treasury_transfer",
+            "order_id": self.next_document_id("TRF"),
+            "product": self.treasury_product,
+            "supplier": None,
+            "warehouse": warehouse,
+            "channel": self.treasury_channel(),
+            "quantity": 1.0,
+            "unit_price": transfer_amount,
+            "gross_amount": transfer_amount,
+            "discount": 0.0,
+            "net_amount": transfer_amount,
+            "tax": 0.0,
+            "marketplace_fee": 0.0,
+            "cost_basis": 0.0,
+            "cmv": 0.0,
+            "sale_id": None,
+            "customer_id": None,
+            "customer_name": None,
+            "customer_cpf": None,
+            "customer_email": None,
+            "customer_segment": None,
+            "payment_method": "internal_sweep",
+            "payment_installments": 1,
+            "order_status": "settled",
+            "order_origin": "treasury",
+            "coupon_code": None,
+            "device_type": None,
+            "sales_region": warehouse.state,
+            "freight_service": None,
+            "cart_items_count": 1,
+            "cart_quantity": 0.0,
+            "cart_gross_amount": transfer_amount,
+            "cart_discount": 0.0,
+            "cart_net_amount": transfer_amount,
+            "sale_line_index": 1,
+            "debit_account": self.account_code("bank_accounts"),
+            "credit_account": self.account_code("cash"),
+        }
+
+    def next_working_capital_loan(self, amount: float) -> dict[str, Any]:
+        loan_amount = round(max(amount, 0.0), 2)
+        if self.outstanding_working_capital <= 0.01:
+            self.working_capital.accrued_since_tick = self.current_tick
+        self.update_liquidity(self.account_code("bank_accounts"), loan_amount)
+        self.outstanding_working_capital = round(self.outstanding_working_capital + loan_amount, 2)
+        if self.working_capital.next_interest_due_tick is None:
+            self.working_capital.next_interest_due_tick = self.current_tick + self.random.randint(6, 12)
+        warehouse = self.treasury_warehouse()
+        return {
+            "event_type": "working_capital_loan",
+            "order_id": self.next_document_id("LOAN"),
+            "product": self.treasury_product,
+            "supplier": None,
+            "warehouse": warehouse,
+            "channel": self.treasury_channel(),
+            "quantity": 1.0,
+            "unit_price": loan_amount,
+            "gross_amount": loan_amount,
+            "discount": 0.0,
+            "net_amount": loan_amount,
+            "tax": 0.0,
+            "marketplace_fee": 0.0,
+            "cost_basis": 0.0,
+            "cmv": 0.0,
+            "sale_id": None,
+            "customer_id": None,
+            "customer_name": None,
+            "customer_cpf": None,
+            "customer_email": None,
+            "customer_segment": None,
+            "payment_method": "working_capital",
+            "payment_installments": 1,
+            "order_status": "funded",
+            "order_origin": "treasury",
+            "coupon_code": None,
+            "device_type": None,
+            "sales_region": warehouse.state,
+            "freight_service": None,
+            "cart_items_count": 1,
+            "cart_quantity": 0.0,
+            "cart_gross_amount": loan_amount,
+            "cart_discount": 0.0,
+            "cart_net_amount": loan_amount,
+            "sale_line_index": 1,
+            "debit_account": self.account_code("bank_accounts"),
+            "credit_account": self.account_code("short_term_loans"),
+        }
+
+    def next_working_capital_repayment(self, amount: float) -> dict[str, Any]:
+        repayment_amount = round(min(max(amount, 0.0), self.outstanding_working_capital, self.liquidity["bank_accounts"]), 2)
+        self.update_liquidity(self.account_code("bank_accounts"), -repayment_amount)
+        self.outstanding_working_capital = round(max(self.outstanding_working_capital - repayment_amount, 0.0), 2)
+        if self.outstanding_working_capital <= 0.01:
+            self.working_capital.accrued_since_tick = self.current_tick
+            self.working_capital.next_interest_due_tick = None
+        warehouse = self.treasury_warehouse()
+        return {
+            "event_type": "working_capital_repayment",
+            "order_id": self.next_document_id("LOANPAY"),
+            "product": self.treasury_product,
+            "supplier": None,
+            "warehouse": warehouse,
+            "channel": self.treasury_channel(),
+            "quantity": 1.0,
+            "unit_price": repayment_amount,
+            "gross_amount": repayment_amount,
+            "discount": 0.0,
+            "net_amount": repayment_amount,
+            "tax": 0.0,
+            "marketplace_fee": 0.0,
+            "cost_basis": 0.0,
+            "cmv": 0.0,
+            "sale_id": None,
+            "customer_id": None,
+            "customer_name": None,
+            "customer_cpf": None,
+            "customer_email": None,
+            "customer_segment": None,
+            "payment_method": "working_capital_repayment",
+            "payment_installments": 1,
+            "order_status": "settled",
+            "order_origin": "treasury",
+            "coupon_code": None,
+            "device_type": None,
+            "sales_region": warehouse.state,
+            "freight_service": None,
+            "cart_items_count": 1,
+            "cart_quantity": 0.0,
+            "cart_gross_amount": repayment_amount,
+            "cart_discount": 0.0,
+            "cart_net_amount": repayment_amount,
+            "sale_line_index": 1,
+            "debit_account": self.account_code("short_term_loans"),
+            "credit_account": self.account_code("bank_accounts"),
+        }
+
+    def working_capital_daily_rate(self) -> float:
+        liquidity_base = max(self.available_liquidity() + self.outstanding_working_capital, 1.0)
+        utilization = min(max(self.outstanding_working_capital / liquidity_base, 0.0), 1.0)
+        return min(max(0.0008 + utilization * 0.00035 + self.random.uniform(-0.00005, 0.00008), 0.0007), 0.00145)
+
+    def due_working_capital_interest_amount(self) -> float:
+        elapsed_ticks = max(self.current_tick - self.working_capital.accrued_since_tick, 1)
+        accrued_amount = self.outstanding_working_capital * self.working_capital_daily_rate() * elapsed_ticks
+        return round(min(max(accrued_amount, 9.0), max(self.outstanding_working_capital * 0.024, 9.0)), 2)
+
+    def next_working_capital_interest_payment(self, amount: float) -> dict[str, Any]:
+        interest_amount = round(max(amount, 0.0), 2)
+        settlement_account = self.choose_settlement_account(interest_amount, preferred_role="bank_accounts")
+        self.update_liquidity(settlement_account, -interest_amount)
+        self.working_capital.accrued_since_tick = self.current_tick
+        self.working_capital.next_interest_due_tick = self.current_tick + self.random.randint(6, 12) if self.outstanding_working_capital > 0.01 else None
+        warehouse = self.treasury_warehouse()
+        return {
+            "event_type": "working_capital_interest_payment",
+            "order_id": self.next_document_id("LOANINT"),
+            "product": self.treasury_product,
+            "supplier": None,
+            "warehouse": warehouse,
+            "channel": self.treasury_channel(),
+            "quantity": 1.0,
+            "unit_price": interest_amount,
+            "gross_amount": interest_amount,
+            "discount": 0.0,
+            "net_amount": interest_amount,
+            "tax": 0.0,
+            "marketplace_fee": 0.0,
+            "cost_basis": 0.0,
+            "cmv": 0.0,
+            "sale_id": None,
+            "customer_id": None,
+            "customer_name": None,
+            "customer_cpf": None,
+            "customer_email": None,
+            "customer_segment": None,
+            "payment_method": "working_capital_interest",
+            "payment_installments": 1,
+            "order_status": "settled",
+            "order_origin": "treasury",
+            "coupon_code": None,
+            "device_type": None,
+            "sales_region": warehouse.state,
+            "freight_service": None,
+            "cart_items_count": 1,
+            "cart_quantity": 0.0,
+            "cart_gross_amount": interest_amount,
+            "cart_discount": 0.0,
+            "cart_net_amount": interest_amount,
+            "sale_line_index": 1,
+            "debit_account": self.account_code("interest_expense"),
+            "credit_account": settlement_account,
+        }
+
+    def maybe_pay_working_capital_interest(self) -> dict[str, Any] | None:
+        if self.outstanding_working_capital <= 0.01:
+            self.working_capital.next_interest_due_tick = None
+            return None
+        due_tick = self.working_capital.next_interest_due_tick
+        if due_tick is None or due_tick > self.current_tick:
+            return None
+        interest_amount = self.due_working_capital_interest_amount()
+        if self.available_liquidity() < (interest_amount + self.minimum_operating_reserve()):
+            return self.next_working_capital_loan(interest_amount + self.minimum_operating_reserve() - self.available_liquidity())
+        return self.next_working_capital_interest_payment(interest_amount)
+
+    def maybe_rebalance_treasury(self) -> dict[str, Any] | None:
+        bank_gap = round(max(self.target_bank_liquidity() - self.liquidity["bank_accounts"], 0.0), 2)
+        cash_floor = round(min(self.minimum_operating_reserve() * 0.35, 1800.0), 2)
+        transferable = round(max(self.liquidity["cash"] - cash_floor, 0.0), 2)
+        transfer_amount = round(min(bank_gap, transferable), 2)
+        if transfer_amount >= 250.0:
+            return self.next_treasury_transfer(transfer_amount)
+        return None
+
+    def maybe_raise_working_capital(self) -> dict[str, Any] | None:
+        reserve_shortfall = max(self.minimum_operating_reserve() - self.available_liquidity(), 0.0)
+        bank_shortfall = max(self.target_bank_liquidity() - self.liquidity["bank_accounts"], 0.0)
+        if reserve_shortfall <= 0.0 and self.available_liquidity() >= max(self.target_bank_liquidity(), 1200.0):
+            return None
+        required = round(max(reserve_shortfall, bank_shortfall), 2)
+        if required < 400.0:
+            return None
+        loan_amount = round(min(max(required * self.random.uniform(1.2, 1.6), 850.0), 6500.0), 2)
+        return self.next_working_capital_loan(loan_amount)
 
     def procurement_lead_ticks(self, supplier: Supplier) -> int:
         base = max(supplier.lead_time_days, 2)
@@ -659,13 +958,17 @@ class RetailSimulation:
         payable = self.choice_weighted(due_payables, lambda item: item.outstanding_amount)
         available_bank = self.liquidity["bank_accounts"]
         available_cash = self.liquidity["cash"]
-        available_total = available_bank + available_cash
-        if available_total < 50:
+        distributable_total = self.distributable_liquidity()
+        if distributable_total < 50:
             return self.next_sale()
 
         target_payment = payable.outstanding_amount * self.random.uniform(0.35, 0.8)
-        payment_amount = round(min(payable.outstanding_amount, max(min(target_payment, available_total), min(payable.outstanding_amount, available_total))), 2)
-        payment_account = self.account_code("bank_accounts") if available_bank >= payment_amount or available_bank >= available_cash else self.account_code("cash")
+        payment_amount = round(min(
+            payable.outstanding_amount,
+            max(min(target_payment, distributable_total), min(payable.outstanding_amount, distributable_total)),
+            max(available_bank, available_cash),
+        ), 2)
+        payment_account = self.choose_settlement_account(payment_amount, preferred_role="bank_accounts")
         self.update_liquidity(payment_account, -payment_amount)
 
         payable.outstanding_amount = round(max(payable.outstanding_amount - payment_amount, 0.0), 2)
@@ -765,6 +1068,14 @@ class RetailSimulation:
             lambda item: float(item["returnable_quantity"]) * max(float(item.get("return_propensity", 0.01)), 0.004),
         )
         quantity = float(self.random.randint(1, min(int(sale["returnable_quantity"]), 2)))
+        gross_amount = round(self.per_unit(sale["gross_amount"], sale["quantity"]) * quantity, 2)
+        discount = round(self.per_unit(sale["discount"], sale["quantity"]) * quantity, 2)
+        net_amount = round(self.per_unit(sale["net_amount"], sale["quantity"]) * quantity, 2)
+        tax_amount = round(self.per_unit(sale["tax"], sale["quantity"]) * quantity, 2)
+        cmv = round(self.per_unit(sale["cmv"], sale["quantity"]) * quantity, 2)
+        refund_total = round(net_amount + tax_amount, 2)
+        if self.available_liquidity() < (refund_total + self.minimum_operating_reserve()):
+            return self.next_working_capital_loan(refund_total + self.minimum_operating_reserve() - self.available_liquidity())
         sale["returnable_quantity"] = round(float(sale["returnable_quantity"]) - quantity, 2)
         stock = self.inventory.setdefault(
             (sale["product"].product_id, sale["warehouse"].warehouse_id),
@@ -772,13 +1083,8 @@ class RetailSimulation:
         )
         stock["quantity"] = round(stock["quantity"] + quantity, 2)
         stock["avg_cost"] = round(float(sale["cost_basis"]), 4)
-        gross_amount = round(self.per_unit(sale["gross_amount"], sale["quantity"]) * quantity, 2)
-        discount = round(self.per_unit(sale["discount"], sale["quantity"]) * quantity, 2)
-        net_amount = round(self.per_unit(sale["net_amount"], sale["quantity"]) * quantity, 2)
-        tax_amount = round(self.per_unit(sale["tax"], sale["quantity"]) * quantity, 2)
-        cmv = round(self.per_unit(sale["cmv"], sale["quantity"]) * quantity, 2)
-        refund_account = sale["debit_account"]
-        self.update_liquidity(refund_account, -round(net_amount + tax_amount, 2))
+        refund_account = self.choose_settlement_account(refund_total, preferred_role="cash" if sale["debit_account"] == self.account_code("cash") else "bank_accounts")
+        self.update_liquidity(refund_account, -refund_total)
         return {
             "event_type": "return",
             "order_id": sale["order_id"],
@@ -826,7 +1132,12 @@ class RetailSimulation:
         base_per_unit = 4.5 if sale["product"].product_category in {"Telefonia", "Eletronicos"} else 3.2
         freight_amount = round(base_per_unit * sale["quantity"] * self.random.uniform(0.95, 1.35), 2)
         bank_fee = round(max(freight_amount * self.random.uniform(0.008, 0.018), 0.35), 2)
-        self.update_liquidity(self.account_code("bank_accounts"), -round(freight_amount + bank_fee, 2))
+        settlement_total = round(freight_amount + bank_fee, 2)
+        if self.available_liquidity() < (settlement_total + self.minimum_operating_reserve()):
+            self.pending_freights.insert(0, sale)
+            return self.next_working_capital_loan(settlement_total + self.minimum_operating_reserve() - self.available_liquidity())
+        settlement_account = self.choose_settlement_account(settlement_total, preferred_role="bank_accounts")
+        self.update_liquidity(settlement_account, -settlement_total)
         return {
             "event_type": "freight",
             "order_id": sale["order_id"],
@@ -864,7 +1175,7 @@ class RetailSimulation:
             "cart_net_amount": sale.get("cart_net_amount", sale["net_amount"]),
             "sale_line_index": sale.get("sale_line_index", 1),
             "debit_account": self.account_code("outbound_freight"),
-            "credit_account": self.account_code("bank_accounts"),
+            "credit_account": settlement_account,
         }
 
     def current_quantity(self, product_id: str) -> float:
@@ -877,6 +1188,18 @@ class RetailSimulation:
         self.current_tick += 1
         self._update_market_state()
         self.schedule_procurement()
+
+        treasury_transfer = self.maybe_rebalance_treasury()
+        if treasury_transfer is not None:
+            return treasury_transfer
+
+        working_capital_loan = self.maybe_raise_working_capital()
+        if working_capital_loan is not None:
+            return working_capital_loan
+
+        working_capital_interest_payment = self.maybe_pay_working_capital_interest()
+        if working_capital_interest_payment is not None:
+            return working_capital_interest_payment
 
         due_receipts = self.due_purchase_receipts()
         due_payables = self.due_supplier_payables()
@@ -897,6 +1220,8 @@ class RetailSimulation:
             eligible_units = sum(min(float(sale.get("returnable_quantity", 0.0)), 3.0) for sale in return_candidates)
             average_propensity = sum(float(sale.get("return_propensity", 0.01)) for sale in return_candidates) / max(len(return_candidates), 1)
             actions.append(("return", 0.015 + min(eligible_units, 80.0) * 0.015 * max(average_propensity, 0.01)))
+        if self.outstanding_working_capital > 0.01 and self.liquidity["bank_accounts"] > max(self.minimum_operating_reserve(), self.target_bank_liquidity()) * 1.15:
+            actions.append(("working_capital_repayment", 0.22 + min(self.outstanding_working_capital / 2500.0, 0.8)))
         if self.available_products():
             sale_pressure = sum(self.demand_multiplier(product.product_id) for product in self.available_products()) / max(len(self.available_products()), 1)
             actions.append(("sale", max(1.35, 2.8 + sale_pressure - low_stock_count * 0.3)))
@@ -913,6 +1238,9 @@ class RetailSimulation:
             return self.next_freight()
         if action == "return":
             return self.next_return()
+        if action == "working_capital_repayment":
+            repayment_capacity = self.liquidity["bank_accounts"] - max(self.minimum_operating_reserve(), self.target_bank_liquidity())
+            return self.next_working_capital_repayment(max(repayment_capacity * self.random.uniform(0.28, 0.54), 250.0))
         return self.next_sale()
 
     def drain_bootstrap_events(self) -> list[dict[str, Any]]:
@@ -927,13 +1255,28 @@ class RetailSimulation:
         gross_amount = round(quantity * unit_cost, 2)
         net_amount = gross_amount
         tax_amount = round(net_amount * product.tax_rate, 2)
+        order_id = self.next_document_id("BOOT")
         current = self.inventory.setdefault((product.product_id, warehouse_id), {"quantity": 0.0, "avg_cost": unit_cost})
         new_quantity = current["quantity"] + quantity
         current["avg_cost"] = round(((current["quantity"] * current["avg_cost"]) + net_amount) / max(new_quantity, 1), 4)
         current["quantity"] = new_quantity
+        payable_total = round(net_amount + tax_amount, 2)
+        self.pending_supplier_payments.append(
+            SupplierPayable(
+                due_tick=self.current_tick + self.payment_term_ticks(supplier),
+                order_id=order_id,
+                product=product,
+                supplier=supplier,
+                warehouse=warehouse,
+                outstanding_amount=payable_total,
+                original_amount=payable_total,
+                quantity=float(quantity),
+                unit_cost=unit_cost,
+            )
+        )
         return {
             "event_type": "purchase",
-            "order_id": self.next_document_id("BOOT"),
+            "order_id": order_id,
             "product": product,
             "supplier": supplier,
             "warehouse": warehouse,

@@ -7,6 +7,8 @@ type Props = {
 }
 
 export default function AccountingView({ summary }: Props) {
+  const equityTotal = summary?.balance_sheet.equity.total ?? summary?.balance_sheet.equity.current_earnings
+
   return (
     <section className="section-stack">
       <section className="panel section-panel frame-panel cinematic-panel">
@@ -33,9 +35,11 @@ export default function AccountingView({ summary }: Props) {
             <h3>Passivos e patrimonio</h3>
             <dl>
               <div><dt>Fornecedores</dt><dd>{summary ? money(summary.balance_sheet.liabilities.accounts_payable) : '-'}</dd></div>
+              <div><dt>Capital de giro</dt><dd>{summary ? money(summary.balance_sheet.liabilities.short_term_loans) : '-'}</dd></div>
               <div><dt>Impostos a recolher</dt><dd>{summary ? money(summary.balance_sheet.liabilities.tax_payable) : '-'}</dd></div>
               <div><dt>Total passivo</dt><dd>{summary ? money(summary.balance_sheet.liabilities.total) : '-'}</dd></div>
-              <div><dt>Lucros correntes</dt><dd>{summary ? money(summary.balance_sheet.equity.current_earnings) : '-'}</dd></div>
+              <div><dt>Patrimonio liquido</dt><dd>{summary ? money(equityTotal ?? 0) : '-'}</dd></div>
+              <div><dt>Resultado corrente</dt><dd>{summary ? money(summary.balance_sheet.equity.current_earnings) : '-'}</dd></div>
               <div className="statement-total"><dt>Passivo + PL</dt><dd>{summary ? money(summary.balance_sheet.total_liabilities_and_equity) : '-'}</dd></div>
             </dl>
           </article>
@@ -66,6 +70,7 @@ export default function AccountingView({ summary }: Props) {
               <div><dt>Comissoes</dt><dd>{summary ? money(summary.income_statement.marketplace_fees) : '-'}</dd></div>
               <div><dt>Frete outbound</dt><dd>{summary ? money(summary.income_statement.freight_out) : '-'}</dd></div>
               <div><dt>Tarifas bancarias</dt><dd>{summary ? money(summary.income_statement.bank_fees) : '-'}</dd></div>
+              <div><dt>Despesas financeiras</dt><dd>{summary ? money(summary.income_statement.financial_expenses) : '-'}</dd></div>
               <div><dt>Outras despesas</dt><dd>{summary ? money(summary.income_statement.other_expenses) : '-'}</dd></div>
               <div><dt>Despesa operacional / RL</dt><dd>{summary ? percent(summary.income_statement.expense_ratio_pct) : '-'}</dd></div>
               <div><dt>Margem liquida</dt><dd>{summary ? percent(summary.income_statement.net_margin_pct) : '-'}</dd></div>

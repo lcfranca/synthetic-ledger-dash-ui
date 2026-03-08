@@ -160,6 +160,9 @@ class ClickHouseAdapter(StorageAdapter):
             alter_response.raise_for_status()
         self._schema_ready = True
 
+    async def ensure_ready(self) -> None:
+        await self._ensure_schema()
+
     async def healthy(self) -> bool:
         try:
             response = await self.client.get(f"{self.base_url}/ping")

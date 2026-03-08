@@ -5,10 +5,19 @@ from __future__ import annotations
 import json
 import math
 import os
+from pathlib import Path
 import sys
 import time
 import urllib.error
 import urllib.request
+
+
+ROOT = Path(__file__).resolve().parents[1]
+PRODUCER_SRC = ROOT / "producer" / "src"
+if str(PRODUCER_SRC) not in sys.path:
+    sys.path.insert(0, str(PRODUCER_SRC))
+
+from producer.domain import Catalog, RetailSimulation
 
 
 EXPECTED_ACCOUNT_ROLES = {
@@ -17,6 +26,7 @@ EXPECTED_ACCOUNT_ROLES = {
     "recoverable_tax",
     "inventory",
     "accounts_payable",
+    "short_term_loans",
     "tax_payable",
     "revenue",
     "returns",
@@ -24,6 +34,7 @@ EXPECTED_ACCOUNT_ROLES = {
     "marketplace_fees",
     "outbound_freight",
     "bank_fees",
+    "interest_expense",
 }
 
 
@@ -63,8 +74,11 @@ def validate_summary(summary: dict, label: str) -> None:
     net_revenue = float(income_statement["net_revenue"])
     revenue = float(income_statement["revenue"])
     returns = float(income_statement["returns"])
+    financial_expenses = float(income_statement.get("financial_expenses", 0.0))
     expenses = float(income_statement["expenses"])
     net_income = float(income_statement["net_income"])
+    cash = float(balance_sheet["assets"]["cash"])
+    bank_accounts = float(balance_sheet["assets"]["bank_accounts"])
 
     if not approx_equal(net_revenue, revenue - returns):
         raise RuntimeError(f"{label}: net_revenue != revenue - returns")
@@ -72,6 +86,73 @@ def validate_summary(summary: dict, label: str) -> None:
         raise RuntimeError(f"{label}: net_income != net_revenue - expenses")
     if not approx_equal(assets_total, liabilities_and_equity) or not approx_equal(difference, 0.0):
         raise RuntimeError(f"{label}: assets total does not match liabilities plus equity")
+    if cash < -0.11 or bank_accounts < -0.11:
+        raise RuntimeError(f"{label}: treasury assets went negative in summary")
+    if financial_expenses < -0.11:
+        raise RuntimeError(f"{label}: financial expenses cannot be negative")
+
+
+def apply_treasury_event(balances: dict[str, float], simulation: RetailSimulation, event: dict) -> None:
+    event_type = str(event["event_type"])
+    if event_type == "sale":
+        amount = round(float(event["net_amount"]) + float(event["tax"]) - float(event["marketplace_fee"]), 2)
+        if event["debit_account"] == simulation.account_code("cash"):
+            balances["cash"] += amount
+        elif event["debit_account"] == simulation.account_code("bank_accounts"):
+            balances["bank_accounts"] += amount
+        return
+
+    if event_type in {"supplier_payment", "working_capital_repayment", "working_capital_interest_payment"}:
+        amount = round(float(event["net_amount"]), 2)
+    elif event_type == "return":
+        amount = round(float(event["net_amount"]) + float(event["tax"]), 2)
+    elif event_type == "freight":
+        amount = round(float(event["net_amount"]) + float(event["marketplace_fee"]), 2)
+    else:
+        amount = 0.0
+
+    if event_type in {"supplier_payment", "return", "freight", "working_capital_repayment", "working_capital_interest_payment"}:
+        if event["credit_account"] == simulation.account_code("cash"):
+            balances["cash"] -= amount
+        elif event["credit_account"] == simulation.account_code("bank_accounts"):
+            balances["bank_accounts"] -= amount
+        return
+
+    if event_type == "treasury_transfer":
+        balances["cash"] -= float(event["net_amount"])
+        balances["bank_accounts"] += float(event["net_amount"])
+        return
+
+    if event_type == "working_capital_loan":
+        balances["bank_accounts"] += float(event["net_amount"])
+
+
+def validate_treasury_simulation() -> None:
+    catalog = Catalog()
+    simulation = RetailSimulation(catalog, seed=17)
+    simulation.drain_bootstrap_events()
+    balances = {"cash": 0.0, "bank_accounts": 0.0}
+    funding_events = 0
+    interest_events = 0
+
+    for tick in range(3000):
+        event = simulation.next_event()
+        apply_treasury_event(balances, simulation, event)
+        if event["event_type"] == "working_capital_loan":
+            funding_events += 1
+        if event["event_type"] == "working_capital_interest_payment":
+            interest_events += 1
+        if balances["cash"] < -0.11 or balances["bank_accounts"] < -0.11:
+            raise RuntimeError(
+                f"treasury simulation went negative at tick {tick + 1}: "
+                f"event={event['event_type']} cash={balances['cash']:.2f} bank={balances['bank_accounts']:.2f}"
+            )
+
+    if funding_events <= 0:
+        raise RuntimeError("treasury simulation never emitted a working capital funding event")
+    if interest_events <= 0:
+        raise RuntimeError("treasury simulation never emitted a working capital interest payment event")
+    print("[ok] treasury simulation preserved non-negative cash and bank balances")
 
 
 def validate_backend_summary(url: str, timeout_seconds: int, label: str) -> None:
@@ -85,6 +166,15 @@ def validate_backend_summary(url: str, timeout_seconds: int, label: str) -> None
     print(f"[ok] {label} arithmetic validated")
 
 
+def validate_storage_writer(timeout_seconds: int) -> None:
+    wait_for_json(
+        "http://localhost:8092/health",
+        lambda payload: isinstance(payload, dict) and payload.get("status") == "ok",
+        timeout_seconds,
+        "storage writer health",
+    )
+
+
 def main() -> int:
     active_stacks = [item.strip() for item in os.getenv("ACTIVE_STACKS", "pinot").split(",") if item.strip()]
     run_producer_on_start = os.getenv("RUN_PRODUCER_ON_START", "false").lower() == "true"
@@ -96,6 +186,9 @@ def main() -> int:
         timeout_seconds,
         "master-data health",
     )
+    validate_storage_writer(timeout_seconds)
+
+    validate_treasury_simulation()
 
     if "pinot" in active_stacks:
         wait_for_json(

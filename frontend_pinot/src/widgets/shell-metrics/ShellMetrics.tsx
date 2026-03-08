@@ -12,6 +12,8 @@ type Props = {
 }
 
 export default function ShellMetrics({ summary, overview, backend, feedMode, isRealtimePaused, pendingRealtimeEvents, onToggleRealtime }: Props) {
+  const equityTotal = summary?.balance_sheet.equity.total ?? summary?.balance_sheet.equity.current_earnings
+
   return (
     <div className="metric-strip hero-strip">
       <button type="button" className="metric-card accent-card panel-surface metric-toggle-card" onClick={onToggleRealtime}>
@@ -25,13 +27,13 @@ export default function ShellMetrics({ summary, overview, backend, feedMode, isR
       </button>
       <article className="metric-card panel-surface">
         <div className="metric-label">Patrimonio liquido</div>
-        <div className="metric-value">{summary ? money(summary.balance_sheet.equity.current_earnings) : '-'}</div>
-        <div className="metric-helper">Diferenca BP: {summary ? money(summary.balance_sheet.difference) : '-'}</div>
+        <div className="metric-value">{summary ? money(equityTotal ?? 0) : '-'}</div>
+        <div className="metric-helper">Resultado corrente: {summary ? money(summary.balance_sheet.equity.current_earnings) : '-'}</div>
       </article>
       <article className="metric-card panel-surface">
         <div className="metric-label">Receita liquida</div>
         <div className="metric-value">{summary ? money(summary.income_statement.net_revenue) : '-'}</div>
-        <div className="metric-helper">CMV: {summary ? money(summary.income_statement.cmv) : '-'}</div>
+        <div className="metric-helper">CMV {summary ? money(summary.income_statement.cmv) : '-'} · Juros {summary ? money(summary.income_statement.financial_expenses) : '-'}</div>
       </article>
       <article className="metric-card panel-surface">
         <div className="metric-label">Universo operacional</div>

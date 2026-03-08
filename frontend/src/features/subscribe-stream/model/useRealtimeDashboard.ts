@@ -24,6 +24,7 @@ export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPau
   const cancelledRef = useRef(false)
   const pausedRef = useRef(isPaused)
   const bufferedMessagesRef = useRef<Array<RealtimeEnvelope | WorkspaceSnapshot>>([])
+  const keepaliveTimerRef = useRef<number | null>(null)
   const filterQuery = buildFilterSearchParams(filters).toString()
 
   const { scheduleReconnect, clearReconnect } = useReconnectSession({ delayMs: 1500 })
@@ -71,6 +72,10 @@ export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPau
 
   const connect = useCallback(() => {
     clearReconnect()
+    if (keepaliveTimerRef.current !== null) {
+      window.clearInterval(keepaliveTimerRef.current)
+      keepaliveTimerRef.current = null
+    }
     websocketRef.current?.close()
 
     const search = new URLSearchParams(filterQuery)
@@ -79,8 +84,22 @@ export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPau
     websocketRef.current = ws
     setSocketStatus('connecting')
 
-    ws.onopen = () => setSocketStatus('open')
+    ws.onopen = () => {
+      setSocketStatus('open')
+      if (keepaliveTimerRef.current !== null) {
+        window.clearInterval(keepaliveTimerRef.current)
+      }
+      keepaliveTimerRef.current = window.setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send('ping')
+        }
+      }, 15000)
+    }
     ws.onclose = () => {
+      if (keepaliveTimerRef.current !== null) {
+        window.clearInterval(keepaliveTimerRef.current)
+        keepaliveTimerRef.current = null
+      }
       if (cancelledRef.current) {
         return
       }
@@ -88,6 +107,10 @@ export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPau
       scheduleReconnect(connect)
     }
     ws.onerror = () => {
+      if (keepaliveTimerRef.current !== null) {
+        window.clearInterval(keepaliveTimerRef.current)
+        keepaliveTimerRef.current = null
+      }
       setSocketStatus('error')
       ws.close()
     }
@@ -113,6 +136,10 @@ export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPau
     return () => {
       cancelledRef.current = true
       clearReconnect()
+      if (keepaliveTimerRef.current !== null) {
+        window.clearInterval(keepaliveTimerRef.current)
+        keepaliveTimerRef.current = null
+      }
       websocketRef.current?.close()
       websocketRef.current = null
       bufferedMessagesRef.current = []
