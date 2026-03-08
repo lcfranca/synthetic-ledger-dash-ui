@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import {
   type EntryFilters,
@@ -8,6 +9,7 @@ import {
 import { feedLabel } from '../../../entities/dashboard/lib/realtime'
 import { useRealtimeDashboard } from '../../../features/subscribe-stream/model/useRealtimeDashboard'
 import type { ViewId } from '../../../shared/config/dashboardViews'
+import { useAuthoritativeRealtimeRefresh } from './useAuthoritativeRealtimeRefresh'
 
 type Params = {
   defaultBackend: string
@@ -21,6 +23,7 @@ type Params = {
 export function useDashboardSession({ defaultBackend, queryKeyPrefix, filters, hasActiveFilters = false, viewId, isRealtimePaused = false }: Params) {
   const enableRealtime = true
   const realtimeMode = 'mixed'
+  const usesAuthoritativeRealtime = defaultBackend === 'clickhouse'
 
   const summaryQuery = useQuery({
     queryKey: [queryKeyPrefix, 'summary', filters],
@@ -47,6 +50,17 @@ export function useDashboardSession({ defaultBackend, queryKeyPrefix, filters, h
     refetchOnReconnect: false,
   })
 
+  const refreshAuthoritativeWorkspace = useCallback(async () => {
+    await Promise.allSettled([workspaceQuery.refetch(), summaryQuery.refetch()])
+  }, [summaryQuery, workspaceQuery])
+
+  const { signalActivity } = useAuthoritativeRealtimeRefresh({
+    enabled: usesAuthoritativeRealtime && !isRealtimePaused,
+    debounceMs: 900,
+    heartbeatMs: 5000,
+    onRefresh: refreshAuthoritativeWorkspace,
+  })
+
   const { liveWorkspace, socketStatus, bufferedEventCount } = useRealtimeDashboard({
     backend: workspaceQuery.data?.backend ?? defaultBackend,
     filters,
@@ -54,6 +68,7 @@ export function useDashboardSession({ defaultBackend, queryKeyPrefix, filters, h
     isPaused: isRealtimePaused,
     enabled: enableRealtime,
     mode: realtimeMode,
+    onRealtimeActivity: usesAuthoritativeRealtime ? signalActivity : undefined,
   })
 
   const queueWorkspace = liveWorkspace ?? workspaceQuery.data

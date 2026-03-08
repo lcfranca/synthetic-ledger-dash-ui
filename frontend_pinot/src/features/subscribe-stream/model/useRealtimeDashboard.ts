@@ -23,9 +23,10 @@ type Params = {
   isPaused?: boolean
   enabled?: boolean
   mode?: 'mixed' | 'snapshot-only'
+  onRealtimeActivity?: () => void
 }
 
-export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPaused = false, enabled = true, mode = 'mixed' }: Params) {
+export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPaused = false, enabled = true, mode = 'mixed', onRealtimeActivity }: Params) {
   const [liveWorkspace, setLiveWorkspace] = useState<WorkspaceSnapshot | null>(initialWorkspace ?? null)
   const [socketStatus, setSocketStatus] = useState<'idle' | 'connecting' | 'open' | 'closed' | 'error'>('idle')
   const [bufferedEventCount, setBufferedEventCount] = useState(0)
@@ -103,6 +104,7 @@ export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPau
 
       pendingTransactionsRef.current = upsertPendingRealtimeTransaction(pendingTransactionsRef.current, parsed)
       scheduleTransactionFlush()
+      onRealtimeActivity?.()
       return current ?? rebuildProjectedWorkspace()
     }
 
@@ -111,6 +113,7 @@ export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPau
       baseWorkspaceRef.current = nextBase
       pendingEntriesRef.current = reconcilePendingRealtimeEntries(nextBase, pendingEntriesRef.current)
       pendingTransactionsRef.current = reconcilePendingRealtimeTransactions(nextBase, pendingTransactionsRef.current)
+      onRealtimeActivity?.()
       return projectRealtimeWorkspace(nextBase, pendingEntriesRef.current)
     }
 
@@ -122,7 +125,7 @@ export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPau
     pendingEntriesRef.current = reconcilePendingRealtimeEntries(parsed, pendingEntriesRef.current)
     pendingTransactionsRef.current = reconcilePendingRealtimeTransactions(parsed, pendingTransactionsRef.current)
     return projectRealtimeWorkspace(parsed, pendingEntriesRef.current)
-  }, [mode, rebuildProjectedWorkspace, scheduleTransactionFlush])
+  }, [mode, onRealtimeActivity, rebuildProjectedWorkspace, scheduleTransactionFlush])
 
   const flushBufferedMessages = useCallback(() => {
     if (bufferedMessagesRef.current.length === 0) {
