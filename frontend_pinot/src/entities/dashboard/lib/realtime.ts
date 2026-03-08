@@ -108,26 +108,7 @@ export function preferIncomingSnapshot(current: WorkspaceSnapshot | null, incomi
     return current
   }
 
-  if (!hasMeaningfulWorkspace(incoming) && hasMeaningfulWorkspace(current)) {
-    return current
-  }
-
   return incoming
-}
-
-function hasMeaningfulWorkspace(workspace: WorkspaceSnapshot) {
-  if (workspace.entries.length > 0) {
-    return true
-  }
-
-  if ((workspace.sales_workspace?.kpis.order_count ?? 0) > 0) {
-    return true
-  }
-
-  return Math.abs(workspace.summary.income_statement.net_revenue) > 0
-    || Math.abs(workspace.summary.income_statement.cmv) > 0
-    || Math.abs(workspace.summary.balance_sheet.assets.total) > 0
-    || Math.abs(workspace.summary.balance_sheet.equity.current_earnings) > 0
 }
 
 function seedRealtimeMetadata(workspace: WorkspaceSnapshot) {

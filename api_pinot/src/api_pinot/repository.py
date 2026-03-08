@@ -487,8 +487,7 @@ class DashboardRepository:
         end_at: str | None = None,
         filters: dict[str, str | None] | None = None,
     ) -> dict[str, Any]:
-        supported_filters = {key: value for key, value in (filters or {}).items() if key in {"product_name", "product_category", "channel_name", "order_id"}}
-        where_clause = self._build_where(supported_filters, as_of=as_of, start_at=start_at, end_at=end_at)
+        where_clause = self._build_where(filters or {}, as_of=as_of, start_at=start_at, end_at=end_at)
         sales_where_clause = f"{where_clause} AND ontology_event_type = 'sale' AND order_id != 'null' AND order_id != ''"
 
         sales_sql = f"""

@@ -1,19 +1,19 @@
 :root {
-  --bg: #060606;
-  --bg-panel: #0f0f10;
-  --bg-panel-alt: #141415;
-  --bg-panel-deep: #090909;
-  --bg-panel-ink: #050505;
+  --bg: #050607;
+  --bg-panel: #0b0c0d;
+  --bg-panel-alt: #101113;
+  --bg-panel-deep: #08090a;
+  --bg-panel-ink: #0a0b0c;
   --text-primary: #f4f1ea;
   --text-secondary: #c8c3b7;
   --text-muted: #7e776b;
   --line: rgba(244, 241, 234, 0.12);
   --line-strong: rgba(244, 241, 234, 0.26);
-  --line-hot: rgba(255, 92, 41, 0.62);
-  --signal: #ff5c29;
-  --signal-soft: rgba(255, 92, 41, 0.12);
+  --line-hot: rgba(240, 96, 44, 0.58);
+  --signal: #f0602c;
+  --signal-soft: rgba(240, 96, 44, 0.1);
   --good: #f4f1ea;
-  --warn: #ffb27f;
+  --warn: #f4a073;
 }
 
 * {
@@ -150,7 +150,7 @@ a:focus-visible *,
     linear-gradient(to bottom, rgba(244, 241, 234, 0.05) 1px, transparent 1px);
   background-size: 32px 32px;
   pointer-events: none;
-  opacity: 0.8;
+  opacity: 0.58;
 }
 
 .panel {
@@ -649,6 +649,7 @@ a:focus-visible *,
 
 .sales-chart-card {
   padding: 16px;
+  min-height: 236px;
 }
 
 .sales-bar-row {
@@ -670,6 +671,7 @@ a:focus-visible *,
 .sales-ticker-strip {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
   gap: 10px;
   margin-top: 12px;
 }
@@ -678,6 +680,8 @@ a:focus-visible *,
   padding: 10px 12px;
   display: grid;
   gap: 6px;
+  min-height: 94px;
+  align-content: start;
 }
 
 .ticker-card span,
@@ -687,6 +691,25 @@ a:focus-visible *,
   font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+}
+
+.ticker-card strong,
+.ticker-note {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ticker-card strong {
+  white-space: nowrap;
+}
+
+.ticker-note {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .table-wrap {

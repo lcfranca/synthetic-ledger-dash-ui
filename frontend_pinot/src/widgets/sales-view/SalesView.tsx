@@ -126,10 +126,11 @@ export default function SalesView({ salesWorkspace }: Props) {
 
         <div className="sales-ticker-strip">
           {liveTape.map((sale) => (
-            <div key={sale.sale_id} className="ticker-card">
-              <span>{sale.sale_id}</span>
-              <strong>{isFallback ? sale.order_id : sale.customer_name || sale.customer_email || sale.order_id}</strong>
+            <div key={sale.sale_id || sale.order_id} className="ticker-card">
+              <span>{sale.order_status || 'pedido'} · {shortTs(sale.occurred_at)}</span>
+              <strong>{sale.sale_id || sale.order_id}</strong>
               <em>{sale.channel_name || sale.channel} · {money(sale.net_amount)}</em>
+              <div className="ticker-note">{isFallback ? (sale.lead_product || '-') : (sale.customer_name || sale.customer_email || 'cliente nao identificado')}</div>
             </div>
           ))}
         </div>
@@ -196,7 +197,7 @@ export default function SalesView({ salesWorkspace }: Props) {
             <tbody>
               {sales.map((sale) => (
                 isFallback ? (
-                  <tr key={sale.sale_id}>
+                  <tr key={sale.sale_id || sale.order_id}>
                     <td>{shortTs(sale.occurred_at)}</td>
                     <td>
                       <strong>{sale.order_id}</strong>
@@ -213,7 +214,7 @@ export default function SalesView({ salesWorkspace }: Props) {
                     <td>{money(sale.net_amount - sale.cmv)}</td>
                   </tr>
                 ) : (
-                  <tr key={sale.sale_id}>
+                  <tr key={sale.sale_id || sale.order_id}>
                     <td>{shortTs(sale.occurred_at)}</td>
                     <td>
                       <strong>{sale.customer_name || sale.customer_email || sale.customer_id || '-'}</strong>

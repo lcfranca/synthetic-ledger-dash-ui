@@ -13,9 +13,10 @@ type Params = {
   filters: EntryFilters
   initialWorkspace?: WorkspaceSnapshot | null
   isPaused?: boolean
+  enabled?: boolean
 }
 
-export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPaused = false }: Params) {
+export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPaused = false, enabled = true }: Params) {
   const [liveWorkspace, setLiveWorkspace] = useState<WorkspaceSnapshot | null>(initialWorkspace ?? null)
   const [socketStatus, setSocketStatus] = useState<'idle' | 'connecting' | 'open' | 'closed' | 'error'>('idle')
   const [bufferedEventCount, setBufferedEventCount] = useState(0)
@@ -24,6 +25,7 @@ export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPau
   const cancelledRef = useRef(false)
   const pausedRef = useRef(isPaused)
   const bufferedMessagesRef = useRef<Array<RealtimeEnvelope | WorkspaceSnapshot>>([])
+  const connectionSerialRef = useRef(0)
   const filterQuery = buildFilterSearchParams(filters).toString()
 
   const { scheduleReconnect, clearReconnect } = useReconnectSession({ delayMs: 1500 })
@@ -54,6 +56,8 @@ export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPau
   }, [applyEnvelope])
 
   useEffect(() => {
+    bufferedMessagesRef.current = []
+    setBufferedEventCount(0)
     pausedRef.current = isPaused
     if (!isPaused) {
       flushBufferedMessages()
@@ -61,17 +65,33 @@ export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPau
   }, [flushBufferedMessages, isPaused])
 
   useEffect(() => {
+    bufferedMessagesRef.current = []
+    setBufferedEventCount(0)
     seedWorkspaceRef.current = initialWorkspace ?? null
-    if (!pausedRef.current) {
-      startTransition(() => {
-        setLiveWorkspace(initialWorkspace ?? null)
-      })
+    startTransition(() => {
+      setLiveWorkspace(initialWorkspace ?? null)
+    })
+  }, [backend, filterQuery, initialWorkspace])
+
+  useEffect(() => {
+    if (enabled) {
+      return
     }
-  }, [initialWorkspace])
+    setSocketStatus('idle')
+    websocketRef.current?.close()
+    websocketRef.current = null
+  }, [enabled])
 
   const connect = useCallback(() => {
+    if (!enabled) {
+      setSocketStatus('idle')
+      return () => undefined
+    }
+
     clearReconnect()
     websocketRef.current?.close()
+    const connectionSerial = connectionSerialRef.current + 1
+    connectionSerialRef.current = connectionSerial
 
     const search = new URLSearchParams(filterQuery)
     search.set('backend', backend)
@@ -79,8 +99,16 @@ export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPau
     websocketRef.current = ws
     setSocketStatus('connecting')
 
-    ws.onopen = () => setSocketStatus('open')
+    ws.onopen = () => {
+      if (connectionSerialRef.current !== connectionSerial) {
+        return
+      }
+      setSocketStatus('open')
+    }
     ws.onclose = () => {
+      if (connectionSerialRef.current !== connectionSerial) {
+        return
+      }
       if (cancelledRef.current) {
         return
       }
@@ -88,10 +116,16 @@ export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPau
       scheduleReconnect(connect)
     }
     ws.onerror = () => {
+      if (connectionSerialRef.current !== connectionSerial) {
+        return
+      }
       setSocketStatus('error')
       ws.close()
     }
     ws.onmessage = (event) => {
+      if (connectionSerialRef.current !== connectionSerial) {
+        return
+      }
       const parsed = JSON.parse(event.data) as RealtimeEnvelope | WorkspaceSnapshot
       if (pausedRef.current) {
         bufferedMessagesRef.current.push(parsed)
@@ -104,18 +138,26 @@ export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPau
         setLiveWorkspace((current) => applyEnvelope(current ?? seedWorkspaceRef.current, parsed))
       })
     }
-  }, [applyEnvelope, backend, clearReconnect, filterQuery, scheduleReconnect])
+    return () => {
+      if (connectionSerialRef.current === connectionSerial) {
+        connectionSerialRef.current += 1
+      }
+      ws.close()
+    }
+  }, [applyEnvelope, backend, clearReconnect, enabled, filterQuery, scheduleReconnect])
 
   useEffect(() => {
     cancelledRef.current = false
-    connect()
+    const cleanup = connect()
 
     return () => {
       cancelledRef.current = true
       clearReconnect()
+      cleanup?.()
       websocketRef.current?.close()
       websocketRef.current = null
       bufferedMessagesRef.current = []
+      setBufferedEventCount(0)
     }
   }, [clearReconnect, connect])
 
