@@ -64,13 +64,13 @@ class DashboardRepository:
     def _supply_plan(product: dict[str, Any], current_stock_quantity: float, sold_quantity: float) -> dict[str, Any]:
         effective_stock = max(round(current_stock_quantity, 3), 0.0)
         demand_weight = max(float(product.get("demand_weight", 0.0) or 0.0), 0.1)
-        daily_demand_units = round(max(sold_quantity / 30.0, demand_weight), 3)
+        daily_demand_units = round(max(sold_quantity / 540.0, demand_weight * 0.55), 3)
+        reorder_trigger = max(float(product.get("reorder_point", 0.0) or 0.0), daily_demand_units * 6.0)
+        target_stock_level = max(float(product.get("target_stock", 0.0) or 0.0), daily_demand_units * 14.0)
         coverage_days = round(effective_stock / daily_demand_units, 1) if daily_demand_units > 0 else None
-        reorder_point = float(product.get("reorder_point", 0.0) or 0.0)
-        target_stock = float(product.get("target_stock", 0.0) or 0.0)
-        suggested_purchase_quantity = round(max(target_stock - effective_stock, 0.0), 3)
+        suggested_purchase_quantity = round(max(target_stock_level - effective_stock, 0.0), 3) if effective_stock <= reorder_trigger else 0.0
         suggested_supplier_name = str(product.get("supplier_name") or product.get("preferred_supplier_id") or "Fornecedor padrão")
-        needs_restock = effective_stock <= reorder_point
+        needs_restock = effective_stock <= reorder_trigger
         if needs_restock and suggested_purchase_quantity > 0:
             purchase_recommendation = f"Comprar {suggested_purchase_quantity:g} un de {suggested_supplier_name}"
         else:
@@ -167,14 +167,12 @@ class DashboardRepository:
     ) -> dict[str, Any]:
         cutoff = end_at or as_of or datetime.now(timezone.utc).isoformat().replace("T", " ").replace("+00:00", "")
         where_clause = self._build_where(filters or {}, as_of=as_of, start_at=start_at, end_at=end_at or cutoff)
-        product_catalog = await self.get_product_catalog()
-        inventory_snapshot = self._inventory_snapshot_totals(product_catalog)
-
         sql = f"""
         SELECT
             COALESCE(SUM(CASE WHEN account_role = 'cash' THEN signed_amount ELSE 0 END), 0) AS cash,
             COALESCE(SUM(CASE WHEN account_role = 'bank_accounts' THEN signed_amount ELSE 0 END), 0) AS bank_accounts,
             COALESCE(SUM(CASE WHEN account_role = 'recoverable_tax' THEN signed_amount ELSE 0 END), 0) AS recoverable_tax,
+            COALESCE(SUM(CASE WHEN account_role = 'inventory' THEN signed_amount ELSE 0 END), 0) AS inventory,
             ABS(COALESCE(SUM(CASE WHEN account_role = 'accounts_payable' THEN signed_amount ELSE 0 END), 0)) AS accounts_payable,
             ABS(COALESCE(SUM(CASE WHEN account_role = 'tax_payable' THEN signed_amount ELSE 0 END), 0)) AS tax_payable,
             ABS(COALESCE(SUM(CASE WHEN account_role = 'revenue' THEN signed_amount ELSE 0 END), 0)) AS revenue,
@@ -199,7 +197,7 @@ class DashboardRepository:
         cash = round(float(row.get("cash", 0.0)), 2)
         bank_accounts = round(float(row.get("bank_accounts", 0.0)), 2)
         recoverable_tax = round(float(row.get("recoverable_tax", 0.0)), 2)
-        inventory = round(float(inventory_snapshot.get("inventory_value", 0.0)), 2)
+        inventory = round(float(row.get("inventory", 0.0)), 2)
         accounts_payable = round(float(row.get("accounts_payable", 0.0)), 2)
         tax_payable = round(float(row.get("tax_payable", 0.0)), 2)
         revenue = round(float(row.get("revenue", 0.0)), 2)

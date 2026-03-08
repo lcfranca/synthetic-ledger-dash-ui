@@ -304,8 +304,8 @@ class RetailSimulation:
         return round(self.liquidity["cash"] + self.liquidity["bank_accounts"], 2)
 
     def procurement_lead_ticks(self, supplier: Supplier) -> int:
-        base = max(supplier.lead_time_days * 2, 3)
-        return self.random.randint(base, base + supplier.lead_time_days * 3)
+        base = max(supplier.lead_time_days, 2)
+        return self.random.randint(base, base + max(supplier.lead_time_days, 2))
 
     def payment_term_ticks(self, supplier: Supplier) -> int:
         base = max(supplier.payment_terms_days // 2, 8)
@@ -366,15 +366,16 @@ class RetailSimulation:
             supplier = self.catalog.suppliers[product.preferred_supplier_id]
             warehouse = self.catalog.warehouses[product.default_warehouse_id]
             demand_pressure = self.demand_multiplier(product.product_id)
-            projected_demand = max(product.reorder_point * 0.35, product.target_stock * 0.14 * demand_pressure)
+            projected_demand = max(product.reorder_point * 0.45, product.target_stock * 0.22 * demand_pressure)
             inventory_position = self.inventory_position(product.product_id)
-            reorder_trigger = product.reorder_point + projected_demand * 0.75
+            reorder_trigger = max(product.reorder_point * 1.45, projected_demand * 1.15)
             if not force and inventory_position > reorder_trigger:
                 continue
-            shortage = max((product.target_stock * self.random.uniform(0.82, 1.08) * demand_pressure) - inventory_position, 0.0)
+            shortage = max((product.target_stock * self.random.uniform(1.15, 1.45) * demand_pressure) - inventory_position, 0.0)
             if shortage <= 0 and not force:
                 continue
-            quantity = round(max(shortage, product.reorder_point * self.random.uniform(0.35, 0.75), 6), 0)
+            base_lot = max(product.reorder_point * self.random.uniform(0.9, 1.4), projected_demand * self.random.uniform(0.6, 0.95), 12)
+            quantity = round(max(shortage, base_lot), 0)
             if quantity <= 0:
                 continue
             unit_cost = round(product.base_cost * self.random.uniform(0.95, 1.06), 2)
@@ -392,7 +393,7 @@ class RetailSimulation:
                 )
             )
             planned += 1
-            if planned >= (2 if force else 1):
+            if planned >= (4 if force else 2):
                 break
 
     def due_purchase_receipts(self) -> list[PendingReceipt]:
@@ -881,10 +882,13 @@ class RetailSimulation:
         due_payables = self.due_supplier_payables()
         due_freights = [item for item in self.pending_freights if int(item.get("due_tick", self.current_tick)) <= self.current_tick]
         return_candidates = self.returnable_sales()
+        low_stock_count = len(self.low_stock_products())
 
         actions: list[tuple[str, float]] = []
         if due_receipts:
             actions.append(("purchase", 1.6 + len(due_receipts) * 0.45))
+        elif low_stock_count:
+            actions.append(("purchase", 0.45 + low_stock_count * 0.22))
         if due_payables and self.available_liquidity() > 50:
             actions.append(("supplier_payment", 0.9 + len(due_payables) * 0.2))
         if due_freights:
@@ -895,7 +899,7 @@ class RetailSimulation:
             actions.append(("return", 0.015 + min(eligible_units, 80.0) * 0.015 * max(average_propensity, 0.01)))
         if self.available_products():
             sale_pressure = sum(self.demand_multiplier(product.product_id) for product in self.available_products()) / max(len(self.available_products()), 1)
-            actions.append(("sale", 2.8 + sale_pressure))
+            actions.append(("sale", max(1.35, 2.8 + sale_pressure - low_stock_count * 0.3)))
 
         if not actions:
             return self.next_purchase()
