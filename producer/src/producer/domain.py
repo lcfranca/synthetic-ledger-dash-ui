@@ -2,6 +2,7 @@ import json
 import random
 from dataclasses import dataclass
 from importlib import resources
+from pathlib import Path
 from typing import Any
 
 
@@ -118,6 +119,30 @@ class Warehouse:
     state: str
 
 
+@dataclass
+class PendingReceipt:
+    due_tick: int
+    product: Product
+    supplier: Supplier
+    warehouse: Warehouse
+    quantity: float
+    unit_cost: float
+    discount_rate: float
+
+
+@dataclass
+class SupplierPayable:
+    due_tick: int
+    order_id: str
+    product: Product
+    supplier: Supplier
+    warehouse: Warehouse
+    outstanding_amount: float
+    original_amount: float
+    quantity: float
+    unit_cost: float
+
+
 class Catalog:
     def __init__(self) -> None:
         self.company = self._load_json("company_profile.json")
@@ -144,8 +169,12 @@ class Catalog:
 
     @staticmethod
     def _load_json(name: str) -> Any:
-        path = resources.files("producer").joinpath("domain_data", name)
-        return json.loads(path.read_text(encoding="utf-8"))
+        package_path = resources.files("producer").joinpath("domain_data", name)
+        if package_path.is_file():
+            return json.loads(package_path.read_text(encoding="utf-8"))
+
+        repo_path = Path(__file__).resolve().parents[3] / "domain_data" / name
+        return json.loads(repo_path.read_text(encoding="utf-8"))
 
 
 class RetailSimulation:
@@ -157,6 +186,18 @@ class RetailSimulation:
         self.fulfilled_sales: list[dict[str, Any]] = []
         self.pending_sale_lines: list[dict[str, Any]] = []
         self.pending_freights: list[dict[str, Any]] = []
+        self.pending_purchase_receipts: list[PendingReceipt] = []
+        self.pending_supplier_payments: list[SupplierPayable] = []
+        self.current_tick = 0
+        self.market_temperature = 1.0
+        self.demand_state = {
+            product.product_id: {
+                "level": self.random.uniform(0.88, 1.12),
+                "trend": self.random.uniform(-0.015, 0.015),
+            }
+            for product in catalog.products.values()
+        }
+        self.liquidity = {"cash": 0.0, "bank_accounts": 0.0}
         self.document_sequence = 0
         for product in catalog.products.values():
             for warehouse_id, quantity in product.initial_stock.items():
@@ -208,7 +249,16 @@ class RetailSimulation:
         return low_stock
 
     def returnable_sales(self) -> list[dict[str, Any]]:
-        return [sale for sale in self.fulfilled_sales if float(sale.get("returnable_quantity", 0.0)) >= 1.0]
+        eligible: list[dict[str, Any]] = []
+        for sale in self.fulfilled_sales:
+            if float(sale.get("returnable_quantity", 0.0)) < 1.0:
+                continue
+            delivered_tick = int(sale.get("delivered_tick", self.current_tick + 1))
+            return_deadline_tick = int(sale.get("return_deadline_tick", delivered_tick))
+            if self.current_tick < delivered_tick or self.current_tick > return_deadline_tick:
+                continue
+            eligible.append(sale)
+        return eligible
 
     def account_code(self, role: str) -> str:
         return str(self.catalog.accounts_by_role[role]["account_code"])
@@ -227,6 +277,129 @@ class RetailSimulation:
         if channel.channel_type == "direct":
             return self.account_code("bank_accounts")
         return self.account_code("cash")
+
+    def _update_market_state(self) -> None:
+        self.market_temperature = max(0.82, min(1.24, (self.market_temperature * 0.92) + (self.random.uniform(0.88, 1.14) * 0.08)))
+        for state in self.demand_state.values():
+            state["trend"] = max(-0.045, min(0.045, (state["trend"] * 0.84) + self.random.uniform(-0.015, 0.015)))
+            state["level"] = max(0.58, min(1.65, state["level"] + state["trend"] + self.random.uniform(-0.025, 0.025)))
+
+    def demand_multiplier(self, product_id: str) -> float:
+        state = self.demand_state[product_id]
+        return round(state["level"] * self.market_temperature, 4)
+
+    def pending_receipt_quantity(self, product_id: str) -> float:
+        return round(sum(item.quantity for item in self.pending_purchase_receipts if item.product.product_id == product_id), 3)
+
+    def inventory_position(self, product_id: str) -> float:
+        return round(self.current_quantity(product_id) + self.pending_receipt_quantity(product_id), 3)
+
+    def update_liquidity(self, account_code: str, delta: float) -> None:
+        if account_code == self.account_code("cash"):
+            self.liquidity["cash"] = round(max(self.liquidity["cash"] + delta, 0.0), 2)
+        if account_code == self.account_code("bank_accounts"):
+            self.liquidity["bank_accounts"] = round(max(self.liquidity["bank_accounts"] + delta, 0.0), 2)
+
+    def available_liquidity(self) -> float:
+        return round(self.liquidity["cash"] + self.liquidity["bank_accounts"], 2)
+
+    def procurement_lead_ticks(self, supplier: Supplier) -> int:
+        base = max(supplier.lead_time_days * 2, 3)
+        return self.random.randint(base, base + supplier.lead_time_days * 3)
+
+    def payment_term_ticks(self, supplier: Supplier) -> int:
+        base = max(supplier.payment_terms_days // 2, 8)
+        return self.random.randint(base, base + max(supplier.payment_terms_days // 2, 6))
+
+    def delivery_ticks(self, freight_service: str | None) -> int:
+        if freight_service == "pickup":
+            return 1
+        if freight_service == "express":
+            return self.random.randint(1, 3)
+        if freight_service == "scheduled":
+            return self.random.randint(4, 7)
+        return self.random.randint(2, 5)
+
+    def return_window_ticks(self, customer_segment: str | None) -> int:
+        base = {
+            "prime": 28,
+            "recorrente": 24,
+            "reativado": 22,
+            "novo": 18,
+            "corporativo": 14,
+        }.get(customer_segment or "", 18)
+        return self.random.randint(max(base - 4, 10), base + 4)
+
+    def return_propensity(self, *, product: Product, channel: Channel, customer_segment: str | None, quantity: float) -> float:
+        propensity = 0.012
+        if product.product_category in {"Telefonia", "Eletronicos"}:
+            propensity += 0.018
+        elif product.product_category in {"Acessorios", "Perifericos"}:
+            propensity += 0.009
+        else:
+            propensity += 0.005
+
+        if channel.channel_type == "marketplace":
+            propensity += 0.01
+        elif channel.channel_type == "b2b":
+            propensity -= 0.006
+
+        if customer_segment == "novo":
+            propensity += 0.007
+        elif customer_segment == "corporativo":
+            propensity -= 0.01
+        elif customer_segment == "prime":
+            propensity -= 0.004
+
+        if quantity >= 3:
+            propensity += 0.004
+
+        return round(min(max(propensity, 0.004), 0.085), 4)
+
+    def schedule_procurement(self, *, force: bool = False) -> None:
+        planned = 0
+        ranked_products = sorted(
+            self.catalog.products.values(),
+            key=lambda product: (self.inventory_position(product.product_id) / max(product.target_stock, 1)) - self.demand_multiplier(product.product_id),
+        )
+        for product in ranked_products:
+            supplier = self.catalog.suppliers[product.preferred_supplier_id]
+            warehouse = self.catalog.warehouses[product.default_warehouse_id]
+            demand_pressure = self.demand_multiplier(product.product_id)
+            projected_demand = max(product.reorder_point * 0.35, product.target_stock * 0.14 * demand_pressure)
+            inventory_position = self.inventory_position(product.product_id)
+            reorder_trigger = product.reorder_point + projected_demand * 0.75
+            if not force and inventory_position > reorder_trigger:
+                continue
+            shortage = max((product.target_stock * self.random.uniform(0.82, 1.08) * demand_pressure) - inventory_position, 0.0)
+            if shortage <= 0 and not force:
+                continue
+            quantity = round(max(shortage, product.reorder_point * self.random.uniform(0.35, 0.75), 6), 0)
+            if quantity <= 0:
+                continue
+            unit_cost = round(product.base_cost * self.random.uniform(0.95, 1.06), 2)
+            discount_rate = min(self.random.uniform(0.0, 0.028), 0.04)
+            due_tick = self.current_tick if force else self.current_tick + self.procurement_lead_ticks(supplier)
+            self.pending_purchase_receipts.append(
+                PendingReceipt(
+                    due_tick=due_tick,
+                    product=product,
+                    supplier=supplier,
+                    warehouse=warehouse,
+                    quantity=float(quantity),
+                    unit_cost=unit_cost,
+                    discount_rate=discount_rate,
+                )
+            )
+            planned += 1
+            if planned >= (2 if force else 1):
+                break
+
+    def due_purchase_receipts(self) -> list[PendingReceipt]:
+        return [item for item in self.pending_purchase_receipts if item.due_tick <= self.current_tick]
+
+    def due_supplier_payables(self) -> list[SupplierPayable]:
+        return [item for item in self.pending_supplier_payments if item.due_tick <= self.current_tick and item.outstanding_amount > 0.01]
 
     def generate_cpf(self) -> str:
         digits = [self.random.randint(0, 9) for _ in range(9)]
@@ -397,26 +570,49 @@ class RetailSimulation:
         return lines
 
     def next_purchase(self) -> dict[str, Any]:
-        candidates = self.low_stock_products() or list(self.catalog.products.values())
-        product = self.choice_weighted(
-            candidates,
-            lambda item: max(item.target_stock - self.current_quantity(item.product_id), 1),
-        )
-        supplier = self.catalog.suppliers[product.preferred_supplier_id]
-        warehouse = self.catalog.warehouses[product.default_warehouse_id]
-        quantity = self.random.randint(max(product.reorder_point // 3, 12), max(product.target_stock - int(self.current_quantity(product.product_id)), 20))
-        unit_cost = round(product.base_cost * self.random.uniform(0.96, 1.05), 2)
+        due_receipts = self.due_purchase_receipts()
+        if due_receipts:
+            receipt = min(due_receipts, key=lambda item: item.due_tick)
+            self.pending_purchase_receipts.remove(receipt)
+        else:
+            self.schedule_procurement(force=True)
+            receipt = min(self.pending_purchase_receipts, key=lambda item: item.due_tick)
+            self.pending_purchase_receipts.remove(receipt)
+
+        product = receipt.product
+        supplier = receipt.supplier
+        warehouse = receipt.warehouse
+        quantity = int(receipt.quantity)
+        unit_cost = receipt.unit_cost
         gross_amount = round(quantity * unit_cost, 2)
-        discount = round(gross_amount * self.random.uniform(0.0, 0.03), 2)
+        discount = round(gross_amount * receipt.discount_rate, 2)
         net_amount = round(gross_amount - discount, 2)
         tax_amount = round(net_amount * product.tax_rate, 2)
+
         current = self.inventory.setdefault((product.product_id, warehouse.warehouse_id), {"quantity": 0.0, "avg_cost": unit_cost})
         new_quantity = current["quantity"] + quantity
         current["avg_cost"] = round(((current["quantity"] * current["avg_cost"]) + net_amount) / max(new_quantity, 1), 4)
         current["quantity"] = new_quantity
+
+        payable_total = round(net_amount + tax_amount, 2)
+        order_id = self.next_document_id("PO")
+        self.pending_supplier_payments.append(
+            SupplierPayable(
+                due_tick=self.current_tick + self.payment_term_ticks(supplier),
+                order_id=order_id,
+                product=product,
+                supplier=supplier,
+                warehouse=warehouse,
+                outstanding_amount=payable_total,
+                original_amount=payable_total,
+                quantity=float(quantity),
+                unit_cost=unit_cost,
+            )
+        )
+
         return {
             "event_type": "purchase",
-            "order_id": self.next_document_id("PO"),
+            "order_id": order_id,
             "product": product,
             "supplier": supplier,
             "warehouse": warehouse,
@@ -454,9 +650,75 @@ class RetailSimulation:
             "credit_account": self.account_code("accounts_payable"),
         }
 
+    def next_supplier_payment(self) -> dict[str, Any]:
+        due_payables = self.due_supplier_payables()
+        if not due_payables:
+            return self.next_sale()
+
+        payable = self.choice_weighted(due_payables, lambda item: item.outstanding_amount)
+        available_bank = self.liquidity["bank_accounts"]
+        available_cash = self.liquidity["cash"]
+        available_total = available_bank + available_cash
+        if available_total < 50:
+            return self.next_sale()
+
+        target_payment = payable.outstanding_amount * self.random.uniform(0.35, 0.8)
+        payment_amount = round(min(payable.outstanding_amount, max(min(target_payment, available_total), min(payable.outstanding_amount, available_total))), 2)
+        payment_account = self.account_code("bank_accounts") if available_bank >= payment_amount or available_bank >= available_cash else self.account_code("cash")
+        self.update_liquidity(payment_account, -payment_amount)
+
+        payable.outstanding_amount = round(max(payable.outstanding_amount - payment_amount, 0.0), 2)
+        if payable.outstanding_amount <= 0.01:
+            self.pending_supplier_payments.remove(payable)
+        else:
+            payable.due_tick = self.current_tick + self.random.randint(4, 10)
+
+        return {
+            "event_type": "supplier_payment",
+            "order_id": payable.order_id,
+            "product": payable.product,
+            "supplier": payable.supplier,
+            "warehouse": payable.warehouse,
+            "channel": self.catalog.channels["b2b_procurement"],
+            "quantity": 0.0,
+            "unit_price": payable.unit_cost,
+            "gross_amount": payment_amount,
+            "discount": 0.0,
+            "net_amount": payment_amount,
+            "tax": 0.0,
+            "marketplace_fee": 0.0,
+            "cost_basis": payable.unit_cost,
+            "cmv": 0.0,
+            "sale_id": None,
+            "customer_id": None,
+            "customer_name": None,
+            "customer_cpf": None,
+            "customer_email": None,
+            "customer_segment": None,
+            "payment_method": "supplier_transfer",
+            "payment_installments": 1,
+            "order_status": "paid",
+            "order_origin": "accounts_payable",
+            "coupon_code": None,
+            "device_type": None,
+            "sales_region": payable.warehouse.state,
+            "freight_service": None,
+            "cart_items_count": 1,
+            "cart_quantity": 0.0,
+            "cart_gross_amount": payment_amount,
+            "cart_discount": 0.0,
+            "cart_net_amount": payment_amount,
+            "sale_line_index": 1,
+            "debit_account": self.account_code("accounts_payable"),
+            "credit_account": payment_account,
+        }
+
     def next_sale(self) -> dict[str, Any]:
         if self.pending_sale_lines:
-            return self.pending_sale_lines.pop(0)
+            line = self.pending_sale_lines.pop(0)
+            settlement_amount = round(line["net_amount"] + line["tax"] - line["marketplace_fee"], 2)
+            self.update_liquidity(line["debit_account"], settlement_amount)
+            return line
 
         products = self.available_products()
         if not products:
@@ -466,9 +728,20 @@ class RetailSimulation:
             return self.next_purchase()
 
         for line in lines:
+            delivered_tick = self.current_tick + self.delivery_ticks(line.get("freight_service"))
+            return_deadline_tick = delivered_tick + self.return_window_ticks(line.get("customer_segment"))
             sale_snapshot = {
                 **line,
                 "returnable_quantity": line["quantity"],
+                "delivered_tick": delivered_tick,
+                "return_deadline_tick": return_deadline_tick,
+                "return_propensity": self.return_propensity(
+                    product=line["product"],
+                    channel=line["channel"],
+                    customer_segment=line.get("customer_segment"),
+                    quantity=float(line["quantity"]),
+                ),
+                "due_tick": max(self.current_tick + 1, delivered_tick - self.random.randint(0, 1)),
             }
             self.fulfilled_sales.append(sale_snapshot)
             self.pending_freights.append(sale_snapshot)
@@ -477,13 +750,19 @@ class RetailSimulation:
         if len(self.pending_freights) > 200:
             self.pending_freights = self.pending_freights[-120:]
         self.pending_sale_lines = lines[1:]
-        return lines[0]
+        line = lines[0]
+        settlement_amount = round(line["net_amount"] + line["tax"] - line["marketplace_fee"], 2)
+        self.update_liquidity(line["debit_account"], settlement_amount)
+        return line
 
     def next_return(self) -> dict[str, Any]:
         candidates = self.returnable_sales()
         if not candidates:
             return self.next_sale()
-        sale = self.choice_weighted(candidates, lambda item: item["returnable_quantity"])
+        sale = self.choice_weighted(
+            candidates,
+            lambda item: float(item["returnable_quantity"]) * max(float(item.get("return_propensity", 0.01)), 0.004),
+        )
         quantity = float(self.random.randint(1, min(int(sale["returnable_quantity"]), 2)))
         sale["returnable_quantity"] = round(float(sale["returnable_quantity"]) - quantity, 2)
         stock = self.inventory.setdefault(
@@ -497,6 +776,8 @@ class RetailSimulation:
         net_amount = round(self.per_unit(sale["net_amount"], sale["quantity"]) * quantity, 2)
         tax_amount = round(self.per_unit(sale["tax"], sale["quantity"]) * quantity, 2)
         cmv = round(self.per_unit(sale["cmv"], sale["quantity"]) * quantity, 2)
+        refund_account = sale["debit_account"]
+        self.update_liquidity(refund_account, -round(net_amount + tax_amount, 2))
         return {
             "event_type": "return",
             "order_id": sale["order_id"],
@@ -534,7 +815,7 @@ class RetailSimulation:
             "cart_net_amount": sale.get("cart_net_amount", net_amount),
             "sale_line_index": sale.get("sale_line_index", 1),
             "debit_account": self.account_code("returns"),
-            "credit_account": sale["debit_account"],
+            "credit_account": refund_account,
         }
 
     def next_freight(self) -> dict[str, Any]:
@@ -544,6 +825,7 @@ class RetailSimulation:
         base_per_unit = 4.5 if sale["product"].product_category in {"Telefonia", "Eletronicos"} else 3.2
         freight_amount = round(base_per_unit * sale["quantity"] * self.random.uniform(0.95, 1.35), 2)
         bank_fee = round(max(freight_amount * self.random.uniform(0.008, 0.018), 0.35), 2)
+        self.update_liquidity(self.account_code("bank_accounts"), -round(freight_amount + bank_fee, 2))
         return {
             "event_type": "freight",
             "order_id": sale["order_id"],
@@ -591,12 +873,42 @@ class RetailSimulation:
         )
 
     def next_event(self) -> dict[str, Any]:
-        if self.pending_freights and self.random.random() < 0.16:
-            return self.next_freight()
-        if self.returnable_sales() and self.random.random() < 0.09:
-            return self.next_return()
-        if self.low_stock_products() and self.random.random() < 0.38:
+        self.current_tick += 1
+        self._update_market_state()
+        self.schedule_procurement()
+
+        due_receipts = self.due_purchase_receipts()
+        due_payables = self.due_supplier_payables()
+        due_freights = [item for item in self.pending_freights if int(item.get("due_tick", self.current_tick)) <= self.current_tick]
+        return_candidates = self.returnable_sales()
+
+        actions: list[tuple[str, float]] = []
+        if due_receipts:
+            actions.append(("purchase", 1.6 + len(due_receipts) * 0.45))
+        if due_payables and self.available_liquidity() > 50:
+            actions.append(("supplier_payment", 0.9 + len(due_payables) * 0.2))
+        if due_freights:
+            actions.append(("freight", 0.55 + len(due_freights) * 0.12))
+        if return_candidates:
+            eligible_units = sum(min(float(sale.get("returnable_quantity", 0.0)), 3.0) for sale in return_candidates)
+            average_propensity = sum(float(sale.get("return_propensity", 0.01)) for sale in return_candidates) / max(len(return_candidates), 1)
+            actions.append(("return", 0.015 + min(eligible_units, 80.0) * 0.015 * max(average_propensity, 0.01)))
+        if self.available_products():
+            sale_pressure = sum(self.demand_multiplier(product.product_id) for product in self.available_products()) / max(len(self.available_products()), 1)
+            actions.append(("sale", 2.8 + sale_pressure))
+
+        if not actions:
             return self.next_purchase()
+
+        action = self.choose_weighted_pair(actions)
+        if action == "purchase":
+            return self.next_purchase()
+        if action == "supplier_payment":
+            return self.next_supplier_payment()
+        if action == "freight":
+            return self.next_freight()
+        if action == "return":
+            return self.next_return()
         return self.next_sale()
 
     def drain_bootstrap_events(self) -> list[dict[str, Any]]:

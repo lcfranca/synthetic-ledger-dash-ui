@@ -1,5 +1,5 @@
 import type { DashboardSummary } from '../../entities/dashboard/api'
-import { money } from '../../shared/lib/format'
+import { money, percent } from '../../shared/lib/format'
 
 type Props = {
   summary?: DashboardSummary | null
@@ -21,16 +21,19 @@ export default function KpiPanel({ summary }: Props) {
           <div className="metric-value">{summary ? money(summary.balance_sheet.assets.inventory) : '-'}</div>
         </article>
         <article className="metric-card metric-card--accent">
-          <div className="metric-label">Receita</div>
-          <div className="metric-value">{summary ? money(summary.income_statement.revenue) : '-'}</div>
+          <div className="metric-label">Receita liquida</div>
+          <div className="metric-value">{summary ? money(summary.income_statement.net_revenue) : '-'}</div>
+          <div className="metric-footnote">Devolucao {summary ? percent(summary.income_statement.return_rate_pct) : '-'}</div>
         </article>
         <article className="metric-card">
-          <div className="metric-label">CMV</div>
-          <div className="metric-value">{summary ? money(summary.income_statement.cmv) : '-'}</div>
+          <div className="metric-label">Margem Bruta</div>
+          <div className="metric-value">{summary ? percent(summary.income_statement.gross_margin_pct) : '-'}</div>
+          <div className="metric-footnote">Lucro bruto {summary ? money(summary.income_statement.gross_profit) : '-'}</div>
         </article>
         <article className="metric-card">
-          <div className="metric-label">Resultado Líquido</div>
-          <div className="metric-value">{summary ? money(summary.income_statement.net_income) : '-'}</div>
+          <div className="metric-label">Margem Liquida</div>
+          <div className="metric-value">{summary ? percent(summary.income_statement.net_margin_pct) : '-'}</div>
+          <div className="metric-footnote">Resultado {summary ? money(summary.income_statement.net_income) : '-'}</div>
         </article>
         <article className={`metric-card ${bpClosed ? 'metric-card--balanced' : 'metric-card--warning'}`}>
           <div className="metric-label">Fechamento do BP</div>

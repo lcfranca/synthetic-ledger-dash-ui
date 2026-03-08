@@ -285,32 +285,33 @@ class RealtimeGateway:
     async def consume(self) -> None:
         while True:
             try:
-                message = await asyncio.to_thread(self.consumer.poll, 1.0)
-                if message is None:
+                kafka_message = await asyncio.to_thread(self.consumer.poll, 1.0)
+                if kafka_message is None:
                     self.state["state"] = "idle"
                     continue
 
-                if message.error():
+                if kafka_message.error():
                     self.state["state"] = "error"
-                    self.state["last_error"] = str(message.error())
+                    self.state["last_error"] = str(kafka_message.error())
                     await asyncio.sleep(1)
                     continue
 
-                entry = json.loads(message.value().decode("utf-8"))
+                entry = json.loads(kafka_message.value().decode("utf-8"))
                 self.state["state"] = "running"
                 self.state["messages_processed"] = int(self.state.get("messages_processed", 0)) + 1
                 self.state["last_event_id"] = entry.get("event_id")
+                self.state["last_error"] = None
                 self.state["last_offsets"] = {
-                    "topic": message.topic(),
-                    "partition": message.partition(),
-                    "offset": message.offset(),
+                    "topic": kafka_message.topic(),
+                    "partition": kafka_message.partition(),
+                    "offset": kafka_message.offset(),
                 }
 
                 for backend in self.active_backends:
                     subscriptions = await self.manager.subscriptions(backend)
                     if not subscriptions:
                         continue
-                    message = {
+                    outbound_message = {
                         "event_id": entry.get("entry_id") or entry.get("event_id") or str(uuid.uuid4()),
                         "event_type": "entry.created",
                         "version": "1.0.0",
@@ -326,13 +327,10 @@ class RealtimeGateway:
                         continue
                     await self.manager.broadcast(
                         backend,
-                        message,
+                        outbound_message,
                         matcher=lambda subscription: entry_matches_filters(entry, subscription.filters),
                     )
-                    for connection_id in matched_connection_ids:
-                        self.schedule_snapshot(backend, connection_id)
-
-                await asyncio.to_thread(self.consumer.commit, message=message, asynchronous=False)
+                await asyncio.to_thread(self.consumer.commit, message=kafka_message, asynchronous=False)
             except asyncio.CancelledError:
                 raise
             except Exception as exc:

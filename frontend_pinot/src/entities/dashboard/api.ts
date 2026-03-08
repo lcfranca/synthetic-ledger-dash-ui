@@ -20,6 +20,11 @@ export type DashboardSummary = {
     expenses: number
     net_income: number
     cmv: number
+    gross_profit: number
+    return_rate_pct?: number | null
+    gross_margin_pct?: number | null
+    net_margin_pct?: number | null
+    expense_ratio_pct?: number | null
   }
   entries: JournalEntry[]
   filters?: EntryFilters
@@ -104,6 +109,41 @@ export type EntryFilters = {
   payment_method?: string
 }
 
+export type QueueFilters = Pick<
+  EntryFilters,
+  | 'as_of'
+  | 'start_at'
+  | 'end_at'
+  | 'product_name'
+  | 'product_category'
+  | 'supplier_name'
+  | 'event_type'
+  | 'entry_category'
+  | 'account_code'
+  | 'warehouse_id'
+  | 'entry_side'
+  | 'ontology_source'
+  | 'channel'
+>
+
+export type SalesFilters = Pick<
+  EntryFilters,
+  | 'as_of'
+  | 'start_at'
+  | 'end_at'
+  | 'product_name'
+  | 'product_category'
+  | 'channel'
+  | 'customer_name'
+  | 'customer_cpf'
+  | 'customer_email'
+  | 'customer_segment'
+  | 'sale_id'
+  | 'order_id'
+  | 'order_status'
+  | 'payment_method'
+>
+
 export type FilterOptions = {
   product_names: string[]
   product_categories: string[]
@@ -173,6 +213,9 @@ export type SalesWorkspace = {
   by_channel: SalesBreakdownRow[]
   by_product: SalesBreakdownRow[]
   by_status: SalesBreakdownRow[]
+  data_mode?: 'full' | 'pinot_order_fallback'
+  data_warning?: string | null
+  missing_dimensions?: string[]
 }
 
 export type MasterDataCompany = {
@@ -257,9 +300,20 @@ export type ProductCatalogRow = MasterDataProduct & {
   opening_stock_quantity?: number
   current_stock_quantity: number
   sold_quantity: number
+  net_sold_quantity: number
   returned_quantity: number
   average_purchase_price: number
   average_sale_price: number
+  revenue_amount: number
+  return_amount: number
+  net_revenue_amount: number
+  cogs_amount: number
+  selling_expenses_amount: number
+  gross_profit_amount: number
+  net_profit_amount: number
+  return_rate_pct?: number | null
+  gross_margin_pct?: number | null
+  net_margin_pct?: number | null
   daily_demand_units: number
   coverage_days: number | null
   suggested_purchase_quantity: number

@@ -1,7 +1,10 @@
 import { useState } from 'react'
+import { useEntryFilters } from '../features/change-filter/model/useEntryFilters'
+import { type EntryFilters, type QueueFilters, type SalesFilters } from '../entities/dashboard/api'
 import { type ViewId } from '../shared/config/dashboardViews'
 import { useDashboardSession } from '../processes/dashboard-session/model/useDashboardSession'
-import FilterPanel from '../widgets/filter-panel/FilterPanel'
+import QueueFilterPanel from '../widgets/filter-panel/QueueFilterPanel'
+import SalesFilterPanel from '../widgets/filter-panel/SalesFilterPanel'
 import QueueView from '../widgets/queue-view/QueueView'
 import SalesView from '../widgets/sales-view/SalesView'
 import AccountingView from '../widgets/accounting-view/AccountingView'
@@ -13,7 +16,26 @@ import SideRail from '../widgets/side-rail/SideRail'
 
 export default function App() {
   const [activeView, setActiveView] = useState<ViewId>('queue')
-  const session = useDashboardSession({ defaultBackend: 'clickhouse', queryKeyPrefix: 'clickhouse' })
+  const [isRealtimePaused, setIsRealtimePaused] = useState(false)
+  const queueFiltersState = useEntryFilters<QueueFilters>()
+  const salesFiltersState = useEntryFilters<SalesFilters>()
+
+  const activeFilters: EntryFilters = activeView === 'sales'
+    ? { ...salesFiltersState.filters }
+    : activeView === 'queue'
+      ? { ...queueFiltersState.filters }
+      : {}
+
+  const activeHasFilters = activeView === 'sales' ? salesFiltersState.hasActiveFilters : activeView === 'queue' ? queueFiltersState.hasActiveFilters : false
+
+  const session = useDashboardSession({
+    defaultBackend: 'clickhouse',
+    queryKeyPrefix: 'clickhouse',
+    filters: activeFilters,
+    hasActiveFilters: activeHasFilters,
+    viewId: activeView,
+    isRealtimePaused,
+  })
 
   return (
     <main className="dashboard-shell">
@@ -28,24 +50,35 @@ export default function App() {
       />
 
       <section className="content-column">
-        <DashboardHeader currentFeed={session.currentFeed} filters={session.filters} workspace={session.workspace} summary={session.summary} />
+        <DashboardHeader activeView={activeView} currentFeed={session.currentFeed} filters={activeFilters} workspace={session.workspace} summary={session.summary} />
 
         <ShellMetrics
           summary={session.summary}
           overview={session.overview}
           backend={session.backend}
           feedMode={session.currentFeed}
+          isRealtimePaused={isRealtimePaused}
+          pendingRealtimeEvents={session.bufferedEventCount}
+          onToggleRealtime={() => setIsRealtimePaused((current) => !current)}
         />
 
-        {activeView === 'queue' || activeView === 'sales' ? (
-          <FilterPanel
-            filters={session.filters}
+        {activeView === 'queue' ? (
+          <QueueFilterPanel
+            filters={queueFiltersState.filters}
             filterOptions={session.filterOptions}
-            setFilter={session.setFilter}
-            clearFilters={session.clearFilters}
+            setFilter={queueFiltersState.setFilter}
+            clearFilters={queueFiltersState.clearFilters}
           />
         ) : null}
-        {activeView === 'queue' ? <QueueView summary={session.summary} entries={session.entries} /> : null}
+        {activeView === 'sales' ? (
+          <SalesFilterPanel
+            filters={salesFiltersState.filters}
+            filterOptions={session.filterOptions}
+            setFilter={salesFiltersState.setFilter}
+            clearFilters={salesFiltersState.clearFilters}
+          />
+        ) : null}
+        {activeView === 'queue' ? <QueueView summary={session.summary} entries={session.entries} isRealtimePaused={isRealtimePaused} bufferedEventCount={session.bufferedEventCount} onToggleRealtime={() => setIsRealtimePaused((current) => !current)} /> : null}
         {activeView === 'sales' ? <SalesView salesWorkspace={session.salesWorkspace} /> : null}
         {activeView === 'accounting' ? <AccountingView summary={session.summary} /> : null}
         {activeView === 'accounts' ? <AccountsView accounts={session.accounts} /> : null}

@@ -10,7 +10,7 @@ export default function AccountsView({ accounts }: Props) {
     <section className="panel section-panel frame-panel cinematic-panel">
       <div className="panel-title-row">
         <div>
-          <div className="meta-label">Documentacao viva</div>
+          <div className="meta-label">Plano contabil</div>
           <h2>Inventario de contas</h2>
         </div>
         <div className="header-time compact-time">{accounts.length} contas</div>

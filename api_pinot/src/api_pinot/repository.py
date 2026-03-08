@@ -19,6 +19,12 @@ class DashboardRepository:
         return value.replace("'", "''")
 
     @staticmethod
+    def _optional_text(value: Any) -> str | None:
+        if value in (None, "", "null"):
+            return None
+        return str(value)
+
+    @staticmethod
     def _to_epoch_millis(value: str) -> int:
         normalized = value.replace("Z", "+00:00")
         try:
@@ -76,6 +82,40 @@ class DashboardRepository:
             "suggested_purchase_supplier_name": suggested_supplier_name,
             "purchase_recommendation": purchase_recommendation,
             "needs_restock": needs_restock,
+        }
+
+    @staticmethod
+    def _percentage(numerator: float, denominator: float, digits: int = 2) -> float | None:
+        if abs(denominator) < 0.005:
+            return None
+        return round((numerator / denominator) * 100.0, digits)
+
+    def _income_statement_metrics(
+        self,
+        *,
+        revenue: float,
+        returns: float,
+        marketplace_fees: float,
+        freight_out: float,
+        bank_fees: float,
+        other_expenses: float,
+        cmv: float,
+    ) -> dict[str, float | None]:
+        net_revenue = round(revenue - returns, 2)
+        gross_profit = round(net_revenue - cmv, 2)
+        operating_expenses = round(marketplace_fees + freight_out + bank_fees + other_expenses, 2)
+        expenses_total = round(operating_expenses + cmv, 2)
+        net_income = round(net_revenue - expenses_total, 2)
+        return {
+            "net_revenue": net_revenue,
+            "gross_profit": gross_profit,
+            "operating_expenses": operating_expenses,
+            "expenses": expenses_total,
+            "net_income": net_income,
+            "return_rate_pct": self._percentage(returns, revenue),
+            "gross_margin_pct": self._percentage(gross_profit, net_revenue),
+            "net_margin_pct": self._percentage(net_income, net_revenue),
+            "expense_ratio_pct": self._percentage(operating_expenses, net_revenue),
         }
 
     def _build_where(
@@ -155,11 +195,21 @@ class DashboardRepository:
         bank_fees = round(float(row.get("bank_fees", 0.0)), 2)
         cmv = round(float(row.get("cmv", 0.0)), 2)
         other_expenses = round(float(row.get("other_expenses", 0.0)), 2)
+        metrics = self._income_statement_metrics(
+            revenue=revenue,
+            returns=returns,
+            marketplace_fees=marketplace_fees,
+            freight_out=freight_out,
+            bank_fees=bank_fees,
+            other_expenses=other_expenses,
+            cmv=cmv,
+        )
         liabilities_total = round(accounts_payable + tax_payable, 2)
-        net_revenue = round(revenue - returns, 2)
-        operating_expenses = round(marketplace_fees + freight_out + bank_fees + other_expenses, 2)
-        expenses_total = round(operating_expenses + cmv, 2)
-        net_income = round(net_revenue - expenses_total, 2)
+        net_revenue = round(float(metrics["net_revenue"] or 0.0), 2)
+        gross_profit = round(float(metrics["gross_profit"] or 0.0), 2)
+        operating_expenses = round(float(metrics["operating_expenses"] or 0.0), 2)
+        expenses_total = round(float(metrics["expenses"] or 0.0), 2)
+        net_income = round(float(metrics["net_income"] or 0.0), 2)
         assets_total = round(cash + bank_accounts + recoverable_tax + inventory, 2)
         liabilities_and_equity = round(liabilities_total + net_income, 2)
         difference = round(assets_total - liabilities_and_equity, 2)
@@ -198,6 +248,11 @@ class DashboardRepository:
                 "expenses": expenses_total,
                 "net_income": net_income,
                 "cmv": cmv,
+                "gross_profit": gross_profit,
+                "return_rate_pct": metrics["return_rate_pct"],
+                "gross_margin_pct": metrics["gross_margin_pct"],
+                "net_margin_pct": metrics["net_margin_pct"],
+                "expense_ratio_pct": metrics["expense_ratio_pct"],
             },
         }
 
@@ -267,12 +322,49 @@ class DashboardRepository:
             occurred_at,
             ingested_at,
             revision
-        FROM {self.realtime_table}
+        FROM {self.table}
         WHERE {where_clause}
         LIMIT {fetch_limit}
         """.strip()
 
         rows = await self._query_rows(sql)
+        if not rows:
+            fallback_sql = f"""
+            SELECT
+                entry_id,
+                event_id,
+                trace_id,
+                entry_side,
+                account_code,
+                account_name,
+                account_role,
+                amount,
+                signed_amount,
+                quantity,
+                unit_price,
+                currency,
+                ontology_event_type,
+                ontology_description,
+                ontology_source,
+                product_id,
+                product_name,
+                product_category,
+                product_brand,
+                supplier_name,
+                warehouse_id,
+                warehouse_name,
+                channel_name,
+                entry_category,
+                order_id,
+                source_payload_hash,
+                occurred_at,
+                ingested_at,
+                revision
+            FROM {self.table}
+            WHERE {where_clause}
+            LIMIT {fetch_limit}
+            """.strip()
+            rows = await self._query_rows(fallback_sql)
         if not isinstance(rows, list):
             return []
         normalized_rows = []
@@ -280,8 +372,35 @@ class DashboardRepository:
             normalized_rows.append(
                 {
                     **row,
+                    "supplier_id": self._optional_text(row.get("supplier_id")),
+                    "supplier_name": self._optional_text(row.get("supplier_name")),
+                    "customer_id": self._optional_text(row.get("customer_id")),
+                    "customer_name": self._optional_text(row.get("customer_name")),
+                    "customer_cpf": self._optional_text(row.get("customer_cpf")),
+                    "customer_email": self._optional_text(row.get("customer_email")),
+                    "customer_segment": self._optional_text(row.get("customer_segment")),
+                    "channel": str(row.get("channel") or row.get("channel_name") or ""),
+                    "channel_name": str(row.get("channel_name") or row.get("channel") or ""),
+                    "sale_id": self._optional_text(row.get("sale_id")),
+                    "order_id": str(row.get("order_id") or ""),
+                    "order_status": self._optional_text(row.get("order_status")),
+                    "order_origin": self._optional_text(row.get("order_origin")),
+                    "payment_method": self._optional_text(row.get("payment_method")),
+                    "payment_installments": int(row.get("payment_installments", 0) or 0),
+                    "coupon_code": self._optional_text(row.get("coupon_code")),
+                    "device_type": self._optional_text(row.get("device_type")),
+                    "sales_region": self._optional_text(row.get("sales_region")),
+                    "freight_service": self._optional_text(row.get("freight_service")),
+                    "cart_items_count": int(row.get("cart_items_count", 0) or 0),
+                    "cart_quantity": float(row.get("cart_quantity", 0.0) or 0.0),
+                    "cart_gross_amount": float(row.get("cart_gross_amount", 0.0) or 0.0),
+                    "cart_discount": float(row.get("cart_discount", 0.0) or 0.0),
+                    "cart_net_amount": float(row.get("cart_net_amount", 0.0) or 0.0),
+                    "sale_line_index": int(row.get("sale_line_index", 0) or 0),
                     "quantity": float(row.get("quantity", 0.0) or 0.0),
                     "unit_price": float(row.get("unit_price", 0.0) or 0.0),
+                    "amount": float(row.get("amount", 0.0) or 0.0),
+                    "signed_amount": float(row.get("signed_amount", 0.0) or 0.0),
                 }
             )
         return sorted(
@@ -346,6 +465,139 @@ class DashboardRepository:
         rows = await self._query_rows(sql)
         return [str(item.get("value")) for item in rows if item.get("value")]
 
+    async def _get_sales_workspace_fallback(
+        self,
+        *,
+        as_of: str | None = None,
+        start_at: str | None = None,
+        end_at: str | None = None,
+        filters: dict[str, str | None] | None = None,
+    ) -> dict[str, Any]:
+        supported_filters = {key: value for key, value in (filters or {}).items() if key in {"product_name", "product_category", "channel_name", "order_id"}}
+        where_clause = self._build_where(supported_filters, as_of=as_of, start_at=start_at, end_at=end_at)
+        sales_where_clause = f"{where_clause} AND ontology_event_type = 'sale' AND order_id != 'null' AND order_id != ''"
+
+        sales_sql = f"""
+        SELECT
+            order_id,
+            MAX(occurred_at) AS occurred_at,
+            MAX(product_name) AS lead_product,
+            DISTINCTCOUNT(product_name) AS product_mix,
+            MAX(channel_name) AS channel_name,
+            ROUND(SUM(CASE WHEN account_role = 'revenue' THEN quantity ELSE 0 END), 3) AS quantity,
+            ROUND(SUM(CASE WHEN account_role = 'revenue' THEN amount ELSE 0 END), 2) AS gross_amount,
+            ROUND(SUM(CASE WHEN account_role = 'cogs' THEN amount ELSE 0 END), 2) AS cmv,
+            ROUND(SUM(CASE WHEN account_role = 'tax_payable' THEN amount ELSE 0 END), 2) AS tax_amount,
+            ROUND(SUM(CASE WHEN account_role = 'marketplace_fees' THEN amount ELSE 0 END), 2) AS marketplace_fee_amount
+        FROM {self.table}
+        WHERE {sales_where_clause}
+        GROUP BY order_id
+        ORDER BY occurred_at DESC
+        LIMIT 40
+        """.strip()
+
+        kpi_sql = f"""
+        SELECT
+            DISTINCTCOUNT(order_id) AS order_count,
+            ROUND(SUM(CASE WHEN account_role = 'revenue' THEN amount ELSE 0 END), 2) AS gross_sales,
+            ROUND(SUM(CASE WHEN account_role = 'revenue' THEN amount ELSE 0 END), 2) AS net_sales,
+            ROUND(SUM(CASE WHEN account_role = 'revenue' THEN quantity ELSE 0 END), 3) AS units_sold,
+            ROUND(AVG(CASE WHEN account_role = 'revenue' THEN quantity ELSE NULL END), 2) AS avg_items_per_order
+        FROM {self.table}
+        WHERE {sales_where_clause}
+        """.strip()
+
+        channel_sql = f"""
+        SELECT
+            channel_name AS label,
+            DISTINCTCOUNT(order_id) AS order_count,
+            ROUND(SUM(CASE WHEN account_role = 'revenue' THEN quantity ELSE 0 END), 3) AS quantity,
+            ROUND(SUM(CASE WHEN account_role = 'revenue' THEN amount ELSE 0 END), 2) AS gross_sales,
+            ROUND(SUM(CASE WHEN account_role = 'revenue' THEN amount ELSE 0 END), 2) AS net_sales
+        FROM {self.table}
+        WHERE {sales_where_clause}
+        GROUP BY channel_name
+        ORDER BY gross_sales DESC
+        LIMIT 8
+        """.strip()
+
+        product_sql = f"""
+        SELECT
+            product_name AS label,
+            DISTINCTCOUNT(order_id) AS order_count,
+            ROUND(SUM(CASE WHEN account_role = 'revenue' THEN quantity ELSE 0 END), 3) AS quantity,
+            ROUND(SUM(CASE WHEN account_role = 'revenue' THEN amount ELSE 0 END), 2) AS gross_sales,
+            ROUND(SUM(CASE WHEN account_role = 'revenue' THEN amount ELSE 0 END), 2) AS net_sales
+        FROM {self.table}
+        WHERE {sales_where_clause}
+        GROUP BY product_name
+        ORDER BY gross_sales DESC
+        LIMIT 8
+        """.strip()
+
+        sales_rows, kpi_rows, by_channel, by_product = await asyncio.gather(
+            self._query_rows(sales_sql),
+            self._query_rows(kpi_sql),
+            self._query_rows(channel_sql),
+            self._query_rows(product_sql),
+        )
+        kpis = kpi_rows[0] if kpi_rows else {}
+        order_count = int(kpis.get("order_count", 0) or 0)
+        gross_sales = round(float(kpis.get("gross_sales", 0.0) or 0.0), 2)
+
+        sales = [
+            {
+                "sale_id": str(row.get("order_id") or ""),
+                "order_id": str(row.get("order_id") or ""),
+                "occurred_at": row.get("occurred_at"),
+                "customer_id": None,
+                "customer_name": None,
+                "customer_cpf": None,
+                "customer_email": None,
+                "customer_segment": None,
+                "channel": str(row.get("channel_name") or ""),
+                "channel_name": str(row.get("channel_name") or ""),
+                "payment_method": None,
+                "payment_installments": 0,
+                "order_status": None,
+                "order_origin": None,
+                "coupon_code": None,
+                "device_type": None,
+                "sales_region": None,
+                "freight_service": None,
+                "lead_product": row.get("lead_product"),
+                "product_mix": int(row.get("product_mix", 1) or 1),
+                "cart_items_count": int(row.get("product_mix", 1) or 1),
+                "quantity": round(float(row.get("quantity", 0.0) or 0.0), 3),
+                "gross_amount": round(float(row.get("gross_amount", 0.0) or 0.0), 2),
+                "net_amount": round(float(row.get("gross_amount", 0.0) or 0.0), 2),
+                "cart_discount": 0.0,
+                "tax_amount": round(float(row.get("tax_amount", 0.0) or 0.0), 2),
+                "marketplace_fee_amount": round(float(row.get("marketplace_fee_amount", 0.0) or 0.0), 2),
+                "cmv": round(float(row.get("cmv", 0.0) or 0.0), 2),
+            }
+            for row in sales_rows
+        ]
+
+        return {
+            "sales": sales,
+            "kpis": {
+                "order_count": order_count,
+                "unique_customers": 0,
+                "gross_sales": gross_sales,
+                "net_sales": gross_sales,
+                "units_sold": round(float(kpis.get("units_sold", 0.0) or 0.0), 3),
+                "average_ticket": round(gross_sales / order_count, 2) if order_count else 0.0,
+                "avg_items_per_order": round(float(kpis.get("avg_items_per_order", 0.0) or 0.0), 2),
+            },
+            "by_channel": by_channel,
+            "by_product": by_product,
+            "by_status": [],
+            "data_mode": "pinot_order_fallback",
+            "data_warning": "Pinot segue sem materializar sale_id, customer_*, payment_method e order_status neste conjunto. O painel comercial foi degradado para um modo seguro por pedido, produto, canal, quantidade e receita enquanto o broker é saneado.",
+            "missing_dimensions": ["sale_id", "customer_name", "customer_email", "customer_segment", "payment_method", "order_status"],
+        }
+
     async def get_sales_workspace(
         self,
         *,
@@ -387,7 +639,7 @@ class DashboardRepository:
             ROUND(SUM(tax_amount), 2) AS tax_amount,
             ROUND(SUM(marketplace_fee_amount), 2) AS marketplace_fee_amount,
             ROUND(SUM(inventory_cost_total), 2) AS cmv
-        FROM {self.realtime_table}
+        FROM {self.table}
         WHERE {sales_where_clause} AND sale_id != 'null' AND sale_id != ''
         GROUP BY sale_id
         ORDER BY occurred_at DESC
@@ -402,7 +654,7 @@ class DashboardRepository:
             ROUND(SUM(net_amount), 2) AS net_sales,
             ROUND(SUM(quantity), 3) AS units_sold,
             ROUND(AVG(cart_items_count), 2) AS avg_items_per_order
-        FROM {self.realtime_table}
+        FROM {self.table}
         WHERE {sales_where_clause} AND sale_id != 'null' AND sale_id != ''
         """.strip()
 
@@ -413,7 +665,7 @@ class DashboardRepository:
             ROUND(SUM(quantity), 3) AS quantity,
             ROUND(SUM(gross_amount), 2) AS gross_sales,
             ROUND(SUM(net_amount), 2) AS net_sales
-        FROM {self.realtime_table}
+        FROM {self.table}
         WHERE {sales_where_clause}
         GROUP BY channel_name
         ORDER BY net_sales DESC
@@ -427,7 +679,7 @@ class DashboardRepository:
             ROUND(SUM(quantity), 3) AS quantity,
             ROUND(SUM(gross_amount), 2) AS gross_sales,
             ROUND(SUM(net_amount), 2) AS net_sales
-        FROM {self.realtime_table}
+        FROM {self.table}
         WHERE {sales_where_clause}
         GROUP BY product_name
         ORDER BY net_sales DESC
@@ -439,7 +691,7 @@ class DashboardRepository:
             order_status AS label,
             DISTINCTCOUNT(sale_id) AS order_count,
             ROUND(SUM(net_amount), 2) AS net_sales
-        FROM {self.realtime_table}
+        FROM {self.table}
         WHERE {sales_where_clause} AND order_status != 'null' AND order_status != ''
         GROUP BY order_status
         ORDER BY order_count DESC
@@ -456,7 +708,7 @@ class DashboardRepository:
         kpis = kpi_rows[0] if kpi_rows else {}
         order_count = int(kpis.get("order_count", 0) or 0)
         net_sales = round(float(kpis.get("net_sales", 0.0) or 0.0), 2)
-        return {
+        result = {
             "sales": sales,
             "kpis": {
                 "order_count": order_count,
@@ -470,7 +722,13 @@ class DashboardRepository:
             "by_channel": by_channel,
             "by_product": by_product,
             "by_status": by_status,
+            "data_mode": "full",
+            "data_warning": None,
+            "missing_dimensions": [],
         }
+        if order_count == 0 and not sales:
+            return await self._get_sales_workspace_fallback(as_of=as_of, start_at=start_at, end_at=end_at, filters=filters)
+        return result
 
     async def get_master_data_overview(self) -> dict[str, Any]:
         health, company, products, accounts, channels = await asyncio.gather(
@@ -553,11 +811,17 @@ class DashboardRepository:
                     ROUND(SUM(CASE WHEN account_role = 'inventory' THEN CASE WHEN entry_side = 'debit' THEN quantity ELSE 0 - quantity END ELSE 0 END), 3) AS stock_quantity,
                     ROUND(SUM(CASE WHEN ontology_event_type = 'sale' AND account_role = 'inventory' THEN quantity ELSE 0 END), 3) AS sold_quantity,
                     ROUND(SUM(CASE WHEN ontology_event_type = 'return' AND account_role = 'inventory' THEN quantity ELSE 0 END), 3) AS returned_quantity,
+                    ROUND(SUM(CASE WHEN account_role = 'revenue' THEN amount ELSE 0 END), 2) AS revenue_amount,
+                    ROUND(SUM(CASE WHEN account_role = 'returns' THEN amount ELSE 0 END), 2) AS return_amount,
+                    ROUND(SUM(CASE WHEN account_role = 'cogs' THEN signed_amount ELSE 0 END), 2) AS cogs_amount,
+                    ROUND(SUM(CASE WHEN account_role = 'marketplace_fees' THEN signed_amount ELSE 0 END), 2) AS marketplace_fees_amount,
+                    ROUND(SUM(CASE WHEN account_role = 'outbound_freight' THEN signed_amount ELSE 0 END), 2) AS freight_out_amount,
+                    ROUND(SUM(CASE WHEN account_role = 'bank_fees' THEN signed_amount ELSE 0 END), 2) AS bank_fees_amount,
                     ROUND(SUM(CASE WHEN ontology_event_type = 'purchase' AND account_role = 'inventory' THEN unit_price ELSE 0 END), 2) AS purchase_price_sum,
                     SUM(CASE WHEN ontology_event_type = 'purchase' AND account_role = 'inventory' THEN 1 ELSE 0 END) AS purchase_event_count,
                     ROUND(SUM(CASE WHEN ontology_event_type = 'sale' AND account_role = 'inventory' THEN unit_price ELSE 0 END), 2) AS sale_price_sum,
                     SUM(CASE WHEN ontology_event_type = 'sale' AND account_role = 'inventory' THEN 1 ELSE 0 END) AS sale_event_count
-                FROM {self.realtime_table}
+                FROM {self.table}
                 WHERE is_current = 1 AND product_id != 'null' AND product_id != ''
                 GROUP BY product_id
                 ORDER BY product_id
@@ -576,8 +840,20 @@ class DashboardRepository:
             average_sale_price = round(float(aggregate.get("sale_price_sum", 0.0)) / sale_event_count, 2) if sale_event_count else round(float(product.get("base_price", 0.0)), 2)
             opening_stock_quantity = round(sum(float(value) for value in (product.get("initial_stock") or {}).values()), 3)
             stock_quantity = round(opening_stock_quantity + float(aggregate.get("stock_quantity", 0.0)), 3)
-            sold_quantity = round(max(float(aggregate.get("sold_quantity", 0.0)) - float(aggregate.get("returned_quantity", 0.0)), 0.0), 3)
-            supply_plan = self._supply_plan(product, stock_quantity, sold_quantity)
+            sold_quantity = round(float(aggregate.get("sold_quantity", 0.0)), 3)
+            returned_quantity = round(float(aggregate.get("returned_quantity", 0.0)), 3)
+            net_sold_quantity = round(max(sold_quantity - returned_quantity, 0.0), 3)
+            revenue_amount = round(float(aggregate.get("revenue_amount", 0.0)), 2)
+            return_amount = round(float(aggregate.get("return_amount", 0.0)), 2)
+            net_revenue_amount = round(revenue_amount - return_amount, 2)
+            cogs_amount = round(float(aggregate.get("cogs_amount", 0.0)), 2)
+            marketplace_fees_amount = round(float(aggregate.get("marketplace_fees_amount", 0.0)), 2)
+            freight_out_amount = round(float(aggregate.get("freight_out_amount", 0.0)), 2)
+            bank_fees_amount = round(float(aggregate.get("bank_fees_amount", 0.0)), 2)
+            selling_expenses_amount = round(marketplace_fees_amount + freight_out_amount + bank_fees_amount, 2)
+            gross_profit_amount = round(net_revenue_amount - cogs_amount, 2)
+            net_profit_amount = round(gross_profit_amount - selling_expenses_amount, 2)
+            supply_plan = self._supply_plan(product, stock_quantity, net_sold_quantity)
             rows.append(
                 {
                     **product,
@@ -585,9 +861,20 @@ class DashboardRepository:
                     "opening_stock_quantity": opening_stock_quantity,
                     "current_stock_quantity": stock_quantity,
                     "sold_quantity": sold_quantity,
-                    "returned_quantity": round(float(aggregate.get("returned_quantity", 0.0)), 3),
+                    "net_sold_quantity": net_sold_quantity,
+                    "returned_quantity": returned_quantity,
                     "average_purchase_price": average_purchase_price,
                     "average_sale_price": average_sale_price,
+                    "revenue_amount": revenue_amount,
+                    "return_amount": return_amount,
+                    "net_revenue_amount": net_revenue_amount,
+                    "cogs_amount": cogs_amount,
+                    "selling_expenses_amount": selling_expenses_amount,
+                    "gross_profit_amount": gross_profit_amount,
+                    "net_profit_amount": net_profit_amount,
+                    "return_rate_pct": self._percentage(returned_quantity, sold_quantity),
+                    "gross_margin_pct": self._percentage(gross_profit_amount, net_revenue_amount),
+                    "net_margin_pct": self._percentage(net_profit_amount, net_revenue_amount),
                     **supply_plan,
                 }
             )

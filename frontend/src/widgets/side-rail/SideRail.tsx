@@ -16,9 +16,9 @@ export default function SideRail({ activeView, backend, setActiveView, workspace
   return (
     <aside className="side-rail panel frame-panel">
       <div className="rail-head">
-        <div className="meta-label">Synthetic ledger / command deck</div>
-        <h1>Commerce block</h1>
-        <p className="rail-copy">Blocos densos, linhas retas, tipografia industrial e operacao viva de vendas, estoque e contabilidade.</p>
+        <div className="meta-label">Tantalex</div>
+        <h1>Tantalex</h1>
+        <p className="rail-copy">Operacao industrial, leitura densa e separacao rigida entre frente comercial, estoque, contas e resultado.</p>
       </div>
 
       <nav className="side-nav" aria-label="Dashboards">
@@ -32,11 +32,11 @@ export default function SideRail({ activeView, backend, setActiveView, workspace
       </nav>
 
       <div className="rail-status panel-surface">
-        <div className="status-row"><span className="status-dot live" />Backend ativo</div>
-        <strong>{backend}</strong>
+        <div className="status-row"><span className="status-dot live" />Fonte de dados</div>
+        <strong>{backend.toUpperCase()}</strong>
         <div className="status-row">Janela de leitura</div>
         <strong>{shortTs(workspace?.timestamp ?? summary?.timestamp)}</strong>
-        <div className="status-row">Vista selecionada</div>
+        <div className="status-row">Area ativa</div>
         <strong>{activeViewMeta.label}</strong>
       </div>
     </aside>

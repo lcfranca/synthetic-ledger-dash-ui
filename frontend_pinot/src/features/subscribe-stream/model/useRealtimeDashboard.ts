@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { startTransition, useCallback, useEffect, useRef, useState } from 'react'
 import { buildFilterSearchParams, type EntryFilters, type RealtimeEnvelope, type WorkspaceSnapshot } from '../../../entities/dashboard/api'
 import {
   isDashboardEnvelope,
   isEntryCreatedEnvelope,
+  preferIncomingSnapshot,
   withRealtimeEntry,
 } from '../../../entities/dashboard/lib/realtime'
 import { useReconnectSession } from '../../reconnect-session/model/useReconnectSession'
@@ -11,21 +12,61 @@ type Params = {
   backend: string
   filters: EntryFilters
   initialWorkspace?: WorkspaceSnapshot | null
+  isPaused?: boolean
 }
 
-export function useRealtimeDashboard({ backend, filters, initialWorkspace }: Params) {
+export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPaused = false }: Params) {
   const [liveWorkspace, setLiveWorkspace] = useState<WorkspaceSnapshot | null>(initialWorkspace ?? null)
   const [socketStatus, setSocketStatus] = useState<'idle' | 'connecting' | 'open' | 'closed' | 'error'>('idle')
+  const [bufferedEventCount, setBufferedEventCount] = useState(0)
   const seedWorkspaceRef = useRef<WorkspaceSnapshot | null>(initialWorkspace ?? null)
   const websocketRef = useRef<WebSocket | null>(null)
   const cancelledRef = useRef(false)
+  const pausedRef = useRef(isPaused)
+  const bufferedMessagesRef = useRef<Array<RealtimeEnvelope | WorkspaceSnapshot>>([])
   const filterQuery = buildFilterSearchParams(filters).toString()
 
   const { scheduleReconnect, clearReconnect } = useReconnectSession({ delayMs: 1500 })
 
+  const applyEnvelope = useCallback((current: WorkspaceSnapshot | null, parsed: RealtimeEnvelope | WorkspaceSnapshot) => {
+    if (isEntryCreatedEnvelope(parsed)) {
+      return withRealtimeEntry(current ?? seedWorkspaceRef.current, parsed.payload, parsed.backend, parsed.ts)
+    }
+    if (isDashboardEnvelope(parsed)) {
+      return preferIncomingSnapshot(current, { ...parsed.payload, backend: parsed.backend })
+    }
+    if ('event_type' in parsed) {
+      return current
+    }
+    return parsed
+  }, [])
+
+  const flushBufferedMessages = useCallback(() => {
+    if (bufferedMessagesRef.current.length === 0) {
+      return
+    }
+    const buffered = bufferedMessagesRef.current
+    bufferedMessagesRef.current = []
+    setBufferedEventCount(0)
+    startTransition(() => {
+      setLiveWorkspace((current) => buffered.reduce((workspace, parsed) => applyEnvelope(workspace, parsed), current ?? seedWorkspaceRef.current))
+    })
+  }, [applyEnvelope])
+
+  useEffect(() => {
+    pausedRef.current = isPaused
+    if (!isPaused) {
+      flushBufferedMessages()
+    }
+  }, [flushBufferedMessages, isPaused])
+
   useEffect(() => {
     seedWorkspaceRef.current = initialWorkspace ?? null
-    setLiveWorkspace(initialWorkspace ?? null)
+    if (!pausedRef.current) {
+      startTransition(() => {
+        setLiveWorkspace(initialWorkspace ?? null)
+      })
+    }
   }, [initialWorkspace])
 
   const connect = useCallback(() => {
@@ -52,20 +93,18 @@ export function useRealtimeDashboard({ backend, filters, initialWorkspace }: Par
     }
     ws.onmessage = (event) => {
       const parsed = JSON.parse(event.data) as RealtimeEnvelope | WorkspaceSnapshot
-      if (isEntryCreatedEnvelope(parsed)) {
-        setLiveWorkspace((current) => withRealtimeEntry(current ?? seedWorkspaceRef.current, parsed.payload, parsed.backend, parsed.ts))
+      if (pausedRef.current) {
+        bufferedMessagesRef.current.push(parsed)
+        if (isEntryCreatedEnvelope(parsed)) {
+          setBufferedEventCount((current) => current + 1)
+        }
         return
       }
-      if (isDashboardEnvelope(parsed)) {
-        setLiveWorkspace({ ...parsed.payload, backend: parsed.backend })
-        return
-      }
-      if ('event_type' in parsed) {
-        return
-      }
-      setLiveWorkspace(parsed)
+      startTransition(() => {
+        setLiveWorkspace((current) => applyEnvelope(current ?? seedWorkspaceRef.current, parsed))
+      })
     }
-  }, [backend, clearReconnect, filterQuery, scheduleReconnect])
+  }, [applyEnvelope, backend, clearReconnect, filterQuery, scheduleReconnect])
 
   useEffect(() => {
     cancelledRef.current = false
@@ -76,8 +115,9 @@ export function useRealtimeDashboard({ backend, filters, initialWorkspace }: Par
       clearReconnect()
       websocketRef.current?.close()
       websocketRef.current = null
+      bufferedMessagesRef.current = []
     }
   }, [clearReconnect, connect])
 
-  return { liveWorkspace, socketStatus }
+  return { liveWorkspace, socketStatus, bufferedEventCount }
 }

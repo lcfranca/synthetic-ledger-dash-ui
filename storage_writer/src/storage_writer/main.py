@@ -814,6 +814,28 @@ def event_to_journal_entries(event: dict[str, Any]) -> list[dict[str, Any]]:
         )
         return entries
 
+    if event_type == "supplier_payment":
+        payable_account_code = str(canonical_event.get("debit_account", account_code_for_role("accounts_payable")))
+        settlement_account_code = str(canonical_event.get("credit_account", account_code_for_role("bank_accounts")))
+        return [
+            make_entry(
+                event=canonical_event,
+                entry_side="debit",
+                account_code=payable_account_code,
+                amount=net_amount,
+                ontology_description="Liquidacao parcial ou total do passivo com fornecedor referente a compras recebidas.",
+                payload_hash=payload_hash,
+            ),
+            make_entry(
+                event=canonical_event,
+                entry_side="credit",
+                account_code=settlement_account_code,
+                amount=net_amount,
+                ontology_description="Baixa financeira da obrigacao com fornecedor usando caixa ou bancos.",
+                payload_hash=payload_hash,
+            ),
+        ]
+
     if event_type == "sale":
         settlement_account_code = str(canonical_event.get("debit_account", account_code_for_role("cash")))
         settlement_amount = round(net_amount + tax_amount - marketplace_fee, 2)

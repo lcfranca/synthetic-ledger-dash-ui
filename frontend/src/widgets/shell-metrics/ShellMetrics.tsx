@@ -6,19 +6,23 @@ type Props = {
   overview?: MasterDataOverview
   backend: string
   feedMode: string
+  isRealtimePaused: boolean
+  pendingRealtimeEvents: number
+  onToggleRealtime: () => void
 }
 
-export default function ShellMetrics({ summary, overview, backend, feedMode }: Props) {
+export default function ShellMetrics({ summary, overview, backend, feedMode, isRealtimePaused, pendingRealtimeEvents, onToggleRealtime }: Props) {
   return (
     <div className="metric-strip hero-strip">
-      <article className="metric-card accent-card panel-surface">
+      <button type="button" className="metric-card accent-card panel-surface metric-toggle-card" onClick={onToggleRealtime}>
         <div className="metric-topline">
-          <span className="metric-label">Sync engine</span>
+          <span className="metric-label">Ritmo operacional</span>
           <span className="status-dot live" />
         </div>
-        <div className="metric-value small-text">{feedMode}</div>
-        <div className="metric-helper">Stack ativo: {backend}</div>
-      </article>
+        <div className="metric-value small-text">{isRealtimePaused ? 'Congelado' : 'Continuo'}</div>
+        <div className="metric-helper">{feedMode}</div>
+        <div className="metric-helper">Fonte de dados: {backend.toUpperCase()}{isRealtimePaused && pendingRealtimeEvents > 0 ? ` · fila ${pendingRealtimeEvents}` : ''}</div>
+      </button>
       <article className="metric-card panel-surface">
         <div className="metric-label">Patrimonio liquido</div>
         <div className="metric-value">{summary ? money(summary.balance_sheet.equity.current_earnings) : '-'}</div>
