@@ -14,9 +14,10 @@ type Params = {
   initialWorkspace?: WorkspaceSnapshot | null
   isPaused?: boolean
   enabled?: boolean
+  mode?: 'mixed' | 'snapshot-only'
 }
 
-export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPaused = false, enabled = true }: Params) {
+export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPaused = false, enabled = true, mode = 'mixed' }: Params) {
   const [liveWorkspace, setLiveWorkspace] = useState<WorkspaceSnapshot | null>(initialWorkspace ?? null)
   const [socketStatus, setSocketStatus] = useState<'idle' | 'connecting' | 'open' | 'closed' | 'error'>('idle')
   const [bufferedEventCount, setBufferedEventCount] = useState(0)
@@ -32,6 +33,9 @@ export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPau
 
   const applyEnvelope = useCallback((current: WorkspaceSnapshot | null, parsed: RealtimeEnvelope | WorkspaceSnapshot) => {
     if (isEntryCreatedEnvelope(parsed)) {
+      if (mode === 'snapshot-only') {
+        return current ?? seedWorkspaceRef.current
+      }
       return withRealtimeEntry(current ?? seedWorkspaceRef.current, parsed.payload, parsed.backend, parsed.ts)
     }
     if (isDashboardEnvelope(parsed)) {
@@ -41,7 +45,7 @@ export function useRealtimeDashboard({ backend, filters, initialWorkspace, isPau
       return current
     }
     return parsed
-  }, [])
+  }, [mode])
 
   const flushBufferedMessages = useCallback(() => {
     if (bufferedMessagesRef.current.length === 0) {

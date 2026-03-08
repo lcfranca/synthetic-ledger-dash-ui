@@ -19,10 +19,9 @@ type Params = {
 }
 
 export function useDashboardSession({ defaultBackend, queryKeyPrefix, filters, hasActiveFilters = false, viewId, isRealtimePaused = false }: Params) {
-  const enableRealtime = viewId === 'queue'
-  const workspaceRefreshInterval = viewId === 'queue'
-    ? (isRealtimePaused ? false : 180000)
-    : 5000
+  const enableRealtime = true
+  const realtimeMode = viewId === 'queue' ? 'mixed' : 'snapshot-only'
+  const workspaceRefreshInterval = isRealtimePaused ? false : 180000
 
   const summaryQuery = useQuery({
     queryKey: [queryKeyPrefix, 'summary', filters],
@@ -52,10 +51,11 @@ export function useDashboardSession({ defaultBackend, queryKeyPrefix, filters, h
     initialWorkspace: workspaceQuery.data,
     isPaused: isRealtimePaused,
     enabled: enableRealtime,
+    mode: realtimeMode,
   })
 
-  const queueWorkspace = enableRealtime ? (liveWorkspace ?? workspaceQuery.data) : workspaceQuery.data
-  const workspace = enableRealtime ? (liveWorkspace ?? workspaceQuery.data) : workspaceQuery.data
+  const queueWorkspace = liveWorkspace ?? workspaceQuery.data
+  const workspace = liveWorkspace ?? workspaceQuery.data
   const summary = workspace?.summary ?? summaryQuery.data
   const entries = workspace?.entries ?? summary?.entries ?? summaryQuery.data?.entries ?? []
   const backend = workspace?.backend ?? summary?.backend ?? defaultBackend

@@ -330,6 +330,8 @@ class RealtimeGateway:
                         outbound_message,
                         matcher=lambda subscription: entry_matches_filters(entry, subscription.filters),
                     )
+                    for connection_id in matched_connection_ids:
+                        self.schedule_snapshot(backend, connection_id)
                 await asyncio.to_thread(self.consumer.commit, message=kafka_message, asynchronous=False)
             except asyncio.CancelledError:
                 raise
