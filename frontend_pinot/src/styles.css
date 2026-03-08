@@ -3,6 +3,7 @@
   --bg-panel: #0f0f10;
   --bg-panel-alt: #141415;
   --bg-panel-deep: #090909;
+  --bg-panel-ink: #050505;
   --text-primary: #f4f1ea;
   --text-secondary: #c8c3b7;
   --text-muted: #7e776b;
@@ -43,6 +44,46 @@ body {
   background: #000000;
   color: var(--signal);
   text-shadow: none;
+}
+
+input::selection,
+textarea::selection,
+button::selection,
+label::selection,
+span::selection,
+strong::selection,
+em::selection,
+td::selection,
+th::selection,
+div::selection,
+p::selection,
+h1::selection,
+h2::selection,
+h3::selection,
+h4::selection,
+code::selection {
+  background: #000000;
+  color: var(--signal);
+}
+
+input::-moz-selection,
+textarea::-moz-selection,
+button::-moz-selection,
+label::-moz-selection,
+span::-moz-selection,
+strong::-moz-selection,
+em::-moz-selection,
+td::-moz-selection,
+th::-moz-selection,
+div::-moz-selection,
+p::-moz-selection,
+h1::-moz-selection,
+h2::-moz-selection,
+h3::-moz-selection,
+h4::-moz-selection,
+code::-moz-selection {
+  background: #000000;
+  color: var(--signal);
 }
 
 button,
@@ -286,6 +327,16 @@ a:focus-visible *,
   background: var(--bg-panel-alt);
 }
 
+.panel-surface,
+.metric-card,
+.statement-card,
+.sales-chart-card,
+.table-shell,
+.filter-popover,
+.ticker-card {
+  transition: border-color 120ms ease, background 120ms ease, box-shadow 120ms ease, color 120ms ease;
+}
+
 .rail-status {
   display: grid;
   gap: 6px;
@@ -385,10 +436,30 @@ a:focus-visible *,
 .metric-card {
   padding: 14px;
   min-height: 110px;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(180deg, rgba(255, 92, 41, 0.04), transparent 28%),
+    var(--bg-panel-alt);
+}
+
+.metric-card:hover,
+.metric-card:focus-within,
+.statement-card:hover,
+.statement-card:focus-within,
+.sales-chart-card:hover,
+.sales-chart-card:focus-within,
+.table-shell:hover,
+.filter-popover:focus-within,
+.ticker-card:focus-within {
+  border-color: var(--line-hot);
+  box-shadow: inset 0 0 0 1px rgba(255, 92, 41, 0.14);
 }
 
 .accent-card {
   border-color: var(--line-hot);
+  background:
+    linear-gradient(180deg, rgba(255, 92, 41, 0.16), rgba(255, 92, 41, 0.04) 36%, transparent 100%),
+    var(--bg-panel-alt);
 }
 
 .metric-value {
@@ -416,7 +487,7 @@ a:focus-visible *,
 .ticker-card,
 .filter-option {
   border: 1px solid var(--line-strong);
-  background: var(--bg-panel-deep);
+  background: var(--bg-panel-ink);
 }
 
 .ghost-action,
@@ -433,6 +504,8 @@ a:focus-visible *,
 .filter-option:hover,
 .ticker-card:hover {
   border-color: var(--line-hot);
+  color: var(--signal);
+  box-shadow: inset 0 0 0 1px rgba(255, 92, 41, 0.12);
 }
 
 .status-pill-toggle {
@@ -468,6 +541,8 @@ a:focus-visible *,
 
 .filter-trigger.is-active {
   border-color: var(--line-hot);
+  color: var(--signal);
+  box-shadow: inset 0 0 0 1px rgba(255, 92, 41, 0.12);
 }
 
 .filter-trigger-text {
@@ -624,6 +699,12 @@ a:focus-visible *,
   overflow-x: auto;
 }
 
+.table-shell {
+  background:
+    linear-gradient(180deg, rgba(255, 92, 41, 0.04), transparent 18%),
+    var(--bg-panel-alt);
+}
+
 .panel-empty-state {
   padding: 18px;
   border: 1px dashed var(--line-strong);
@@ -645,10 +726,29 @@ a:focus-visible *,
 
 .data-table th {
   white-space: nowrap;
+  background: var(--bg-panel-ink);
+  border-bottom: 1px solid var(--line-hot);
+}
+
+.data-table tbody tr {
+  transition: background 120ms ease, color 120ms ease, box-shadow 120ms ease;
 }
 
 .data-table tbody tr:hover {
   background: var(--signal-soft);
+  box-shadow: inset 4px 0 0 var(--signal);
+}
+
+.data-table tbody tr:hover td,
+.data-table tbody tr:hover .cell-meta,
+.data-table tbody tr:hover strong {
+  color: var(--text-primary);
+}
+
+.data-table tbody tr::selection,
+.data-table tbody tr *::selection {
+  background: #000000;
+  color: var(--signal);
 }
 
 .hash-line {
@@ -715,6 +815,14 @@ a:focus-visible *,
   padding: 10px 12px;
   border: 1px solid var(--line-strong);
   background: var(--bg-panel-deep);
+}
+
+.section-frame:hover::before,
+.section-frame:focus-within::before,
+.frame-panel:hover::before,
+.frame-panel:focus-within::before {
+  border-top-color: var(--signal);
+  border-left-color: var(--signal);
 }
 
 @keyframes heartbeat {
