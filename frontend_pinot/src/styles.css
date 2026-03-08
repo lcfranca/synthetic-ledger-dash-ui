@@ -35,13 +35,13 @@ body {
 }
 
 ::selection {
-  background: #000000;
+  background: var(--bg-panel-ink);
   color: var(--signal);
   text-shadow: none;
 }
 
 ::-moz-selection {
-  background: #000000;
+  background: var(--bg-panel-ink);
   color: var(--signal);
   text-shadow: none;
 }
@@ -62,7 +62,7 @@ h2::selection,
 h3::selection,
 h4::selection,
 code::selection {
-  background: #000000;
+  background: var(--bg-panel-ink);
   color: var(--signal);
 }
 
@@ -82,7 +82,7 @@ h2::-moz-selection,
 h3::-moz-selection,
 h4::-moz-selection,
 code::-moz-selection {
-  background: #000000;
+  background: var(--bg-panel-ink);
   color: var(--signal);
 }
 
@@ -161,13 +161,13 @@ a:focus-visible *,
 
 .panel::selection,
 .panel *::selection {
-  background: #000000;
+  background: var(--bg-panel-ink);
   color: var(--signal);
 }
 
 .panel::-moz-selection,
 .panel *::-moz-selection {
-  background: #000000;
+  background: var(--bg-panel-ink);
   color: var(--signal);
 }
 
@@ -270,9 +270,7 @@ a:focus-visible *,
 .nav-card.active {
   border-color: var(--line-hot);
   box-shadow: inset 4px 0 0 var(--signal);
-  background:
-    linear-gradient(90deg, rgba(255, 92, 41, 0.18), rgba(255, 92, 41, 0.04) 22%, transparent 60%),
-    var(--bg-panel-alt);
+  background: var(--bg-panel-ink);
 }
 
 .nav-card:hover .nav-eyebrow,
@@ -290,7 +288,7 @@ a:focus-visible *,
   bottom: 8px;
   right: 8px;
   width: 1px;
-  background: linear-gradient(180deg, transparent, var(--signal), transparent);
+  background: var(--signal);
 }
 
 .nav-code,
@@ -437,9 +435,7 @@ a:focus-visible *,
   padding: 14px;
   min-height: 110px;
   border: 1px solid var(--line);
-  background:
-    linear-gradient(180deg, rgba(255, 92, 41, 0.04), transparent 28%),
-    var(--bg-panel-alt);
+  background: var(--bg-panel-alt);
 }
 
 .metric-card:hover,
@@ -457,9 +453,7 @@ a:focus-visible *,
 
 .accent-card {
   border-color: var(--line-hot);
-  background:
-    linear-gradient(180deg, rgba(255, 92, 41, 0.16), rgba(255, 92, 41, 0.04) 36%, transparent 100%),
-    var(--bg-panel-alt);
+  background: var(--bg-panel-ink);
 }
 
 .metric-value {
@@ -700,9 +694,7 @@ a:focus-visible *,
 }
 
 .table-shell {
-  background:
-    linear-gradient(180deg, rgba(255, 92, 41, 0.04), transparent 18%),
-    var(--bg-panel-alt);
+  background: var(--bg-panel-alt);
 }
 
 .panel-empty-state {
@@ -747,7 +739,7 @@ a:focus-visible *,
 
 .data-table tbody tr::selection,
 .data-table tbody tr *::selection {
-  background: #000000;
+  background: var(--bg-panel-ink);
   color: var(--signal);
 }
 

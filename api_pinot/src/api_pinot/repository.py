@@ -118,6 +118,19 @@ class DashboardRepository:
             "expense_ratio_pct": self._percentage(operating_expenses, net_revenue),
         }
 
+    def _inventory_snapshot_totals(self, product_catalog: list[dict[str, Any]]) -> dict[str, float]:
+        inventory_value = 0.0
+        inventory_units = 0.0
+        for product in product_catalog:
+            current_stock_quantity = max(float(product.get("current_stock_quantity", 0.0) or 0.0), 0.0)
+            average_purchase_price = max(float(product.get("average_purchase_price", 0.0) or 0.0), 0.0)
+            inventory_units += current_stock_quantity
+            inventory_value += current_stock_quantity * average_purchase_price
+        return {
+            "inventory_value": round(inventory_value, 2),
+            "inventory_units": round(inventory_units, 3),
+        }
+
     def _build_where(
         self,
         filters: dict[str, str | None],
@@ -154,13 +167,14 @@ class DashboardRepository:
     ) -> dict[str, Any]:
         cutoff = end_at or as_of or datetime.now(timezone.utc).isoformat().replace("T", " ").replace("+00:00", "")
         where_clause = self._build_where(filters or {}, as_of=as_of, start_at=start_at, end_at=end_at or cutoff)
+        product_catalog = await self.get_product_catalog()
+        inventory_snapshot = self._inventory_snapshot_totals(product_catalog)
 
         sql = f"""
         SELECT
             COALESCE(SUM(CASE WHEN account_role = 'cash' THEN signed_amount ELSE 0 END), 0) AS cash,
             COALESCE(SUM(CASE WHEN account_role = 'bank_accounts' THEN signed_amount ELSE 0 END), 0) AS bank_accounts,
             COALESCE(SUM(CASE WHEN account_role = 'recoverable_tax' THEN signed_amount ELSE 0 END), 0) AS recoverable_tax,
-            COALESCE(SUM(CASE WHEN account_role = 'inventory' THEN signed_amount ELSE 0 END), 0) AS inventory,
             ABS(COALESCE(SUM(CASE WHEN account_role = 'accounts_payable' THEN signed_amount ELSE 0 END), 0)) AS accounts_payable,
             ABS(COALESCE(SUM(CASE WHEN account_role = 'tax_payable' THEN signed_amount ELSE 0 END), 0)) AS tax_payable,
             ABS(COALESCE(SUM(CASE WHEN account_role = 'revenue' THEN signed_amount ELSE 0 END), 0)) AS revenue,
@@ -185,7 +199,7 @@ class DashboardRepository:
         cash = round(float(row.get("cash", 0.0)), 2)
         bank_accounts = round(float(row.get("bank_accounts", 0.0)), 2)
         recoverable_tax = round(float(row.get("recoverable_tax", 0.0)), 2)
-        inventory = round(float(row.get("inventory", 0.0)), 2)
+        inventory = round(float(inventory_snapshot.get("inventory_value", 0.0)), 2)
         accounts_payable = round(float(row.get("accounts_payable", 0.0)), 2)
         tax_payable = round(float(row.get("tax_payable", 0.0)), 2)
         revenue = round(float(row.get("revenue", 0.0)), 2)
@@ -839,7 +853,7 @@ class DashboardRepository:
             average_purchase_price = round(float(aggregate.get("purchase_price_sum", 0.0)) / purchase_event_count, 2) if purchase_event_count else round(float(product.get("base_cost", 0.0)), 2)
             average_sale_price = round(float(aggregate.get("sale_price_sum", 0.0)) / sale_event_count, 2) if sale_event_count else round(float(product.get("base_price", 0.0)), 2)
             opening_stock_quantity = round(sum(float(value) for value in (product.get("initial_stock") or {}).values()), 3)
-            stock_quantity = round(opening_stock_quantity + float(aggregate.get("stock_quantity", 0.0)), 3)
+            stock_quantity = round(max(float(aggregate.get("stock_quantity", 0.0)), 0.0), 3)
             sold_quantity = round(float(aggregate.get("sold_quantity", 0.0)), 3)
             returned_quantity = round(float(aggregate.get("returned_quantity", 0.0)), 3)
             net_sold_quantity = round(max(sold_quantity - returned_quantity, 0.0), 3)
