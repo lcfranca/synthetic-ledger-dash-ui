@@ -243,6 +243,7 @@ O alvo `run` cria `.env` automaticamente a partir de `.env.example` se necessár
 - O gateway trata `materialize` como backend autoritativo por padrão e mantém snapshots incrementais em memória por filtro suportado.
 - O frontend Materialize opera em modo `snapshot-only`, consumindo `dashboard.snapshot` progressivos sem depender de projeção local por evento.
 - O endpoint `/health` da API expõe métricas da camada incremental, incluindo `hydrated_rows`, `last_kafka_offset`, `view_lag_ms`, `freshness_ms` e contagens por view.
+- O threshold padrão `MATERIALIZE_EXPECTED_VIEW_LAG_MS` foi elevado para `5000` no baseline local, reduzindo oscilações espúrias de `warming_up` sob carga alta sem mascarar degradações prolongadas.
 
 ### Conexão analítica
 
@@ -308,5 +309,9 @@ Avaliação state-of-the-art para frontend orientado a PUSH: [docs/frontend-push
 Avaliação state-of-the-art da trilha Materialize: [docs/materialize-benchmark-state-of-the-art.md](docs/materialize-benchmark-state-of-the-art.md).
 
 Registro versionado de cenários e metadados de benchmark: [docs/benchmark-backend-registry.yaml](docs/benchmark-backend-registry.yaml).
+
+Esqueleto acadêmico do artigo/TCC do benchmark: [docs/benchmarking-tcc-outline.md](docs/benchmarking-tcc-outline.md).
+
+Guia de métricas e estratégia de coleta individualizada: [docs/benchmark-metrics-collection-playbook.md](docs/benchmark-metrics-collection-playbook.md).
 
 Direção estética e semântica de produto: [docs/art_bible.md](docs/art_bible.md).

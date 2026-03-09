@@ -28,7 +28,7 @@ class MaterializeBootstrapper:
         self.retry_seconds = max(int(os.getenv("MATERIALIZE_BOOTSTRAP_RETRY_SECONDS", "5") or 5), 1)
         self.max_attempts = max(int(os.getenv("MATERIALIZE_BOOTSTRAP_MAX_ATTEMPTS", "0") or 0), 0)
         self.start_timestamp_ms = (os.getenv("MATERIALIZE_BOOTSTRAP_START_TIMESTAMP_MS") or "").strip()
-        self.expected_view_lag_ms = max(int(os.getenv("MATERIALIZE_EXPECTED_VIEW_LAG_MS", "2000") or 2000), 0)
+        self.expected_view_lag_ms = max(int(os.getenv("MATERIALIZE_EXPECTED_VIEW_LAG_MS", "5000") or 5000), 0)
         self.expected_freshness_ms = max(int(os.getenv("MATERIALIZE_EXPECTED_FRESHNESS_MS", "5000") or 5000), 0)
         self.target_hydration_rows = max(int(os.getenv("MATERIALIZE_TARGET_HYDRATION_ROWS", "1") or 1), 0)
         self.status: dict[str, Any] = {
