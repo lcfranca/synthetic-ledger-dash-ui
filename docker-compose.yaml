@@ -306,6 +306,18 @@ services:
       pinot-controller:
         condition: service_healthy
 
+  materialized:
+    image: materialize/materialized:v26.14.1
+    mem_limit: ${MATERIALIZE_MEM_LIMIT:-2048m}
+    cpus: ${MATERIALIZE_CPU_LIMIT:-1.5}
+    restart: unless-stopped
+    ports:
+      - "6875:6875"
+      - "6877:6877"
+    depends_on:
+      kafka:
+        condition: service_healthy
+
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.108.0
     mem_limit: ${OTEL_MEM_LIMIT:-384m}
@@ -435,6 +447,23 @@ services:
       - storage-writer
       - pinot-broker
 
+  api-materialize:
+    build: ./api_materialize
+    mem_limit: ${API_MATERIALIZE_MEM_LIMIT:-352m}
+    cpus: ${API_MATERIALIZE_CPU_LIMIT:-0.75}
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      ACTIVE_STACKS: ${ACTIVE_STACKS:-pinot}
+      API_ALLOWED_BACKENDS: ${API_ALLOWED_BACKENDS:-}
+      API_DEFAULT_BACKEND: ${API_DEFAULT_BACKEND:-}
+    ports:
+      - "8084:8080"
+    depends_on:
+      - storage-writer
+      - materialized
+
   frontend:
     build:
       context: ./frontend_pinot
@@ -468,6 +497,18 @@ services:
       - "5175:80"
     depends_on:
       - api-pinot
+
+  frontend-materialize:
+    build:
+      context: ./frontend_pinot
+      dockerfile: Dockerfile.materialize
+    mem_limit: ${FRONTEND_MATERIALIZE_MEM_LIMIT:-192m}
+    cpus: ${FRONTEND_MATERIALIZE_CPU_LIMIT:-0.5}
+    restart: unless-stopped
+    ports:
+      - "5176:80"
+    depends_on:
+      - api-materialize
 
 volumes:
   druid_pgdata:

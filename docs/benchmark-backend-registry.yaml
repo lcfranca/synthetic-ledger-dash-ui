@@ -1,0 +1,135 @@
+version: 1
+updated_at: 2026-03-08
+
+backend_categories:
+  hot-analytic:
+    description: Backends de leitura quente e materializacao analitica sobre read models consultaveis.
+  incremental-streaming:
+    description: Backends de manutencao incremental de views que vivem proximos do stream canonico.
+
+backends:
+  clickhouse:
+    category: hot-analytic
+    dominant_read_model: kafka_fanout_snapshot
+    visual_convergence_mode: authoritative_resync
+    local_operational_cost: medium
+    cognitive_cost: medium
+    replay_cold_start_grade: high_replay_medium_cold_start
+    benchmark_frontend_port: 5173
+    benchmark_api_port: 8080
+    benchmark_notes:
+      - Forte em serving analitico e scans sobre snapshot quente.
+      - Gateway opera melhor em push mais authoritative resync.
+
+  druid:
+    category: hot-analytic
+    dominant_read_model: realtime_datasource
+    visual_convergence_mode: authoritative_filtered_snapshot
+    local_operational_cost: high
+    cognitive_cost: high
+    replay_cold_start_grade: medium
+    benchmark_frontend_port: 5174
+    benchmark_api_port: 8081
+    benchmark_notes:
+      - Requer mais coordenacao operacional entre router, broker, overlord e metadata store.
+      - Benchmark deve capturar sensibilidade a supervisor e cold start de cluster.
+
+  pinot:
+    category: hot-analytic
+    dominant_read_model: realtime_table
+    visual_convergence_mode: local_projection
+    local_operational_cost: medium
+    cognitive_cost: medium
+    replay_cold_start_grade: medium_high
+    benchmark_frontend_port: 5175
+    benchmark_api_port: 8082
+    benchmark_notes:
+      - Push-first funciona bem com projecao local no frontend.
+      - Boa referencia para comparar custo de convergencia visual contra Materialize.
+
+  materialize:
+    category: incremental-streaming
+    dominant_read_model: incremental_views_on_kafka_source
+    visual_convergence_mode: authoritative_incremental_snapshot
+    local_operational_cost: medium
+    cognitive_cost: medium_high
+    replay_cold_start_grade: high
+    benchmark_frontend_port: 5176
+    benchmark_api_port: 8084
+    benchmark_notes:
+      - Gateway deve operar com snapshots autoritativos incrementais por filtro suportado.
+      - Bootstrap, hydration e lag incremental precisam entrar no benchmark como metricas de primeira classe.
+
+scenarios:
+  - id: high-ingestion-incremental-snapshots
+    category: incremental-streaming
+    applies_to:
+      - materialize
+    objective: Medir a latencia entre o evento canonico e o dashboard.snapshot autoritativo consultavel.
+    workload:
+      producer_rate: high
+      run_producer_on_start: true
+      filters: []
+    metrics:
+      - time_to_first_useful_snapshot_ms
+      - websocket_snapshot_rate_per_second
+      - materialize_view_lag_ms
+      - materialize_freshness_ms
+      - hydrated_rows
+
+  - id: high-cardinality-commercial-dimensions
+    category: cross-paradigm
+    applies_to:
+      - clickhouse
+      - druid
+      - pinot
+      - materialize
+    objective: Medir o custo de filtros e agregacoes sob crescimento rapido de dimensoes comerciais.
+    workload:
+      producer_rate: medium_high
+      filters:
+        - customer_name
+        - product_name
+        - channel
+        - order_id
+    metrics:
+      - filtered_workspace_p50_ms
+      - filtered_workspace_p95_ms
+      - visual_convergence_p95_ms
+      - snapshot_bootstrap_ms
+
+  - id: incremental-joins-with-master-data
+    category: incremental-streaming
+    applies_to:
+      - materialize
+    objective: Verificar estabilidade de joins incrementais entre ledger e dimensoes de master data.
+    workload:
+      producer_rate: medium
+      concurrent_views:
+        - summary
+        - workspace
+        - products_catalog
+        - accounts_catalog
+    metrics:
+      - join_convergence_ms
+      - catalog_refresh_age_ms
+      - sales_workspace_p95_ms
+      - view_count_consistency
+
+  - id: retractions-and-offset-replay
+    category: cross-paradigm
+    applies_to:
+      - clickhouse
+      - druid
+      - pinot
+      - materialize
+    objective: Medir reconvergencia apos devolucoes, ajustes financeiros e replay controlado do topico.
+    workload:
+      producer_rate: medium
+      replay_offsets: true
+      return_events: true
+    metrics:
+      - replay_recovery_ms
+      - accounting_difference_after_replay
+      - pending_retractions
+      - cold_start_to_green_ms

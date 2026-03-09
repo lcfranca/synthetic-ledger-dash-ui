@@ -145,7 +145,7 @@ class AuthoritativeProjectionEntry:
 
 def parse_backends() -> list[str]:
     configured = os.getenv("ACTIVE_STACKS", "clickhouse,druid,pinot")
-    ordered = ["clickhouse", "druid", "pinot"]
+    ordered = ["clickhouse", "druid", "pinot", "materialize"]
     enabled = {item.strip() for item in configured.split(",") if item.strip()}
     return [backend for backend in ordered if backend in enabled]
 
@@ -212,6 +212,7 @@ class RealtimeGateway:
             "clickhouse": os.getenv("REALTIME_GATEWAY_CLICKHOUSE_API_URL", "http://api:8080"),
             "druid": os.getenv("REALTIME_GATEWAY_DRUID_API_URL", "http://api-druid:8080"),
             "pinot": os.getenv("REALTIME_GATEWAY_PINOT_API_URL", "http://api-pinot:8080"),
+            "materialize": os.getenv("REALTIME_GATEWAY_MATERIALIZE_API_URL", "http://api-materialize:8080"),
         }
         self.manager = ConnectionManager()
         self.client = httpx.AsyncClient(timeout=8.0)
@@ -228,7 +229,7 @@ class RealtimeGateway:
             }
         else:
             self.authoritative_projection_backends = {
-                backend for backend in self.active_backends if backend in {"clickhouse", "druid"}
+                backend for backend in self.active_backends if backend in {"clickhouse", "druid", "materialize"}
             }
         self.authoritative_supported_filters = {
             "as_of",

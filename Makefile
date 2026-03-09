@@ -4,7 +4,7 @@ ENV_FILE ?= .env
 STACK_SELECTION := bash scripts/stack-selection.sh
 CURL_HEALTH := curl --retry 20 --retry-delay 1 --retry-all-errors -fsS
 
-.PHONY: run stop up down logs ps rebuild populate stop-populate health health-clickhouse health-druid health-pinot smoke-clickhouse smoke-druid smoke-pinot smoke-all smoke-startup print-selection verify-stream-clickhouse verify-stream-druid verify-stream-pinot verify-projection-clickhouse verify-projection-druid verify-projection-pinot
+.PHONY: run stop up down logs ps rebuild populate stop-populate health health-clickhouse health-druid health-pinot health-materialize smoke-clickhouse smoke-druid smoke-pinot smoke-materialize smoke-all smoke-startup print-selection verify-stream-clickhouse verify-stream-druid verify-stream-pinot verify-stream-materialize verify-projection-clickhouse verify-projection-druid verify-projection-pinot verify-projection-materialize
 
 run:
 	@if [ ! -f $(ENV_FILE) ]; then cp .env.example $(ENV_FILE); fi
@@ -76,9 +76,11 @@ health:
 	if echo "$$ACTIVE_RESOLVED_STACKS" | grep -Eq '(^|,)clickhouse($$|,)'; then echo "API ClickHouse:" && $(CURL_HEALTH) http://localhost:8080/health && echo; fi; \
 	if echo "$$ACTIVE_RESOLVED_STACKS" | grep -Eq '(^|,)druid($$|,)'; then echo "API Druid:" && $(CURL_HEALTH) http://localhost:8081/health && echo; fi; \
 	if echo "$$ACTIVE_RESOLVED_STACKS" | grep -Eq '(^|,)pinot($$|,)'; then echo "API Pinot:" && $(CURL_HEALTH) http://localhost:8082/health && echo; fi; \
+	if echo "$$ACTIVE_RESOLVED_STACKS" | grep -Eq '(^|,)materialize($$|,)'; then echo "API Materialize:" && $(CURL_HEALTH) http://localhost:8084/health && echo; fi; \
 	if echo "$$ACTIVE_RESOLVED_STACKS" | grep -Eq '(^|,)clickhouse($$|,)'; then echo "Frontend ClickHouse:" && curl -fsSI http://localhost:5173 | head -n 1; fi; \
 	if echo "$$ACTIVE_RESOLVED_STACKS" | grep -Eq '(^|,)druid($$|,)'; then echo "Frontend Druid:" && curl -fsSI http://localhost:5174 | head -n 1; fi; \
-	if echo "$$ACTIVE_RESOLVED_STACKS" | grep -Eq '(^|,)pinot($$|,)'; then echo "Frontend Pinot:" && curl -fsSI http://localhost:5175 | head -n 1; fi
+	if echo "$$ACTIVE_RESOLVED_STACKS" | grep -Eq '(^|,)pinot($$|,)'; then echo "Frontend Pinot:" && curl -fsSI http://localhost:5175 | head -n 1; fi; \
+	if echo "$$ACTIVE_RESOLVED_STACKS" | grep -Eq '(^|,)materialize($$|,)'; then echo "Frontend Materialize:" && curl -fsSI http://localhost:5176 | head -n 1; fi
 
 health-clickhouse:
 	@echo "ClickHouse API:" && $(CURL_HEALTH) http://localhost:8080/health && echo
@@ -100,6 +102,13 @@ health-pinot:
 	@echo "Pinot Realtime Stream:" && node scripts/verify_realtime_stream.mjs pinot 5175
 	@echo "Pinot Realtime Projection:" && node scripts/verify_realtime_projection.mjs pinot 5175
 
+health-materialize:
+	@echo "Materialize API:" && $(CURL_HEALTH) http://localhost:8084/health && echo
+	@echo "Materialize Frontend:" && curl -fsSI http://localhost:5176 | head -n 1
+	@echo "Materialize Bootstrap:" && $(CURL_HEALTH) http://localhost:8092/debug/materialize-bootstrap && echo
+	@echo "Materialize Realtime Stream:" && node scripts/verify_realtime_stream.mjs materialize 5176
+	@echo "Materialize Realtime Projection:" && node scripts/verify_realtime_projection.mjs materialize 5176
+
 smoke-clickhouse:
 	@echo "ClickHouse summary:" && curl -fsS http://localhost:8080/api/v1/dashboard/summary | head -c 400 && echo
 	@echo "ClickHouse entries:" && curl -fsS 'http://localhost:8080/api/v1/dashboard/entries?limit=5' | head -c 400 && echo
@@ -114,6 +123,11 @@ smoke-pinot:
 	@echo "Pinot entries:" && curl -fsS 'http://localhost:8082/api/v1/dashboard/entries?limit=5' | head -c 400 && echo
 	@echo "Pinot SQL count:" && curl -fsS -X POST http://localhost:8099/query/sql -H 'Content-Type: application/json' -d '{"sql":"SELECT COUNT(*) AS c FROM ledger_events"}' && echo
 
+smoke-materialize:
+	@echo "Materialize summary:" && curl -fsS http://localhost:8084/api/v1/dashboard/summary | head -c 400 && echo
+	@echo "Materialize entries:" && curl -fsS 'http://localhost:8084/api/v1/dashboard/entries?limit=5' | head -c 400 && echo
+	@echo "Materialize readiness:" && curl -fsS http://localhost:8084/health | head -c 400 && echo
+
 verify-stream-druid:
 	@node scripts/verify_realtime_stream.mjs druid 5174
 
@@ -122,6 +136,9 @@ verify-stream-clickhouse:
 
 verify-stream-pinot:
 	@node scripts/verify_realtime_stream.mjs pinot 5175
+
+verify-stream-materialize:
+	@node scripts/verify_realtime_stream.mjs materialize 5176
 
 verify-projection-clickhouse:
 	@node scripts/verify_realtime_projection.mjs clickhouse 5173
@@ -132,11 +149,15 @@ verify-projection-druid:
 verify-projection-pinot:
 	@node scripts/verify_realtime_projection.mjs pinot 5175
 
+verify-projection-materialize:
+	@node scripts/verify_realtime_projection.mjs materialize 5176
+
 smoke-all:
 	@eval "$$($(STACK_SELECTION) exports $(ENV_FILE))"; \
 	if echo "$$ACTIVE_RESOLVED_STACKS" | grep -Eq '(^|,)clickhouse($$|,)'; then $(MAKE) smoke-clickhouse ENV_FILE=$(ENV_FILE); fi; \
 	if echo "$$ACTIVE_RESOLVED_STACKS" | grep -Eq '(^|,)druid($$|,)'; then $(MAKE) smoke-druid ENV_FILE=$(ENV_FILE); fi; \
-	if echo "$$ACTIVE_RESOLVED_STACKS" | grep -Eq '(^|,)pinot($$|,)'; then $(MAKE) smoke-pinot ENV_FILE=$(ENV_FILE); fi
+	if echo "$$ACTIVE_RESOLVED_STACKS" | grep -Eq '(^|,)pinot($$|,)'; then $(MAKE) smoke-pinot ENV_FILE=$(ENV_FILE); fi; \
+	if echo "$$ACTIVE_RESOLVED_STACKS" | grep -Eq '(^|,)materialize($$|,)'; then $(MAKE) smoke-materialize ENV_FILE=$(ENV_FILE); fi
 
 smoke-startup:
 	@set -a; source $(ENV_FILE); set +a; \

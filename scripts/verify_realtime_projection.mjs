@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
 const backend = (process.env.BACKEND || process.argv[2] || 'druid').trim().toLowerCase()
-const frontendPort = Number(process.env.FRONTEND_PORT || process.argv[3] || (backend === 'pinot' ? '5175' : backend === 'clickhouse' ? '5173' : '5174'))
+const frontendPort = Number(process.env.FRONTEND_PORT || process.argv[3] || (backend === 'pinot' ? '5175' : backend === 'clickhouse' ? '5173' : backend === 'materialize' ? '5176' : '5174'))
 const timeoutMs = Number(process.env.REALTIME_PROJECTION_TIMEOUT_MS || 10000)
+const isMaterialize = backend === 'materialize'
 
 const baseUrl = `http://localhost:${frontendPort}`
 const wsUrl = `ws://localhost:${frontendPort}/ws/dashboard?backend=${backend}`
@@ -91,6 +92,7 @@ if (!response.ok) {
 
 const workspace = await response.json()
 let projectedSummary = clone(workspace.summary)
+let lastSnapshotTimestamp = workspace.timestamp || null
 
 const finish = (code, reason, extra = {}) => {
   console.log(JSON.stringify({ backend, frontendPort, wsUrl, reason, ...extra }, null, 2))
@@ -102,6 +104,30 @@ const timer = setTimeout(() => finish(1, 'projection-timeout'), timeoutMs)
 
 socket.onmessage = (event) => {
   const envelope = JSON.parse(event.data)
+  if (isMaterialize && envelope.event_type === 'dashboard.snapshot') {
+    const nextTimestamp = envelope.payload?.timestamp || envelope.ts || null
+    const nextSummary = envelope.payload?.summary
+    if (!nextSummary) {
+      return
+    }
+
+    const summaryChanged = JSON.stringify(nextSummary) !== JSON.stringify(projectedSummary)
+    const timestampAdvanced = nextTimestamp && nextTimestamp !== lastSnapshotTimestamp
+    projectedSummary = clone(nextSummary)
+    lastSnapshotTimestamp = nextTimestamp
+
+    if (!summaryChanged && !timestampAdvanced) {
+      return
+    }
+
+    clearTimeout(timer)
+    finish(0, 'projection-active', {
+      snapshotTimestamp: nextTimestamp,
+      mode: 'snapshot-authoritative',
+    })
+    return
+  }
+
   if (envelope.event_type !== 'entry.created') {
     return
   }

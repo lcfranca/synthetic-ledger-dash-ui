@@ -18,7 +18,7 @@ import SideRail from '../widgets/side-rail/SideRail'
 function resolveBackendConfig() {
   const configuredBackend = (import.meta.env.VITE_DASHBOARD_BACKEND ?? 'pinot').trim().toLowerCase()
 
-  if (configuredBackend === 'druid' || configuredBackend === 'clickhouse') {
+  if (configuredBackend === 'druid' || configuredBackend === 'clickhouse' || configuredBackend === 'materialize') {
     return { defaultBackend: configuredBackend, queryKeyPrefix: configuredBackend }
   }
 

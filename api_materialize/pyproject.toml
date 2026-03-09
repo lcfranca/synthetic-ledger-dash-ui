@@ -1,16 +1,13 @@
 [project]
-name = "synthetic-ledger-storage-writer"
+name = "synthetic-ledger-api-materialize"
 version = "0.1.0"
-description = "Fan-out writer for ClickHouse, Druid and Pinot"
+description = "Low-latency query API for synthetic ledger dashboard backed by Materialize"
 requires-python = ">=3.12"
 dependencies = [
   "fastapi>=0.115.0",
   "uvicorn[standard]>=0.30.0",
   "httpx>=0.27.0",
-  "confluent-kafka>=2.5.0",
-  "opentelemetry-proto>=1.27.0",
   "orjson>=3.10.0",
-  "protobuf>=5.28.0",
   "pydantic>=2.8.0",
   "psycopg[binary]>=3.2.0",
 ]
@@ -24,6 +21,3 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
-
-[tool.setuptools.package-data]
-storage_writer = ["domain_data/*.json"]

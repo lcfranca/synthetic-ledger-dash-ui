@@ -50,6 +50,7 @@ export function isDashboardEnvelope(payload: RealtimeEnvelope | WorkspaceSnapsho
 }
 
 type FeedLabelParams = {
+  backend: string
   socketStatus: string
   liveWorkspace: WorkspaceSnapshot | null
   hasActiveFilters: boolean
@@ -58,37 +59,38 @@ type FeedLabelParams = {
   viewId: string
 }
 
-export function feedLabel({ socketStatus, liveWorkspace, hasActiveFilters, isPaused, bufferedEventCount, viewId }: FeedLabelParams) {
+export function feedLabel({ backend, socketStatus, liveWorkspace, hasActiveFilters, isPaused, bufferedEventCount, viewId }: FeedLabelParams) {
+  const isMaterialize = backend === 'materialize'
   if (isPaused) {
     return bufferedEventCount > 0
       ? `Visao congelada · ${bufferedEventCount} registros em espera`
       : 'Visao congelada'
   }
   if (viewId === 'queue' && socketStatus === 'open' && liveWorkspace && hasActiveFilters) {
-    return 'Lancamentos filtrados em curso'
+    return isMaterialize ? 'Views incrementais filtradas em curso' : 'Lancamentos filtrados em curso'
   }
   if (viewId === 'queue' && socketStatus === 'open' && liveWorkspace) {
-    return 'Lancamentos em curso'
+    return isMaterialize ? 'Views incrementais em curso' : 'Lancamentos em curso'
   }
   if (socketStatus === 'open' && liveWorkspace && hasActiveFilters) {
-    return 'Leitura filtrada sincronizada'
+    return isMaterialize ? 'Leitura incremental filtrada sincronizada' : 'Leitura filtrada sincronizada'
   }
   if (socketStatus === 'open' && liveWorkspace) {
-    return 'Leitura sincronizada'
+    return isMaterialize ? 'Leitura incremental autoritativa' : 'Leitura sincronizada'
   }
   if (socketStatus === 'connecting' && hasActiveFilters) {
-    return 'Sincronizando recorte filtrado'
+    return isMaterialize ? 'Sincronizando view incremental filtrada' : 'Sincronizando recorte filtrado'
   }
   if (socketStatus === 'connecting') {
-    return 'Sincronizando base operacional'
+    return isMaterialize ? 'Sincronizando base incremental' : 'Sincronizando base operacional'
   }
   if (socketStatus === 'error' && hasActiveFilters) {
-    return 'Leitura filtrada em contingencia'
+    return isMaterialize ? 'View incremental filtrada em contingencia' : 'Leitura filtrada em contingencia'
   }
   if (socketStatus === 'error') {
-    return 'Leitura em contingencia'
+    return isMaterialize ? 'View incremental em contingencia' : 'Leitura em contingencia'
   }
-  return 'Base operacional'
+  return isMaterialize ? 'Modo materialize-authoritative' : 'Base operacional'
 }
 
 export function withRealtimeEntry(workspace: WorkspaceSnapshot | null, entry: JournalEntry, backend: string, ts: string) {

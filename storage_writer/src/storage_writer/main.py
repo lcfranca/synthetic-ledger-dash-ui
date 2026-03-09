@@ -15,6 +15,7 @@ from opentelemetry.proto.collector.logs.v1.logs_service_pb2 import ExportLogsSer
 
 from storage_writer.adapters import ClickHouseAdapter, DruidAdapter, PinotAdapter
 from storage_writer.master_data import load_accounts_by_code, load_accounts_by_role
+from storage_writer.materialize import MaterializeBootstrapper
 
 app = FastAPI(title="synthetic-ledger-storage-writer", version="0.1.0")
 last_otlp_stats: dict[str, Any] = {}
@@ -23,6 +24,7 @@ pinot_realtime_status: dict[str, Any] = {}
 kafka_fanout_status: dict[str, Any] = {}
 ACCOUNTS_BY_CODE = load_accounts_by_code()
 ACCOUNTS_BY_ROLE = load_accounts_by_role()
+materialize_bootstrapper = MaterializeBootstrapper()
 
 
 def build_adapters() -> dict[str, Any]:
@@ -1191,6 +1193,11 @@ async def debug_kafka_fanout() -> dict[str, Any]:
     return kafka_fanout_status
 
 
+@app.get("/debug/materialize-bootstrap")
+async def debug_materialize_bootstrap() -> dict[str, Any]:
+    return await materialize_bootstrapper.current_status()
+
+
 @app.on_event("startup")
 async def startup_tasks() -> None:
     clickhouse_adapter = adapters.get("clickhouse")
@@ -1198,6 +1205,7 @@ async def startup_tasks() -> None:
         await clickhouse_adapter.ensure_ready()
     asyncio.create_task(bootstrap_druid_supervisor_task())
     asyncio.create_task(bootstrap_pinot_realtime_task())
+    asyncio.create_task(materialize_bootstrapper.bootstrap_forever())
     asyncio.create_task(consume_entries_from_kafka())
 
 

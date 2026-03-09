@@ -28,11 +28,11 @@ trim() {
 
 validate_name() {
 	case "$1" in
-		clickhouse|druid|pinot)
+		clickhouse|druid|pinot|materialize)
 			return 0
 			;;
 		*)
-			echo "Invalid stack selector '$1'. Use clickhouse, druid or pinot." >&2
+			echo "Invalid stack selector '$1'. Use clickhouse, druid, pinot or materialize." >&2
 			exit 1
 			;;
 	esac
@@ -73,7 +73,7 @@ if [[ ${#stack_set[@]} -eq 0 ]]; then
 	exit 1
 fi
 
-ordered_backends=(clickhouse druid pinot)
+ordered_backends=(clickhouse druid pinot materialize)
 stack_list=()
 
 for backend in "${ordered_backends[@]}"; do
@@ -140,6 +140,12 @@ if [[ -v "stack_set[pinot]" ]]; then
 	service_set[frontend-pinot]=1
 fi
 
+if [[ -v "stack_set[materialize]" ]]; then
+	service_set[materialized]=1
+	service_set[api-materialize]=1
+	service_set[frontend-materialize]=1
+fi
+
 if [[ "${RUN_PRODUCER_ON_START,,}" == "true" ]]; then
 	service_set[producer]=1
 fi
@@ -160,6 +166,7 @@ ordered_services=(
 	pinot-controller
 	pinot-broker
 	pinot-server
+	materialized
 	master-data
 	storage-writer
 	realtime-gateway
@@ -167,9 +174,11 @@ ordered_services=(
 	api
 	api-druid
 	api-pinot
+	api-materialize
 	frontend
 	frontend-druid
 	frontend-pinot
+	frontend-materialize
 	producer
 )
 

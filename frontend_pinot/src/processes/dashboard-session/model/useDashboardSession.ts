@@ -20,8 +20,8 @@ type Params = {
 
 export function useDashboardSession({ defaultBackend, queryKeyPrefix, filters, hasActiveFilters = false, viewId, isRealtimePaused = false }: Params) {
   const enableRealtime = true
-  const realtimeMode = 'mixed'
-  const usesRealtimeBootstrap = defaultBackend === 'clickhouse' || defaultBackend === 'druid'
+  const realtimeMode = defaultBackend === 'materialize' ? 'snapshot-only' : 'mixed'
+  const usesRealtimeBootstrap = defaultBackend === 'clickhouse' || defaultBackend === 'druid' || defaultBackend === 'materialize'
 
   const summaryQuery = useQuery({
     queryKey: [queryKeyPrefix, 'summary', filters],
@@ -65,6 +65,7 @@ export function useDashboardSession({ defaultBackend, queryKeyPrefix, filters, h
   const entries = workspace?.entries ?? summary?.entries ?? summaryQuery.data?.entries ?? []
   const backend = workspace?.backend ?? summary?.backend ?? defaultBackend
   const currentFeed = feedLabel({
+    backend,
     socketStatus,
     liveWorkspace: queueWorkspace ?? null,
     hasActiveFilters,

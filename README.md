@@ -12,6 +12,7 @@ Versão atual do projeto (configuração oficial): `pyproject.toml` (`project.ve
 - `api/`: camada de consulta agregada para o frontend.
 - `api_druid/`: camada de consulta agregada para dashboard com backend Druid.
 - `api_pinot/`: camada de consulta agregada para dashboard com backend Pinot.
+- `api_materialize/`: camada de consulta agregada para dashboard com backend Materialize.
 - `frontend/`: dashboard near-real-time.
 - `frontend_pinot/`: dashboard Pinot desacoplado e modular.
 - `k8s/`: manifests base para execução em Kubernetes.
@@ -42,6 +43,7 @@ Cada painel é isolado em sua própria API e frontend, mas todos compartilham o 
    - ClickHouse dashboard
    - Druid dashboard
    - Pinot dashboard
+   - Materialize incremental dashboard
 
 ### Endpoints de debug do fan-out
 
@@ -50,6 +52,7 @@ Cada painel é isolado em sua própria API e frontend, mas todos compartilham o 
 - Fan-out Kafka para backends diretos: `http://localhost:8092/debug/kafka-fanout`
 - Supervisor Kafka do Druid: `http://localhost:8092/debug/druid-supervisor`
 - Bootstrap realtime do Pinot: `http://localhost:8092/debug/pinot-realtime`
+- Bootstrap incremental do Materialize: `http://localhost:8092/debug/materialize-bootstrap`
 
 ## Primeiros passos
 
@@ -62,6 +65,8 @@ Antes da subida, escolha no `.env` quais stacks completas ficam ativas:
 
 - `ACTIVE_STACKS=clickhouse,pinot`
 - `ACTIVE_STACKS=druid,pinot`
+- `ACTIVE_STACKS=materialize`
+- `ACTIVE_STACKS=clickhouse,materialize`
 
 1. Suba ambiente local com um comando:
    - `make run`
@@ -77,6 +82,7 @@ Antes da subida, escolha no `.env` quais stacks completas ficam ativas:
    - `make health-clickhouse`
    - `make health-druid`
    - `make health-pinot`
+   - `make health-materialize`
    - `make smoke-all`
 
 Ao final de `make run`, o projeto agora executa um smoke automático de subida para validar saúde do `master-data`, contrato do catálogo Pinot e, quando `RUN_PRODUCER_ON_START=true`, a aritmética de BP e DRE.
@@ -196,6 +202,56 @@ O alvo `run` cria `.env` automaticamente a partir de `.env.example` se necessár
 - O plano de contas cobre caixa, bancos, tributos recuperáveis, estoque, fornecedores, tributos a recolher, receita, devoluções, CMV, frete e despesas bancárias.
 - O card de fechamento do BP mostra, em tempo real, `Ativos` versus `Passivos + Patrimônio` e a `difference` calculada na API.
 
+## Painel 4 — Materialize
+
+### URLs
+
+- Frontend: `http://localhost:5176`
+- API: `http://localhost:8084/docs`
+- Health API: `http://localhost:8084/health`
+- Gateway realtime: `http://localhost:8083/health`
+- Debug bootstrap: `http://localhost:8092/debug/materialize-bootstrap`
+
+### Fonte de dados
+
+- Backend de leitura: Materialize
+- Alimentação: source Kafka sobre `ledger-entries-v1`
+- Serving model: views incrementais autoritativas mantidas sobre pgwire SQL
+- API dedicada: `api_materialize/`
+- Frontend dedicado: `frontend-materialize`
+
+### Observabilidade e pontos de acesso
+
+- Materialize SQL/pgwire: `localhost:6875`
+- Health bootstrap incremental: `http://localhost:8092/debug/materialize-bootstrap`
+- Health da API: `http://localhost:8084/health`
+- Snapshot autoritativo e stream: `ws://localhost:5176/ws/dashboard?backend=materialize`
+- Kafka UI para o tópico canônico: `http://localhost:8090`
+
+### Verificações rápidas
+
+1. `make health-materialize`
+2. `make smoke-materialize`
+3. `node scripts/verify_realtime_stream.mjs materialize 5176`
+4. `node scripts/verify_realtime_projection.mjs materialize 5176`
+5. Testar workspace incremental:
+   - `curl -fsS http://localhost:8084/api/v1/dashboard/workspace | head -c 600`
+
+### Contrato operacional
+
+- O `storage_writer` bootstrapa `CONNECTION`, `SOURCE`, `VIEW` tipada e `MATERIALIZED VIEW` por domínio contábil.
+- O gateway trata `materialize` como backend autoritativo por padrão e mantém snapshots incrementais em memória por filtro suportado.
+- O frontend Materialize opera em modo `snapshot-only`, consumindo `dashboard.snapshot` progressivos sem depender de projeção local por evento.
+- O endpoint `/health` da API expõe métricas da camada incremental, incluindo `hydrated_rows`, `last_kafka_offset`, `view_lag_ms`, `freshness_ms` e contagens por view.
+
+### Conexão analítica
+
+- Host: `localhost`
+- Port: `6875`
+- Database/Schema: `materialize` / definido por `MATERIALIZE_VIEW_SCHEMA`
+- User: `materialize`
+- Password: não exigida no ambiente local padrão
+
 ## Smoke contábil estrito
 
 - `make smoke-startup` valida automaticamente o resumo expandido de qualquer backend ativo.
@@ -236,10 +292,21 @@ O alvo `run` cria `.env` automaticamente a partir de `.env.example` se necessár
 - Datasource: `ledger_events`
 - Observação: autenticação também não é imposta no quickstart local.
 
+### Materialize
+- Host: `localhost`
+- Port: `6875`
+- Source: `ledger-entries-v1`
+- Schema de views: `MATERIALIZE_VIEW_SCHEMA`
+- Observação: acesso local por pgwire, sem TLS e sem senha obrigatória no compose padrão.
+
 ## Documentação técnica
 
 Veja [docs/architecture-state-of-the-art.md](docs/architecture-state-of-the-art.md).
 
 Avaliação state-of-the-art para frontend orientado a PUSH: [docs/frontend-push-state-of-the-art.md](docs/frontend-push-state-of-the-art.md).
+
+Avaliação state-of-the-art da trilha Materialize: [docs/materialize-benchmark-state-of-the-art.md](docs/materialize-benchmark-state-of-the-art.md).
+
+Registro versionado de cenários e metadados de benchmark: [docs/benchmark-backend-registry.yaml](docs/benchmark-backend-registry.yaml).
 
 Direção estética e semântica de produto: [docs/art_bible.md](docs/art_bible.md).
