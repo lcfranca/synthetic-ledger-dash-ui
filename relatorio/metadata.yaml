@@ -3,7 +3,7 @@ subtitle: Avaliacao arquitetural, operacional e experimental de ClickHouse, Drui
 document_type: Relatorio tecnico analitico
 repository_name: Synthetic Ledger Dash UI
 document_scope: Analise do benchmark de convergencia visual, corretude contabil e latencia percebida em paineis orientados por eventos
-date: 2026-03-08
+date: 2026-03-09
 documentclass: report
 classoption:
   - 12pt

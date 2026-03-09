@@ -1,0 +1,2 @@
+round_id,commit,backend,scenario,run_number,started_at,duration_seconds,api_summary_p95_ms,api_workspace_p95_ms,sql_entries_count_p95_ms,sql_summary_by_role_p95_ms,frontend_time_to_first_meaningful_state_ms,snapshot_rate_per_second,entry_rate_per_second,balance_sheet_difference,health_transition_total
+20260309T024926Z__clickhouse__report-conclusion__run-1,2211abae82145de28056003773f83d8785fe454e,clickhouse,report-conclusion,1,2026-03-09T02:49:26Z,270,55.50794714836229,216.6036173519387,,,94,2.3669502836169505,56.54612946279613,0.0,0

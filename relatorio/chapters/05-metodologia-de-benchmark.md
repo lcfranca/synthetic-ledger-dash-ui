@@ -14,15 +14,20 @@ O identificador canonico de rodada adota o formato:
 
 ## 5.3 Janela temporal da rodada
 
-Cada rodada possui janela maxima de 10 minutos, distribuida entre bootstrap, warm-up, coleta principal, captura de recursos e teardown. O protocolo recomendado e o seguinte:
+Na versao do protocolo efetivamente utilizada para a bateria conclusiva deste relatorio, os tempos nao foram tratados como literais soltos. Eles sao materializados no codigo por constantes nomeadas e copiados para `metadata.json` sob a chave `phase_budget_seconds`, o que permite auditoria posterior da configuracao aplicada em cada rodada.
 
-| Fase | Duracao maxima | Objetivo |
-| --- | --- | --- |
-| Bootstrap | 120 s | tornar a stack operante e atingir health minimo |
-| Warm-up | 90 s | reduzir efeitos de cold path |
-| Coleta principal | 300 s | medir API, SQL e websocket |
-| Recursos e debug final | 60 s | capturar estado operacional consolidado |
-| Teardown | 30 s | limpar ambiente e persistir artefatos |
+Para as rodadas `report-conclusion`, executadas neste manuscrito, a parametrizacao observada foi a seguinte:
+
+| Parametro protocolar | Valor efetivo | Origem operacional |
+| --- | ---: | --- |
+| `collection_seconds` | 270 s | argumento da rodada |
+| `bootstrap_wait` | 180 s | `BENCHMARK_DEFAULT_BOOTSTRAP_TIMEOUT_SECONDS` |
+| `backend_readiness_wait` | 240 s | `BENCHMARK_DEFAULT_BACKEND_TIMEOUT_SECONDS` |
+| `warmup` | 10 s | `BENCHMARK_DEFAULT_WARMUP_SECONDS` |
+| `per_probe_segment` | 90 s | `max(collection_seconds / 3, BENCHMARK_MIN_SEGMENT_SECONDS)` |
+| `BENCHMARK_MIN_SEGMENT_SECONDS` | 45 s | piso operacional do coletor |
+
+Essa explicitude e metodologicamente relevante. Em vez de postular numeros arbitrarios na escrita, o relatorio passa a herdar os budgets reais do protocolo executado.
 
 ## 5.4 Fluxo operacional da coleta
 
@@ -37,9 +42,13 @@ O protocolo de coleta segue cinco etapas.
 
 ### 5.4.2 Bootstrap
 
-1. Executar `make run ENV_FILE=<env>`.
-2. Executar `make populate ENV_FILE=<env>` quando o cenario exigir geracao ativa.
-3. Aguardar estado minimo de saude para APIs, frontend e endpoints de debug.
+1. Gerar um arquivo de ambiente derivado de `.env.example`, ativando exatamente um backend.
+2. Resolver o conjunto de servicos por meio de `scripts/stack-selection.sh`.
+3. Subir a stack via `docker compose --env-file <env> up --build -d ...`.
+4. Executar `make populate ENV_FILE=<env>` para iniciar a geracao ativa de eventos e popular a trilha observada.
+5. Aguardar estado minimo de saude para `master-data`, `storage-writer`, `realtime-gateway`, API do backend, frontend e endpoint de debug.
+
+Essa variante foi necessaria para preservar equivalencia metodologica entre as stacks. O alvo generico `make run` acoplava a coleta a um smoke test que, no caso de Druid, podia reprovar o sistema antes da materializacao do datasource. A orquestracao de benchmark foi, portanto, desacoplada do smoke genérico de desenvolvimento sem abrir mao de health checks explicitos.
 
 ### 5.4.3 Warm-up
 
@@ -57,7 +66,7 @@ O protocolo de coleta segue cinco etapas.
 
 ### 5.4.5 Encerramento
 
-1. Capturar snapshots finais de debug.
+1. Capturar snapshots finais de debug, preservando inclusive falhas HTTP residuais como artefatos auditaveis quando algum endpoint de observabilidade nao responder com sucesso.
 2. Consolidar os artefatos em JSON e CSV.
 3. Derrubar a stack com `make stop`.
 
@@ -125,7 +134,7 @@ O arquivo `round_report.json` agrega os resultados brutos e derivados da rodada.
 
 ## 5.7 Implementacao concreta no repositorio
 
-O protocolo foi implementado por meio dos scripts localizados em `scripts/benchmark/`. O script `run_round.sh` orquestra a execucao integral da rodada. Wrappers dedicados selecionam o backend. Scripts Python e Node coletam API, SQL, websocket, recursos, health e snapshots finais. Por fim, `consolidate_round_results.py` gera `round_report.json` e `summary.csv` no formato padrao.
+O protocolo foi implementado por meio dos scripts localizados em `scripts/benchmark/`. O script `run_round.sh` orquestra a execucao integral da rodada. Wrappers dedicados selecionam o backend. Scripts Python e Node coletam API, SQL, websocket, recursos, health e snapshots finais. Por fim, `consolidate_round_results.py` gera `round_report.json` e `summary.csv` no formato padrao. Como os budgets de fase sao gravados em metadados, cada tabela do manuscrito pode ser confrontada diretamente com a configuracao operada em tempo de execucao.
 
 Essa implementacao e essencial para a validade da pesquisa, pois reduz a dependencia de execucao manual, melhora a reprodutibilidade e preserva rastreabilidade entre rodadas, configuracoes e commits.
 

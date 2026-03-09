@@ -16,6 +16,7 @@ pandoc \
   "$SCRIPT_DIR/chapters/04-modelo-do-problema-e-arquitetura.md" \
   "$SCRIPT_DIR/chapters/05-metodologia-de-benchmark.md" \
   "$SCRIPT_DIR/chapters/06-resultados-preliminares.md" \
+  "$SCRIPT_DIR/chapters/07-conclusao.md" \
   "$SCRIPT_DIR/chapters/appendix-a-protocolo-de-coleta.md" \
   "$SCRIPT_DIR/chapters/appendix-b-especificacao-de-artefatos.md" \
   --metadata-file "$SCRIPT_DIR/metadata.yaml" \

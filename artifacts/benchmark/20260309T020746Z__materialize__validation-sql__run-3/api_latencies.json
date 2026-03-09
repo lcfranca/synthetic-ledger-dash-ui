@@ -1,0 +1,726 @@
+{
+  "backend": "materialize",
+  "started_at": "2026-03-09T02:09:27.086764+00:00",
+  "duration_seconds": 45,
+  "sample_count": 41,
+  "endpoints": {
+    "health": {
+      "count": 9,
+      "success_count": 9,
+      "error_count": 0,
+      "min_ms": 30.011331000423525,
+      "avg_ms": 642.8404173356183,
+      "p50_ms": 913.677191005263,
+      "p95_ms": 1034.2411002027802,
+      "p99_ms": 1045.4900816455483,
+      "max_ms": 1048.3023270062404,
+      "avg_response_bytes": 278.77777777777777
+    },
+    "summary": {
+      "count": 8,
+      "success_count": 8,
+      "error_count": 0,
+      "min_ms": 981.4045999955852,
+      "avg_ms": 1289.0361203753855,
+      "p50_ms": 1052.88021099841,
+      "p95_ms": 2039.6374333016865,
+      "p99_ms": 2057.2858786607685,
+      "max_ms": 2061.697990000539,
+      "avg_response_bytes": 48944.375
+    },
+    "workspace": {
+      "count": 8,
+      "success_count": 8,
+      "error_count": 0,
+      "min_ms": 1070.4605589999119,
+      "avg_ms": 1834.5267492504718,
+      "p50_ms": 1948.2210204987496,
+      "p95_ms": 2019.678015550744,
+      "p99_ms": 2037.378391110833,
+      "max_ms": 2041.8034850008553,
+      "avg_response_bytes": 343118.125
+    },
+    "entries": {
+      "count": 8,
+      "success_count": 8,
+      "error_count": 0,
+      "min_ms": 111.4631169984932,
+      "avg_ms": 923.1774472500547,
+      "p50_ms": 1040.8306954996078,
+      "p95_ms": 1106.2721460009925,
+      "p99_ms": 1120.488905198872,
+      "max_ms": 1124.043094998342,
+      "avg_response_bytes": 79915.75
+    },
+    "filter_search": {
+      "count": 8,
+      "success_count": 8,
+      "error_count": 0,
+      "min_ms": 876.5301480016205,
+      "avg_ms": 955.1448954998705,
+      "p50_ms": 973.0666689974896,
+      "p95_ms": 987.6154656518338,
+      "p99_ms": 991.9397915305308,
+      "max_ms": 993.020873000205,
+      "avg_response_bytes": 265.0
+    }
+  },
+  "samples": [
+    {
+      "timestamp": "2026-03-09T02:08:35.384093+00:00",
+      "backend": "materialize",
+      "endpoint": "health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 682.1655460007605,
+      "response_bytes": 277,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "materialize",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:08:36.066291+00:00",
+      "backend": "materialize",
+      "endpoint": "summary",
+      "url": "http://localhost:8084/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1001.235492003616,
+      "response_bytes": 49107,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": "2026-03-09T02:08:36.086505+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:08:39.999759+00:00",
+      "backend": "materialize",
+      "endpoint": "workspace",
+      "url": "http://localhost:8084/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1070.4605589999119,
+      "response_bytes": 331460,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": "2026-03-09T02:08:41.066992+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:08:41.073368+00:00",
+      "backend": "materialize",
+      "endpoint": "entries",
+      "url": "http://localhost:8084/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1005.7392160015297,
+      "response_bytes": 79375,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:08:42.080232+00:00",
+      "backend": "materialize",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8084/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 972.8549309947994,
+      "response_bytes": 265,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:08:43.053186+00:00",
+      "backend": "materialize",
+      "endpoint": "health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1013.14925999759,
+      "response_bytes": 279,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "materialize",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:08:44.066391+00:00",
+      "backend": "materialize",
+      "endpoint": "summary",
+      "url": "http://localhost:8084/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1015.1374070046586,
+      "response_bytes": 48950,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": "2026-03-09T02:08:44.079824+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:08:45.081798+00:00",
+      "backend": "materialize",
+      "endpoint": "workspace",
+      "url": "http://localhost:8084/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 2041.8034850008553,
+      "response_bytes": 341973,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": "2026-03-09T02:08:47.119263+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:08:47.127688+00:00",
+      "backend": "materialize",
+      "endpoint": "entries",
+      "url": "http://localhost:8084/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 943.661618999613,
+      "response_bytes": 79952,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:08:48.071949+00:00",
+      "backend": "materialize",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8084/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 977.5768520048587,
+      "response_bytes": 265,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:08:49.049614+00:00",
+      "backend": "materialize",
+      "endpoint": "health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 30.011331000423525,
+      "response_bytes": 279,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "materialize",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:08:49.079656+00:00",
+      "backend": "materialize",
+      "endpoint": "summary",
+      "url": "http://localhost:8084/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1998.6678280038177,
+      "response_bytes": 49061,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": "2026-03-09T02:08:50.057072+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:08:51.078704+00:00",
+      "backend": "materialize",
+      "endpoint": "workspace",
+      "url": "http://localhost:8084/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1978.5878580005374,
+      "response_bytes": 344120,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": "2026-03-09T02:08:53.053812+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:08:53.060218+00:00",
+      "backend": "materialize",
+      "endpoint": "entries",
+      "url": "http://localhost:8084/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1073.268955005915,
+      "response_bytes": 79476,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:08:54.134526+00:00",
+      "backend": "materialize",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8084/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 929.9259519975749,
+      "response_bytes": 265,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:08:55.064609+00:00",
+      "backend": "materialize",
+      "endpoint": "health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 39.76033700018888,
+      "response_bytes": 279,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "materialize",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:08:55.104404+00:00",
+      "backend": "materialize",
+      "endpoint": "summary",
+      "url": "http://localhost:8084/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1044.2622850023326,
+      "response_bytes": 49099,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": "2026-03-09T02:08:56.063053+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:08:56.148885+00:00",
+      "backend": "materialize",
+      "endpoint": "workspace",
+      "url": "http://localhost:8084/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1915.8137690028525,
+      "response_bytes": 344634,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": "2026-03-09T02:08:58.062013+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:08:58.067462+00:00",
+      "backend": "materialize",
+      "endpoint": "entries",
+      "url": "http://localhost:8084/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1038.3140100020682,
+      "response_bytes": 79954,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:08:59.106783+00:00",
+      "backend": "materialize",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8084/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 976.7518919979921,
+      "response_bytes": 265,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:09:00.083654+00:00",
+      "backend": "materialize",
+      "endpoint": "health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 975.9078910065,
+      "response_bytes": 279,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "materialize",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:09:01.059595+00:00",
+      "backend": "materialize",
+      "endpoint": "summary",
+      "url": "http://localhost:8084/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1061.4981369944871,
+      "response_bytes": 48725,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": "2026-03-09T02:09:02.046063+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:09:02.121468+00:00",
+      "backend": "materialize",
+      "endpoint": "workspace",
+      "url": "http://localhost:8084/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1948.6781029991107,
+      "response_bytes": 345051,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": "2026-03-09T02:09:04.065586+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:09:04.072908+00:00",
+      "backend": "materialize",
+      "endpoint": "entries",
+      "url": "http://localhost:8084/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1043.3473809971474,
+      "response_bytes": 80393,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:09:05.117582+00:00",
+      "backend": "materialize",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8084/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 973.2784070001799,
+      "response_bytes": 265,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:09:06.090960+00:00",
+      "backend": "materialize",
+      "endpoint": "health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1048.3023270062404,
+      "response_bytes": 279,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "materialize",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:09:07.139304+00:00",
+      "backend": "materialize",
+      "endpoint": "summary",
+      "url": "http://localhost:8084/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 981.4045999955852,
+      "response_bytes": 48693,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": "2026-03-09T02:09:08.049484+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:09:08.121171+00:00",
+      "backend": "materialize",
+      "endpoint": "workspace",
+      "url": "http://localhost:8084/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1953.40915700217,
+      "response_bytes": 346195,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": "2026-03-09T02:09:10.071670+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:09:10.078179+00:00",
+      "backend": "materialize",
+      "endpoint": "entries",
+      "url": "http://localhost:8084/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1045.582184997329,
+      "response_bytes": 79859,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:09:11.124991+00:00",
+      "backend": "materialize",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8084/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 993.020873000205,
+      "response_bytes": 265,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:09:15.050211+00:00",
+      "backend": "materialize",
+      "endpoint": "health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1003.7493229974643,
+      "response_bytes": 279,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "materialize",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:09:16.053984+00:00",
+      "backend": "materialize",
+      "endpoint": "summary",
+      "url": "http://localhost:8084/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 2061.697990000539,
+      "response_bytes": 48854,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": "2026-03-09T02:09:17.057527+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:09:18.116009+00:00",
+      "backend": "materialize",
+      "endpoint": "workspace",
+      "url": "http://localhost:8084/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1947.7639379983884,
+      "response_bytes": 345588,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": "2026-03-09T02:09:20.059137+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:09:20.067820+00:00",
+      "backend": "materialize",
+      "endpoint": "entries",
+      "url": "http://localhost:8084/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1124.043094998342,
+      "response_bytes": 80031,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:09:21.192541+00:00",
+      "backend": "materialize",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8084/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 876.5301480016205,
+      "response_bytes": 265,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:09:22.069230+00:00",
+      "backend": "materialize",
+      "endpoint": "health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 78.84055000613444,
+      "response_bytes": 279,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "materialize",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:09:22.148107+00:00",
+      "backend": "materialize",
+      "endpoint": "summary",
+      "url": "http://localhost:8084/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1148.3852239980479,
+      "response_bytes": 49066,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": "2026-03-09T02:09:23.109852+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:09:23.296869+00:00",
+      "backend": "materialize",
+      "endpoint": "workspace",
+      "url": "http://localhost:8084/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1819.6971249999478,
+      "response_bytes": 345924,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": "2026-03-09T02:09:25.113915+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:09:25.119467+00:00",
+      "backend": "materialize",
+      "endpoint": "entries",
+      "url": "http://localhost:8084/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 111.4631169984932,
+      "response_bytes": 80286,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:09:25.231581+00:00",
+      "backend": "materialize",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8084/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 941.2201090017334,
+      "response_bytes": 265,
+      "payload_observations": {
+        "status": null,
+        "backend": "materialize",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:09:26.173022+00:00",
+      "backend": "materialize",
+      "endpoint": "health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 913.677191005263,
+      "response_bytes": 279,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "materialize",
+        "timestamp": null,
+        "entry_count": null
+      }
+    }
+  ]
+}

@@ -1,0 +1,2879 @@
+{
+  "backend": "materialize",
+  "duration_seconds": 90,
+  "interval_seconds": 2.0,
+  "transition_count": {
+    "backend_debug": 4
+  },
+  "samples": [
+    {
+      "timestamp": "2026-03-09T02:16:58.107473+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "counts": {
+          "products": 6,
+          "accounts": 14,
+          "channels": 6,
+          "suppliers": 4,
+          "warehouses": 3
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:16:58.138335+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "adapters": {}
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:16:58.139949+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "active_backends": [
+          "materialize"
+        ],
+        "connections": {
+          "materialize": 1
+        },
+        "consumer": {
+          "state": "running",
+          "topic": "ledger-entries-v1",
+          "delivery_mode": "push-only",
+          "messages_processed": 1079,
+          "last_event_id": "55a58e4a-43bb-4e06-a48a-b9808e6b52d3",
+          "last_offsets": {
+            "topic": "ledger-entries-v1",
+            "partition": 0,
+            "offset": 1370
+          },
+          "last_error": null
+        },
+        "authoritative_projection": {
+          "enabled_backends": [
+            "materialize"
+          ],
+          "supported_filters": [
+            "account_code",
+            "as_of",
+            "channel",
+            "customer_cpf",
+            "customer_email",
+            "customer_name",
+            "customer_segment",
+            "end_at",
+            "entry_category",
+            "entry_side",
+            "event_type",
+            "ontology_source",
+            "order_id",
+            "order_status",
+            "payment_method",
+            "product_category",
+            "product_name",
+            "sale_id",
+            "start_at",
+            "supplier_name",
+            "warehouse_id"
+          ],
+          "active_projection_count": 0,
+          "filtered_projection_count": 0,
+          "projections": []
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:16:58.141754+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "backend": "materialize",
+        "query_layer": {
+          "hydrated_rows": 1358,
+          "last_occurred_at": "2026-03-09T02:16:57.874812+00:00",
+          "last_ingested_at": "2026-03-09T02:16:57.874828+00:00",
+          "last_kafka_offset": 1357,
+          "view_lag_ms": 1210,
+          "freshness_ms": 1210
+        },
+        "refresh_interval_seconds": 1.0
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:16:59.085637+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": true,
+      "state": "ready",
+      "payload": {
+        "enabled": true,
+        "state": "ready",
+        "schema": "public",
+        "topic": "ledger-entries-v1",
+        "group_id_prefix": "ledger-materialize",
+        "objects": {
+          "connection": "public.ledger_kafka_connection",
+          "source": "public.ledger_entries_source",
+          "progress": "public.ledger_entries_source_progress",
+          "typed_view": "public.ledger_entries_typed",
+          "entries_view": "public.ledger_entries_current_mv",
+          "summary_view": "public.ledger_summary_by_role_mv",
+          "sales_view": "public.ledger_sales_mv",
+          "account_balances_view": "public.ledger_account_balances_mv",
+          "product_metrics_view": "public.ledger_product_metrics_mv"
+        },
+        "hydrated_rows": 1419,
+        "target_hydration_rows": 1,
+        "view_count": {
+          "sales": 51,
+          "accounts": 14,
+          "products": 7
+        },
+        "pending_retractions": 0,
+        "last_visible_occurred_at": "2026-03-09T02:16:58.843946+00:00",
+        "last_visible_ingested_at": "2026-03-09T02:16:58.843958+00:00",
+        "last_source_offset": 1539,
+        "view_lag_ms": 3246,
+        "expected_view_lag_ms": 5000,
+        "freshness_ms": 3246,
+        "expected_freshness_ms": 5000,
+        "updated_at": "2026-03-09T02:17:02.090728+00:00",
+        "attempt": 3,
+        "last_success_at": "2026-03-09T02:16:40.142321+00:00"
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:04.092089+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "counts": {
+          "products": 6,
+          "accounts": 14,
+          "channels": 6,
+          "suppliers": 4,
+          "warehouses": 3
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:04.094450+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "adapters": {}
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:04.095530+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "active_backends": [
+          "materialize"
+        ],
+        "connections": {
+          "materialize": 1
+        },
+        "consumer": {
+          "state": "running",
+          "topic": "ledger-entries-v1",
+          "delivery_mode": "push-only",
+          "messages_processed": 1477,
+          "last_event_id": "f7d8e433-e107-48cb-996c-3ff62dc10f05",
+          "last_offsets": {
+            "topic": "ledger-entries-v1",
+            "partition": 0,
+            "offset": 1768
+          },
+          "last_error": null
+        },
+        "authoritative_projection": {
+          "enabled_backends": [
+            "materialize"
+          ],
+          "supported_filters": [
+            "account_code",
+            "as_of",
+            "channel",
+            "customer_cpf",
+            "customer_email",
+            "customer_name",
+            "customer_segment",
+            "end_at",
+            "entry_category",
+            "entry_side",
+            "event_type",
+            "ontology_source",
+            "order_id",
+            "order_status",
+            "payment_method",
+            "product_category",
+            "product_name",
+            "sale_id",
+            "start_at",
+            "supplier_name",
+            "warehouse_id"
+          ],
+          "active_projection_count": 0,
+          "filtered_projection_count": 0,
+          "projections": []
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:04.096694+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "backend": "materialize",
+        "query_layer": {
+          "hydrated_rows": 1769,
+          "last_occurred_at": "2026-03-09T02:17:03.900479+00:00",
+          "last_ingested_at": "2026-03-09T02:17:03.900494+00:00",
+          "last_kafka_offset": 1768,
+          "view_lag_ms": 1175,
+          "freshness_ms": 1175
+        },
+        "refresh_interval_seconds": 1.0
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:05.077117+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": true,
+      "state": "ready",
+      "payload": {
+        "enabled": true,
+        "state": "ready",
+        "schema": "public",
+        "topic": "ledger-entries-v1",
+        "group_id_prefix": "ledger-materialize",
+        "objects": {
+          "connection": "public.ledger_kafka_connection",
+          "source": "public.ledger_entries_source",
+          "progress": "public.ledger_entries_source_progress",
+          "typed_view": "public.ledger_entries_typed",
+          "entries_view": "public.ledger_entries_current_mv",
+          "summary_view": "public.ledger_summary_by_role_mv",
+          "sales_view": "public.ledger_sales_mv",
+          "account_balances_view": "public.ledger_account_balances_mv",
+          "product_metrics_view": "public.ledger_product_metrics_mv"
+        },
+        "hydrated_rows": 1847,
+        "target_hydration_rows": 1,
+        "view_count": {
+          "sales": 66,
+          "accounts": 14,
+          "products": 7
+        },
+        "pending_retractions": 0,
+        "last_visible_occurred_at": "2026-03-09T02:17:04.870750+00:00",
+        "last_visible_ingested_at": "2026-03-09T02:17:04.870767+00:00",
+        "last_source_offset": 1998,
+        "view_lag_ms": 4186,
+        "expected_view_lag_ms": 5000,
+        "freshness_ms": 4186,
+        "expected_freshness_ms": 5000,
+        "updated_at": "2026-03-09T02:17:09.057306+00:00",
+        "attempt": 3,
+        "last_success_at": "2026-03-09T02:16:40.142321+00:00"
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:11.058392+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "counts": {
+          "products": 6,
+          "accounts": 14,
+          "channels": 6,
+          "suppliers": 4,
+          "warehouses": 3
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:11.060835+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "adapters": {}
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:11.062137+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "active_backends": [
+          "materialize"
+        ],
+        "connections": {
+          "materialize": 1
+        },
+        "consumer": {
+          "state": "running",
+          "topic": "ledger-entries-v1",
+          "delivery_mode": "push-only",
+          "messages_processed": 2038,
+          "last_event_id": "ee313d20-4616-4bd4-b176-d5795d496cbf",
+          "last_offsets": {
+            "topic": "ledger-entries-v1",
+            "partition": 0,
+            "offset": 2329
+          },
+          "last_error": null
+        },
+        "authoritative_projection": {
+          "enabled_backends": [
+            "materialize"
+          ],
+          "supported_filters": [
+            "account_code",
+            "as_of",
+            "channel",
+            "customer_cpf",
+            "customer_email",
+            "customer_name",
+            "customer_segment",
+            "end_at",
+            "entry_category",
+            "entry_side",
+            "event_type",
+            "ontology_source",
+            "order_id",
+            "order_status",
+            "payment_method",
+            "product_category",
+            "product_name",
+            "sale_id",
+            "start_at",
+            "supplier_name",
+            "warehouse_id"
+          ],
+          "active_projection_count": 0,
+          "filtered_projection_count": 0,
+          "projections": []
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:11.063415+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "backend": "materialize",
+        "query_layer": {
+          "hydrated_rows": 2330,
+          "last_occurred_at": "2026-03-09T02:17:10.914643+00:00",
+          "last_ingested_at": "2026-03-09T02:17:10.914655+00:00",
+          "last_kafka_offset": 2329,
+          "view_lag_ms": 1191,
+          "freshness_ms": 1191
+        },
+        "refresh_interval_seconds": 1.0
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:12.107546+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": true,
+      "state": "ready",
+      "payload": {
+        "enabled": true,
+        "state": "ready",
+        "schema": "public",
+        "topic": "ledger-entries-v1",
+        "group_id_prefix": "ledger-materialize",
+        "objects": {
+          "connection": "public.ledger_kafka_connection",
+          "source": "public.ledger_entries_source",
+          "progress": "public.ledger_entries_source_progress",
+          "typed_view": "public.ledger_entries_typed",
+          "entries_view": "public.ledger_entries_current_mv",
+          "summary_view": "public.ledger_summary_by_role_mv",
+          "sales_view": "public.ledger_sales_mv",
+          "account_balances_view": "public.ledger_account_balances_mv",
+          "product_metrics_view": "public.ledger_product_metrics_mv"
+        },
+        "hydrated_rows": 2402,
+        "target_hydration_rows": 1,
+        "view_count": {
+          "sales": 85,
+          "accounts": 14,
+          "products": 7
+        },
+        "pending_retractions": 0,
+        "last_visible_occurred_at": "2026-03-09T02:17:11.887821+00:00",
+        "last_visible_ingested_at": "2026-03-09T02:17:11.887833+00:00",
+        "last_source_offset": 2554,
+        "view_lag_ms": 3180,
+        "expected_view_lag_ms": 5000,
+        "freshness_ms": 3180,
+        "expected_freshness_ms": 5000,
+        "updated_at": "2026-03-09T02:17:15.067861+00:00",
+        "attempt": 3,
+        "last_success_at": "2026-03-09T02:16:40.142321+00:00"
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:17.069016+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "counts": {
+          "products": 6,
+          "accounts": 14,
+          "channels": 6,
+          "suppliers": 4,
+          "warehouses": 3
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:17.071984+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "adapters": {}
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:17.073805+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "active_backends": [
+          "materialize"
+        ],
+        "connections": {
+          "materialize": 1
+        },
+        "consumer": {
+          "state": "running",
+          "topic": "ledger-entries-v1",
+          "delivery_mode": "push-only",
+          "messages_processed": 2496,
+          "last_event_id": "4fc56072-3fed-450c-9217-ae1f96bb123f",
+          "last_offsets": {
+            "topic": "ledger-entries-v1",
+            "partition": 0,
+            "offset": 2787
+          },
+          "last_error": null
+        },
+        "authoritative_projection": {
+          "enabled_backends": [
+            "materialize"
+          ],
+          "supported_filters": [
+            "account_code",
+            "as_of",
+            "channel",
+            "customer_cpf",
+            "customer_email",
+            "customer_name",
+            "customer_segment",
+            "end_at",
+            "entry_category",
+            "entry_side",
+            "event_type",
+            "ontology_source",
+            "order_id",
+            "order_status",
+            "payment_method",
+            "product_category",
+            "product_name",
+            "sale_id",
+            "start_at",
+            "supplier_name",
+            "warehouse_id"
+          ],
+          "active_projection_count": 0,
+          "filtered_projection_count": 0,
+          "projections": []
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:17.074889+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "backend": "materialize",
+        "query_layer": {
+          "hydrated_rows": 2717,
+          "last_occurred_at": "2026-03-09T02:17:15.935984+00:00",
+          "last_ingested_at": "2026-03-09T02:17:15.935998+00:00",
+          "last_kafka_offset": 2716,
+          "view_lag_ms": 1259,
+          "freshness_ms": 1259
+        },
+        "refresh_interval_seconds": 1.0
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:17.196546+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": true,
+      "state": "ready",
+      "payload": {
+        "enabled": true,
+        "state": "ready",
+        "schema": "public",
+        "topic": "ledger-entries-v1",
+        "group_id_prefix": "ledger-materialize",
+        "objects": {
+          "connection": "public.ledger_kafka_connection",
+          "source": "public.ledger_entries_source",
+          "progress": "public.ledger_entries_source_progress",
+          "typed_view": "public.ledger_entries_typed",
+          "entries_view": "public.ledger_entries_current_mv",
+          "summary_view": "public.ledger_summary_by_role_mv",
+          "sales_view": "public.ledger_sales_mv",
+          "account_balances_view": "public.ledger_account_balances_mv",
+          "product_metrics_view": "public.ledger_product_metrics_mv"
+        },
+        "hydrated_rows": 2788,
+        "target_hydration_rows": 1,
+        "view_count": {
+          "sales": 97,
+          "accounts": 14,
+          "products": 7
+        },
+        "pending_retractions": 0,
+        "last_visible_occurred_at": "2026-03-09T02:17:16.911078+00:00",
+        "last_visible_ingested_at": "2026-03-09T02:17:16.911091+00:00",
+        "last_source_offset": 2925,
+        "view_lag_ms": 3172,
+        "expected_view_lag_ms": 5000,
+        "freshness_ms": 3172,
+        "expected_freshness_ms": 5000,
+        "updated_at": "2026-03-09T02:17:20.083190+00:00",
+        "attempt": 3,
+        "last_success_at": "2026-03-09T02:16:40.142321+00:00"
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:22.084195+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "counts": {
+          "products": 6,
+          "accounts": 14,
+          "channels": 6,
+          "suppliers": 4,
+          "warehouses": 3
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:22.086585+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "adapters": {}
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:22.088079+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "active_backends": [
+          "materialize"
+        ],
+        "connections": {
+          "materialize": 1
+        },
+        "consumer": {
+          "state": "running",
+          "topic": "ledger-entries-v1",
+          "delivery_mode": "push-only",
+          "messages_processed": 2877,
+          "last_event_id": "cf41cdc8-16d3-4667-ab68-01629bb1ecdb",
+          "last_offsets": {
+            "topic": "ledger-entries-v1",
+            "partition": 0,
+            "offset": 3168
+          },
+          "last_error": null
+        },
+        "authoritative_projection": {
+          "enabled_backends": [
+            "materialize"
+          ],
+          "supported_filters": [
+            "account_code",
+            "as_of",
+            "channel",
+            "customer_cpf",
+            "customer_email",
+            "customer_name",
+            "customer_segment",
+            "end_at",
+            "entry_category",
+            "entry_side",
+            "event_type",
+            "ontology_source",
+            "order_id",
+            "order_status",
+            "payment_method",
+            "product_category",
+            "product_name",
+            "sale_id",
+            "start_at",
+            "supplier_name",
+            "warehouse_id"
+          ],
+          "active_projection_count": 0,
+          "filtered_projection_count": 0,
+          "projections": []
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:22.089490+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "backend": "materialize",
+        "query_layer": {
+          "hydrated_rows": 3169,
+          "last_occurred_at": "2026-03-09T02:17:21.951528+00:00",
+          "last_ingested_at": "2026-03-09T02:17:21.951542+00:00",
+          "last_kafka_offset": 3168,
+          "view_lag_ms": 1165,
+          "freshness_ms": 1165
+        },
+        "refresh_interval_seconds": 1.0
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:23.118369+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": true,
+      "state": "warming_up",
+      "payload": {
+        "enabled": true,
+        "state": "warming_up",
+        "schema": "public",
+        "topic": "ledger-entries-v1",
+        "group_id_prefix": "ledger-materialize",
+        "objects": {
+          "connection": "public.ledger_kafka_connection",
+          "source": "public.ledger_entries_source",
+          "progress": "public.ledger_entries_source_progress",
+          "typed_view": "public.ledger_entries_typed",
+          "entries_view": "public.ledger_entries_current_mv",
+          "summary_view": "public.ledger_summary_by_role_mv",
+          "sales_view": "public.ledger_sales_mv",
+          "account_balances_view": "public.ledger_account_balances_mv",
+          "product_metrics_view": "public.ledger_product_metrics_mv"
+        },
+        "hydrated_rows": 3169,
+        "target_hydration_rows": 1,
+        "view_count": {
+          "sales": 116,
+          "accounts": 14,
+          "products": 7
+        },
+        "pending_retractions": 0,
+        "last_visible_occurred_at": "2026-03-09T02:17:21.951528+00:00",
+        "last_visible_ingested_at": "2026-03-09T02:17:21.951542+00:00",
+        "last_source_offset": 3349,
+        "view_lag_ms": 7109,
+        "expected_view_lag_ms": 5000,
+        "freshness_ms": 7109,
+        "expected_freshness_ms": 5000,
+        "updated_at": "2026-03-09T02:17:29.061323+00:00",
+        "attempt": 3,
+        "last_success_at": "2026-03-09T02:16:40.142321+00:00"
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:31.062246+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "counts": {
+          "products": 6,
+          "accounts": 14,
+          "channels": 6,
+          "suppliers": 4,
+          "warehouses": 3
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:31.064249+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "adapters": {}
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:31.065376+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "active_backends": [
+          "materialize"
+        ],
+        "connections": {
+          "materialize": 1
+        },
+        "consumer": {
+          "state": "running",
+          "topic": "ledger-entries-v1",
+          "delivery_mode": "push-only",
+          "messages_processed": 3295,
+          "last_event_id": "d416319b-833c-4085-bacc-a906d5b17100",
+          "last_offsets": {
+            "topic": "ledger-entries-v1",
+            "partition": 0,
+            "offset": 3586
+          },
+          "last_error": null
+        },
+        "authoritative_projection": {
+          "enabled_backends": [
+            "materialize"
+          ],
+          "supported_filters": [
+            "account_code",
+            "as_of",
+            "channel",
+            "customer_cpf",
+            "customer_email",
+            "customer_name",
+            "customer_segment",
+            "end_at",
+            "entry_category",
+            "entry_side",
+            "event_type",
+            "ontology_source",
+            "order_id",
+            "order_status",
+            "payment_method",
+            "product_category",
+            "product_name",
+            "sale_id",
+            "start_at",
+            "supplier_name",
+            "warehouse_id"
+          ],
+          "active_projection_count": 0,
+          "filtered_projection_count": 0,
+          "projections": []
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:31.066407+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "backend": "materialize",
+        "query_layer": {
+          "hydrated_rows": 3587,
+          "last_occurred_at": "2026-03-09T02:17:30.880230+00:00",
+          "last_ingested_at": "2026-03-09T02:17:30.880241+00:00",
+          "last_kafka_offset": 3586,
+          "view_lag_ms": 1181,
+          "freshness_ms": 1181
+        },
+        "refresh_interval_seconds": 1.0
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:32.062965+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": true,
+      "state": "ready",
+      "payload": {
+        "enabled": true,
+        "state": "ready",
+        "schema": "public",
+        "topic": "ledger-entries-v1",
+        "group_id_prefix": "ledger-materialize",
+        "objects": {
+          "connection": "public.ledger_kafka_connection",
+          "source": "public.ledger_entries_source",
+          "progress": "public.ledger_entries_source_progress",
+          "typed_view": "public.ledger_entries_typed",
+          "entries_view": "public.ledger_entries_current_mv",
+          "summary_view": "public.ledger_summary_by_role_mv",
+          "sales_view": "public.ledger_sales_mv",
+          "account_balances_view": "public.ledger_account_balances_mv",
+          "product_metrics_view": "public.ledger_product_metrics_mv"
+        },
+        "hydrated_rows": 3587,
+        "target_hydration_rows": 1,
+        "view_count": {
+          "sales": 132,
+          "accounts": 14,
+          "products": 7
+        },
+        "pending_retractions": 0,
+        "last_visible_occurred_at": "2026-03-09T02:17:30.880230+00:00",
+        "last_visible_ingested_at": "2026-03-09T02:17:30.880241+00:00",
+        "last_source_offset": 3801,
+        "view_lag_ms": 4246,
+        "expected_view_lag_ms": 5000,
+        "freshness_ms": 4246,
+        "expected_freshness_ms": 5000,
+        "updated_at": "2026-03-09T02:17:35.127136+00:00",
+        "attempt": 3,
+        "last_success_at": "2026-03-09T02:16:40.142321+00:00"
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:37.128182+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "counts": {
+          "products": 6,
+          "accounts": 14,
+          "channels": 6,
+          "suppliers": 4,
+          "warehouses": 3
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:37.130828+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "adapters": {}
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:37.132284+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "active_backends": [
+          "materialize"
+        ],
+        "connections": {
+          "materialize": 1
+        },
+        "consumer": {
+          "state": "running",
+          "topic": "ledger-entries-v1",
+          "delivery_mode": "push-only",
+          "messages_processed": 3746,
+          "last_event_id": "2dce6df2-52e7-462d-8213-b2f7eeb9934f",
+          "last_offsets": {
+            "topic": "ledger-entries-v1",
+            "partition": 0,
+            "offset": 4037
+          },
+          "last_error": null
+        },
+        "authoritative_projection": {
+          "enabled_backends": [
+            "materialize"
+          ],
+          "supported_filters": [
+            "account_code",
+            "as_of",
+            "channel",
+            "customer_cpf",
+            "customer_email",
+            "customer_name",
+            "customer_segment",
+            "end_at",
+            "entry_category",
+            "entry_side",
+            "event_type",
+            "ontology_source",
+            "order_id",
+            "order_status",
+            "payment_method",
+            "product_category",
+            "product_name",
+            "sale_id",
+            "start_at",
+            "supplier_name",
+            "warehouse_id"
+          ],
+          "active_projection_count": 0,
+          "filtered_projection_count": 0,
+          "projections": []
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:37.133745+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "backend": "materialize",
+        "query_layer": {
+          "hydrated_rows": 4038,
+          "last_occurred_at": "2026-03-09T02:17:36.920833+00:00",
+          "last_ingested_at": "2026-03-09T02:17:36.920843+00:00",
+          "last_kafka_offset": 4037,
+          "view_lag_ms": 1134,
+          "freshness_ms": 1134
+        },
+        "refresh_interval_seconds": 1.0
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:38.055823+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": true,
+      "state": "warming_up",
+      "payload": {
+        "enabled": true,
+        "state": "warming_up",
+        "schema": "public",
+        "topic": "ledger-entries-v1",
+        "group_id_prefix": "ledger-materialize",
+        "objects": {
+          "connection": "public.ledger_kafka_connection",
+          "source": "public.ledger_entries_source",
+          "progress": "public.ledger_entries_source_progress",
+          "typed_view": "public.ledger_entries_typed",
+          "entries_view": "public.ledger_entries_current_mv",
+          "summary_view": "public.ledger_summary_by_role_mv",
+          "sales_view": "public.ledger_sales_mv",
+          "account_balances_view": "public.ledger_account_balances_mv",
+          "product_metrics_view": "public.ledger_product_metrics_mv"
+        },
+        "hydrated_rows": 4038,
+        "target_hydration_rows": 1,
+        "view_count": {
+          "sales": 153,
+          "accounts": 14,
+          "products": 7
+        },
+        "pending_retractions": 0,
+        "last_visible_occurred_at": "2026-03-09T02:17:36.920833+00:00",
+        "last_visible_ingested_at": "2026-03-09T02:17:36.920843+00:00",
+        "last_source_offset": 4267,
+        "view_lag_ms": 5168,
+        "expected_view_lag_ms": 5000,
+        "freshness_ms": 5168,
+        "expected_freshness_ms": 5000,
+        "updated_at": "2026-03-09T02:17:42.089736+00:00",
+        "attempt": 3,
+        "last_success_at": "2026-03-09T02:16:40.142321+00:00"
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:44.090825+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "counts": {
+          "products": 6,
+          "accounts": 14,
+          "channels": 6,
+          "suppliers": 4,
+          "warehouses": 3
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:44.093733+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "adapters": {}
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:44.094892+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "active_backends": [
+          "materialize"
+        ],
+        "connections": {
+          "materialize": 1
+        },
+        "consumer": {
+          "state": "running",
+          "topic": "ledger-entries-v1",
+          "delivery_mode": "push-only",
+          "messages_processed": 4281,
+          "last_event_id": "1583459a-39ae-44d7-9b18-815565b001d0",
+          "last_offsets": {
+            "topic": "ledger-entries-v1",
+            "partition": 0,
+            "offset": 4572
+          },
+          "last_error": null
+        },
+        "authoritative_projection": {
+          "enabled_backends": [
+            "materialize"
+          ],
+          "supported_filters": [
+            "account_code",
+            "as_of",
+            "channel",
+            "customer_cpf",
+            "customer_email",
+            "customer_name",
+            "customer_segment",
+            "end_at",
+            "entry_category",
+            "entry_side",
+            "event_type",
+            "ontology_source",
+            "order_id",
+            "order_status",
+            "payment_method",
+            "product_category",
+            "product_name",
+            "sale_id",
+            "start_at",
+            "supplier_name",
+            "warehouse_id"
+          ],
+          "active_projection_count": 0,
+          "filtered_projection_count": 0,
+          "projections": []
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:44.096346+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "backend": "materialize",
+        "query_layer": {
+          "hydrated_rows": 4504,
+          "last_occurred_at": "2026-03-09T02:17:42.914487+00:00",
+          "last_ingested_at": "2026-03-09T02:17:42.914507+00:00",
+          "last_kafka_offset": 4503,
+          "view_lag_ms": 1239,
+          "freshness_ms": 1239
+        },
+        "refresh_interval_seconds": 1.0
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:44.154322+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": true,
+      "state": "ready",
+      "payload": {
+        "enabled": true,
+        "state": "ready",
+        "schema": "public",
+        "topic": "ledger-entries-v1",
+        "group_id_prefix": "ledger-materialize",
+        "objects": {
+          "connection": "public.ledger_kafka_connection",
+          "source": "public.ledger_entries_source",
+          "progress": "public.ledger_entries_source_progress",
+          "typed_view": "public.ledger_entries_typed",
+          "entries_view": "public.ledger_entries_current_mv",
+          "summary_view": "public.ledger_summary_by_role_mv",
+          "sales_view": "public.ledger_sales_mv",
+          "account_balances_view": "public.ledger_account_balances_mv",
+          "product_metrics_view": "public.ledger_product_metrics_mv"
+        },
+        "hydrated_rows": 4573,
+        "target_hydration_rows": 1,
+        "view_count": {
+          "sales": 173,
+          "accounts": 14,
+          "products": 7
+        },
+        "pending_retractions": 0,
+        "last_visible_occurred_at": "2026-03-09T02:17:43.957439+00:00",
+        "last_visible_ingested_at": "2026-03-09T02:17:43.957453+00:00",
+        "last_source_offset": 4712,
+        "view_lag_ms": 3197,
+        "expected_view_lag_ms": 5000,
+        "freshness_ms": 3197,
+        "expected_freshness_ms": 5000,
+        "updated_at": "2026-03-09T02:17:47.154691+00:00",
+        "attempt": 3,
+        "last_success_at": "2026-03-09T02:16:40.142321+00:00"
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:49.162326+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "counts": {
+          "products": 6,
+          "accounts": 14,
+          "channels": 6,
+          "suppliers": 4,
+          "warehouses": 3
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:49.165654+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "adapters": {}
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:49.167259+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "active_backends": [
+          "materialize"
+        ],
+        "connections": {
+          "materialize": 1
+        },
+        "consumer": {
+          "state": "running",
+          "topic": "ledger-entries-v1",
+          "delivery_mode": "push-only",
+          "messages_processed": 4681,
+          "last_event_id": "5c7cb565-e941-4bbc-8338-bb8141688c28",
+          "last_offsets": {
+            "topic": "ledger-entries-v1",
+            "partition": 0,
+            "offset": 4972
+          },
+          "last_error": null
+        },
+        "authoritative_projection": {
+          "enabled_backends": [
+            "materialize"
+          ],
+          "supported_filters": [
+            "account_code",
+            "as_of",
+            "channel",
+            "customer_cpf",
+            "customer_email",
+            "customer_name",
+            "customer_segment",
+            "end_at",
+            "entry_category",
+            "entry_side",
+            "event_type",
+            "ontology_source",
+            "order_id",
+            "order_status",
+            "payment_method",
+            "product_category",
+            "product_name",
+            "sale_id",
+            "start_at",
+            "supplier_name",
+            "warehouse_id"
+          ],
+          "active_projection_count": 0,
+          "filtered_projection_count": 0,
+          "projections": []
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:49.168889+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "backend": "materialize",
+        "query_layer": {
+          "hydrated_rows": 4958,
+          "last_occurred_at": "2026-03-09T02:17:48.743041+00:00",
+          "last_ingested_at": "2026-03-09T02:17:48.743050+00:00",
+          "last_kafka_offset": 4957,
+          "view_lag_ms": 1495,
+          "freshness_ms": 1495
+        },
+        "refresh_interval_seconds": 1.0
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:50.239808+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": true,
+      "state": "ready",
+      "payload": {
+        "enabled": true,
+        "state": "ready",
+        "schema": "public",
+        "topic": "ledger-entries-v1",
+        "group_id_prefix": "ledger-materialize",
+        "objects": {
+          "connection": "public.ledger_kafka_connection",
+          "source": "public.ledger_entries_source",
+          "progress": "public.ledger_entries_source_progress",
+          "typed_view": "public.ledger_entries_typed",
+          "entries_view": "public.ledger_entries_current_mv",
+          "summary_view": "public.ledger_summary_by_role_mv",
+          "sales_view": "public.ledger_sales_mv",
+          "account_balances_view": "public.ledger_account_balances_mv",
+          "product_metrics_view": "public.ledger_product_metrics_mv"
+        },
+        "hydrated_rows": 5035,
+        "target_hydration_rows": 1,
+        "view_count": {
+          "sales": 191,
+          "accounts": 14,
+          "products": 7
+        },
+        "pending_retractions": 0,
+        "last_visible_occurred_at": "2026-03-09T02:17:49.773674+00:00",
+        "last_visible_ingested_at": "2026-03-09T02:17:49.773684+00:00",
+        "last_source_offset": 5035,
+        "view_lag_ms": 1483,
+        "expected_view_lag_ms": 5000,
+        "freshness_ms": 1483,
+        "expected_freshness_ms": 5000,
+        "updated_at": "2026-03-09T02:17:51.257349+00:00",
+        "attempt": 3,
+        "last_success_at": "2026-03-09T02:16:40.142321+00:00"
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:53.258353+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "counts": {
+          "products": 6,
+          "accounts": 14,
+          "channels": 6,
+          "suppliers": 4,
+          "warehouses": 3
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:53.263096+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "adapters": {}
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:53.264720+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "active_backends": [
+          "materialize"
+        ],
+        "connections": {
+          "materialize": 1
+        },
+        "consumer": {
+          "state": "running",
+          "topic": "ledger-entries-v1",
+          "delivery_mode": "push-only",
+          "messages_processed": 4991,
+          "last_event_id": "2069fff9-ff11-4067-a83b-0af2860cbc4d",
+          "last_offsets": {
+            "topic": "ledger-entries-v1",
+            "partition": 0,
+            "offset": 5282
+          },
+          "last_error": null
+        },
+        "authoritative_projection": {
+          "enabled_backends": [
+            "materialize"
+          ],
+          "supported_filters": [
+            "account_code",
+            "as_of",
+            "channel",
+            "customer_cpf",
+            "customer_email",
+            "customer_name",
+            "customer_segment",
+            "end_at",
+            "entry_category",
+            "entry_side",
+            "event_type",
+            "ontology_source",
+            "order_id",
+            "order_status",
+            "payment_method",
+            "product_category",
+            "product_name",
+            "sale_id",
+            "start_at",
+            "supplier_name",
+            "warehouse_id"
+          ],
+          "active_projection_count": 0,
+          "filtered_projection_count": 0,
+          "projections": []
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:53.266140+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "backend": "materialize",
+        "query_layer": {
+          "hydrated_rows": 5255,
+          "last_occurred_at": "2026-03-09T02:17:52.771934+00:00",
+          "last_ingested_at": "2026-03-09T02:17:52.771951+00:00",
+          "last_kafka_offset": 5254,
+          "view_lag_ms": 1300,
+          "freshness_ms": 1300
+        },
+        "refresh_interval_seconds": 1.0
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:54.073694+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": true,
+      "state": "ready",
+      "payload": {
+        "enabled": true,
+        "state": "ready",
+        "schema": "public",
+        "topic": "ledger-entries-v1",
+        "group_id_prefix": "ledger-materialize",
+        "objects": {
+          "connection": "public.ledger_kafka_connection",
+          "source": "public.ledger_entries_source",
+          "progress": "public.ledger_entries_source_progress",
+          "typed_view": "public.ledger_entries_typed",
+          "entries_view": "public.ledger_entries_current_mv",
+          "summary_view": "public.ledger_summary_by_role_mv",
+          "sales_view": "public.ledger_sales_mv",
+          "account_balances_view": "public.ledger_account_balances_mv",
+          "product_metrics_view": "public.ledger_product_metrics_mv"
+        },
+        "hydrated_rows": 5255,
+        "target_hydration_rows": 1,
+        "view_count": {
+          "sales": 203,
+          "accounts": 14,
+          "products": 7
+        },
+        "pending_retractions": 0,
+        "last_visible_occurred_at": "2026-03-09T02:17:52.771934+00:00",
+        "last_visible_ingested_at": "2026-03-09T02:17:52.771951+00:00",
+        "last_source_offset": 5329,
+        "view_lag_ms": 2395,
+        "expected_view_lag_ms": 5000,
+        "freshness_ms": 2395,
+        "expected_freshness_ms": 5000,
+        "updated_at": "2026-03-09T02:17:55.167699+00:00",
+        "attempt": 3,
+        "last_success_at": "2026-03-09T02:16:40.142321+00:00"
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:57.168944+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "counts": {
+          "products": 6,
+          "accounts": 14,
+          "channels": 6,
+          "suppliers": 4,
+          "warehouses": 3
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:57.172079+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "adapters": {}
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:57.173476+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "active_backends": [
+          "materialize"
+        ],
+        "connections": {
+          "materialize": 1
+        },
+        "consumer": {
+          "state": "running",
+          "topic": "ledger-entries-v1",
+          "delivery_mode": "push-only",
+          "messages_processed": 5285,
+          "last_event_id": "10ca431a-0060-4fc9-9d12-6125d0877e43",
+          "last_offsets": {
+            "topic": "ledger-entries-v1",
+            "partition": 0,
+            "offset": 5576
+          },
+          "last_error": null
+        },
+        "authoritative_projection": {
+          "enabled_backends": [
+            "materialize"
+          ],
+          "supported_filters": [
+            "account_code",
+            "as_of",
+            "channel",
+            "customer_cpf",
+            "customer_email",
+            "customer_name",
+            "customer_segment",
+            "end_at",
+            "entry_category",
+            "entry_side",
+            "event_type",
+            "ontology_source",
+            "order_id",
+            "order_status",
+            "payment_method",
+            "product_category",
+            "product_name",
+            "sale_id",
+            "start_at",
+            "supplier_name",
+            "warehouse_id"
+          ],
+          "active_projection_count": 0,
+          "filtered_projection_count": 0,
+          "projections": []
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:57.174598+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "backend": "materialize",
+        "query_layer": {
+          "hydrated_rows": 5484,
+          "last_occurred_at": "2026-03-09T02:17:55.766053+00:00",
+          "last_ingested_at": "2026-03-09T02:17:55.766066+00:00",
+          "last_kafka_offset": 5483,
+          "view_lag_ms": 1453,
+          "freshness_ms": 1453
+        },
+        "refresh_interval_seconds": 1.0
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:17:57.220898+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": true,
+      "state": "ready",
+      "payload": {
+        "enabled": true,
+        "state": "ready",
+        "schema": "public",
+        "topic": "ledger-entries-v1",
+        "group_id_prefix": "ledger-materialize",
+        "objects": {
+          "connection": "public.ledger_kafka_connection",
+          "source": "public.ledger_entries_source",
+          "progress": "public.ledger_entries_source_progress",
+          "typed_view": "public.ledger_entries_typed",
+          "entries_view": "public.ledger_entries_current_mv",
+          "summary_view": "public.ledger_summary_by_role_mv",
+          "sales_view": "public.ledger_sales_mv",
+          "account_balances_view": "public.ledger_account_balances_mv",
+          "product_metrics_view": "public.ledger_product_metrics_mv"
+        },
+        "hydrated_rows": 5484,
+        "target_hydration_rows": 1,
+        "view_count": {
+          "sales": 213,
+          "accounts": 14,
+          "products": 7
+        },
+        "pending_retractions": 0,
+        "last_visible_occurred_at": "2026-03-09T02:17:55.766053+00:00",
+        "last_visible_ingested_at": "2026-03-09T02:17:55.766066+00:00",
+        "last_source_offset": 5634,
+        "view_lag_ms": 3371,
+        "expected_view_lag_ms": 5000,
+        "freshness_ms": 3371,
+        "expected_freshness_ms": 5000,
+        "updated_at": "2026-03-09T02:17:59.137224+00:00",
+        "attempt": 3,
+        "last_success_at": "2026-03-09T02:16:40.142321+00:00"
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:04.070512+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "counts": {
+          "products": 6,
+          "accounts": 14,
+          "channels": 6,
+          "suppliers": 4,
+          "warehouses": 3
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:04.072593+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "adapters": {}
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:04.073843+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "active_backends": [
+          "materialize"
+        ],
+        "connections": {
+          "materialize": 1
+        },
+        "consumer": {
+          "state": "running",
+          "topic": "ledger-entries-v1",
+          "delivery_mode": "push-only",
+          "messages_processed": 5591,
+          "last_event_id": "63c56e61-7870-4451-ac16-e1146e2b83e2",
+          "last_offsets": {
+            "topic": "ledger-entries-v1",
+            "partition": 0,
+            "offset": 5882
+          },
+          "last_error": null
+        },
+        "authoritative_projection": {
+          "enabled_backends": [
+            "materialize"
+          ],
+          "supported_filters": [
+            "account_code",
+            "as_of",
+            "channel",
+            "customer_cpf",
+            "customer_email",
+            "customer_name",
+            "customer_segment",
+            "end_at",
+            "entry_category",
+            "entry_side",
+            "event_type",
+            "ontology_source",
+            "order_id",
+            "order_status",
+            "payment_method",
+            "product_category",
+            "product_name",
+            "sale_id",
+            "start_at",
+            "supplier_name",
+            "warehouse_id"
+          ],
+          "active_projection_count": 0,
+          "filtered_projection_count": 0,
+          "projections": []
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:04.075230+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "backend": "materialize",
+        "query_layer": {
+          "hydrated_rows": 5799,
+          "last_occurred_at": "2026-03-09T02:18:02.928766+00:00",
+          "last_ingested_at": "2026-03-09T02:18:02.928780+00:00",
+          "last_kafka_offset": 5798,
+          "view_lag_ms": 1190,
+          "freshness_ms": 1190
+        },
+        "refresh_interval_seconds": 1.0
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:04.120102+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": true,
+      "state": "ready",
+      "payload": {
+        "enabled": true,
+        "state": "ready",
+        "schema": "public",
+        "topic": "ledger-entries-v1",
+        "group_id_prefix": "ledger-materialize",
+        "objects": {
+          "connection": "public.ledger_kafka_connection",
+          "source": "public.ledger_entries_source",
+          "progress": "public.ledger_entries_source_progress",
+          "typed_view": "public.ledger_entries_typed",
+          "entries_view": "public.ledger_entries_current_mv",
+          "summary_view": "public.ledger_summary_by_role_mv",
+          "sales_view": "public.ledger_sales_mv",
+          "account_balances_view": "public.ledger_account_balances_mv",
+          "product_metrics_view": "public.ledger_product_metrics_mv"
+        },
+        "hydrated_rows": 5799,
+        "target_hydration_rows": 1,
+        "view_count": {
+          "sales": 225,
+          "accounts": 14,
+          "products": 7
+        },
+        "pending_retractions": 0,
+        "last_visible_occurred_at": "2026-03-09T02:18:02.928766+00:00",
+        "last_visible_ingested_at": "2026-03-09T02:18:02.928780+00:00",
+        "last_source_offset": 5883,
+        "view_lag_ms": 2273,
+        "expected_view_lag_ms": 5000,
+        "freshness_ms": 2273,
+        "expected_freshness_ms": 5000,
+        "updated_at": "2026-03-09T02:18:05.202181+00:00",
+        "attempt": 3,
+        "last_success_at": "2026-03-09T02:16:40.142321+00:00"
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:07.203412+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "counts": {
+          "products": 6,
+          "accounts": 14,
+          "channels": 6,
+          "suppliers": 4,
+          "warehouses": 3
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:07.206210+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "adapters": {}
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:07.207762+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "active_backends": [
+          "materialize"
+        ],
+        "connections": {
+          "materialize": 1
+        },
+        "consumer": {
+          "state": "running",
+          "topic": "ledger-entries-v1",
+          "delivery_mode": "push-only",
+          "messages_processed": 5831,
+          "last_event_id": "49e3ccc0-b5c7-411e-b1ed-d5e521362ba0",
+          "last_offsets": {
+            "topic": "ledger-entries-v1",
+            "partition": 0,
+            "offset": 6122
+          },
+          "last_error": null
+        },
+        "authoritative_projection": {
+          "enabled_backends": [
+            "materialize"
+          ],
+          "supported_filters": [
+            "account_code",
+            "as_of",
+            "channel",
+            "customer_cpf",
+            "customer_email",
+            "customer_name",
+            "customer_segment",
+            "end_at",
+            "entry_category",
+            "entry_side",
+            "event_type",
+            "ontology_source",
+            "order_id",
+            "order_status",
+            "payment_method",
+            "product_category",
+            "product_name",
+            "sale_id",
+            "start_at",
+            "supplier_name",
+            "warehouse_id"
+          ],
+          "active_projection_count": 0,
+          "filtered_projection_count": 0,
+          "projections": []
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:07.209398+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "backend": "materialize",
+        "query_layer": {
+          "hydrated_rows": 6111,
+          "last_occurred_at": "2026-03-09T02:18:06.939737+00:00",
+          "last_ingested_at": "2026-03-09T02:18:06.939753+00:00",
+          "last_kafka_offset": 6110,
+          "view_lag_ms": 1147,
+          "freshness_ms": 1147
+        },
+        "refresh_interval_seconds": 1.0
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:08.088704+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": true,
+      "state": "ready",
+      "payload": {
+        "enabled": true,
+        "state": "ready",
+        "schema": "public",
+        "topic": "ledger-entries-v1",
+        "group_id_prefix": "ledger-materialize",
+        "objects": {
+          "connection": "public.ledger_kafka_connection",
+          "source": "public.ledger_entries_source",
+          "progress": "public.ledger_entries_source_progress",
+          "typed_view": "public.ledger_entries_typed",
+          "entries_view": "public.ledger_entries_current_mv",
+          "summary_view": "public.ledger_summary_by_role_mv",
+          "sales_view": "public.ledger_sales_mv",
+          "account_balances_view": "public.ledger_account_balances_mv",
+          "product_metrics_view": "public.ledger_product_metrics_mv"
+        },
+        "hydrated_rows": 6111,
+        "target_hydration_rows": 1,
+        "view_count": {
+          "sales": 238,
+          "accounts": 14,
+          "products": 7
+        },
+        "pending_retractions": 0,
+        "last_visible_occurred_at": "2026-03-09T02:18:06.939737+00:00",
+        "last_visible_ingested_at": "2026-03-09T02:18:06.939753+00:00",
+        "last_source_offset": 6267,
+        "view_lag_ms": 3204,
+        "expected_view_lag_ms": 5000,
+        "freshness_ms": 3204,
+        "expected_freshness_ms": 5000,
+        "updated_at": "2026-03-09T02:18:10.143784+00:00",
+        "attempt": 3,
+        "last_success_at": "2026-03-09T02:16:40.142321+00:00"
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:12.144881+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "counts": {
+          "products": 6,
+          "accounts": 14,
+          "channels": 6,
+          "suppliers": 4,
+          "warehouses": 3
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:12.147721+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "adapters": {}
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:12.149445+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "active_backends": [
+          "materialize"
+        ],
+        "connections": {
+          "materialize": 1
+        },
+        "consumer": {
+          "state": "running",
+          "topic": "ledger-entries-v1",
+          "delivery_mode": "push-only",
+          "messages_processed": 6205,
+          "last_event_id": "bb3f912d-844b-47d0-82f0-5dc545c38184",
+          "last_offsets": {
+            "topic": "ledger-entries-v1",
+            "partition": 0,
+            "offset": 6496
+          },
+          "last_error": null
+        },
+        "authoritative_projection": {
+          "enabled_backends": [
+            "materialize"
+          ],
+          "supported_filters": [
+            "account_code",
+            "as_of",
+            "channel",
+            "customer_cpf",
+            "customer_email",
+            "customer_name",
+            "customer_segment",
+            "end_at",
+            "entry_category",
+            "entry_side",
+            "event_type",
+            "ontology_source",
+            "order_id",
+            "order_status",
+            "payment_method",
+            "product_category",
+            "product_name",
+            "sale_id",
+            "start_at",
+            "supplier_name",
+            "warehouse_id"
+          ],
+          "active_projection_count": 0,
+          "filtered_projection_count": 0,
+          "projections": []
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:12.151310+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "backend": "materialize",
+        "query_layer": {
+          "hydrated_rows": 6411,
+          "last_occurred_at": "2026-03-09T02:18:10.749510+00:00",
+          "last_ingested_at": "2026-03-09T02:18:10.749535+00:00",
+          "last_kafka_offset": 6410,
+          "view_lag_ms": 1501,
+          "freshness_ms": 1501
+        },
+        "refresh_interval_seconds": 1.0
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:12.252470+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": true,
+      "state": "ready",
+      "payload": {
+        "enabled": true,
+        "state": "ready",
+        "schema": "public",
+        "topic": "ledger-entries-v1",
+        "group_id_prefix": "ledger-materialize",
+        "objects": {
+          "connection": "public.ledger_kafka_connection",
+          "source": "public.ledger_entries_source",
+          "progress": "public.ledger_entries_source_progress",
+          "typed_view": "public.ledger_entries_typed",
+          "entries_view": "public.ledger_entries_current_mv",
+          "summary_view": "public.ledger_summary_by_role_mv",
+          "sales_view": "public.ledger_sales_mv",
+          "account_balances_view": "public.ledger_account_balances_mv",
+          "product_metrics_view": "public.ledger_product_metrics_mv"
+        },
+        "hydrated_rows": 6486,
+        "target_hydration_rows": 1,
+        "view_count": {
+          "sales": 251,
+          "accounts": 14,
+          "products": 7
+        },
+        "pending_retractions": 0,
+        "last_visible_occurred_at": "2026-03-09T02:18:11.777007+00:00",
+        "last_visible_ingested_at": "2026-03-09T02:18:11.777016+00:00",
+        "last_source_offset": 6486,
+        "view_lag_ms": 1463,
+        "expected_view_lag_ms": 5000,
+        "freshness_ms": 1463,
+        "expected_freshness_ms": 5000,
+        "updated_at": "2026-03-09T02:18:13.240870+00:00",
+        "attempt": 3,
+        "last_success_at": "2026-03-09T02:16:40.142321+00:00"
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:15.241984+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "counts": {
+          "products": 6,
+          "accounts": 14,
+          "channels": 6,
+          "suppliers": 4,
+          "warehouses": 3
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:15.244357+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "adapters": {}
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:15.245814+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "active_backends": [
+          "materialize"
+        ],
+        "connections": {
+          "materialize": 1
+        },
+        "consumer": {
+          "state": "running",
+          "topic": "ledger-entries-v1",
+          "delivery_mode": "push-only",
+          "messages_processed": 6464,
+          "last_event_id": "b913375c-74a0-4d08-8500-a2c8551c8bf7",
+          "last_offsets": {
+            "topic": "ledger-entries-v1",
+            "partition": 0,
+            "offset": 6755
+          },
+          "last_error": null
+        },
+        "authoritative_projection": {
+          "enabled_backends": [
+            "materialize"
+          ],
+          "supported_filters": [
+            "account_code",
+            "as_of",
+            "channel",
+            "customer_cpf",
+            "customer_email",
+            "customer_name",
+            "customer_segment",
+            "end_at",
+            "entry_category",
+            "entry_side",
+            "event_type",
+            "ontology_source",
+            "order_id",
+            "order_status",
+            "payment_method",
+            "product_category",
+            "product_name",
+            "sale_id",
+            "start_at",
+            "supplier_name",
+            "warehouse_id"
+          ],
+          "active_projection_count": 0,
+          "filtered_projection_count": 0,
+          "projections": []
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:15.247237+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "backend": "materialize",
+        "query_layer": {
+          "hydrated_rows": 6727,
+          "last_occurred_at": "2026-03-09T02:18:14.766061+00:00",
+          "last_ingested_at": "2026-03-09T02:18:14.766072+00:00",
+          "last_kafka_offset": 6726,
+          "view_lag_ms": 1300,
+          "freshness_ms": 1300
+        },
+        "refresh_interval_seconds": 1.0
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:16.067274+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": true,
+      "state": "ready",
+      "payload": {
+        "enabled": true,
+        "state": "ready",
+        "schema": "public",
+        "topic": "ledger-entries-v1",
+        "group_id_prefix": "ledger-materialize",
+        "objects": {
+          "connection": "public.ledger_kafka_connection",
+          "source": "public.ledger_entries_source",
+          "progress": "public.ledger_entries_source_progress",
+          "typed_view": "public.ledger_entries_typed",
+          "entries_view": "public.ledger_entries_current_mv",
+          "summary_view": "public.ledger_summary_by_role_mv",
+          "sales_view": "public.ledger_sales_mv",
+          "account_balances_view": "public.ledger_account_balances_mv",
+          "product_metrics_view": "public.ledger_product_metrics_mv"
+        },
+        "hydrated_rows": 6727,
+        "target_hydration_rows": 1,
+        "view_count": {
+          "sales": 265,
+          "accounts": 14,
+          "products": 7
+        },
+        "pending_retractions": 0,
+        "last_visible_occurred_at": "2026-03-09T02:18:14.766061+00:00",
+        "last_visible_ingested_at": "2026-03-09T02:18:14.766072+00:00",
+        "last_source_offset": 6882,
+        "view_lag_ms": 3352,
+        "expected_view_lag_ms": 5000,
+        "freshness_ms": 3352,
+        "expected_freshness_ms": 5000,
+        "updated_at": "2026-03-09T02:18:18.118867+00:00",
+        "attempt": 3,
+        "last_success_at": "2026-03-09T02:16:40.142321+00:00"
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:20.119826+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "counts": {
+          "products": 6,
+          "accounts": 14,
+          "channels": 6,
+          "suppliers": 4,
+          "warehouses": 3
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:20.122287+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "adapters": {}
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:20.123436+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "active_backends": [
+          "materialize"
+        ],
+        "connections": {
+          "materialize": 1
+        },
+        "consumer": {
+          "state": "running",
+          "topic": "ledger-entries-v1",
+          "delivery_mode": "push-only",
+          "messages_processed": 6846,
+          "last_event_id": "e5499d2c-34e7-468c-b29d-36d1adaf952f",
+          "last_offsets": {
+            "topic": "ledger-entries-v1",
+            "partition": 0,
+            "offset": 7137
+          },
+          "last_error": null
+        },
+        "authoritative_projection": {
+          "enabled_backends": [
+            "materialize"
+          ],
+          "supported_filters": [
+            "account_code",
+            "as_of",
+            "channel",
+            "customer_cpf",
+            "customer_email",
+            "customer_name",
+            "customer_segment",
+            "end_at",
+            "entry_category",
+            "entry_side",
+            "event_type",
+            "ontology_source",
+            "order_id",
+            "order_status",
+            "payment_method",
+            "product_category",
+            "product_name",
+            "sale_id",
+            "start_at",
+            "supplier_name",
+            "warehouse_id"
+          ],
+          "active_projection_count": 0,
+          "filtered_projection_count": 0,
+          "projections": []
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:20.124536+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "backend": "materialize",
+        "query_layer": {
+          "hydrated_rows": 7037,
+          "last_occurred_at": "2026-03-09T02:18:18.777893+00:00",
+          "last_ingested_at": "2026-03-09T02:18:18.777907+00:00",
+          "last_kafka_offset": 7036,
+          "view_lag_ms": 1402,
+          "freshness_ms": 1402
+        },
+        "refresh_interval_seconds": 1.0
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:20.181391+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": true,
+      "state": "ready",
+      "payload": {
+        "enabled": true,
+        "state": "ready",
+        "schema": "public",
+        "topic": "ledger-entries-v1",
+        "group_id_prefix": "ledger-materialize",
+        "objects": {
+          "connection": "public.ledger_kafka_connection",
+          "source": "public.ledger_entries_source",
+          "progress": "public.ledger_entries_source_progress",
+          "typed_view": "public.ledger_entries_typed",
+          "entries_view": "public.ledger_entries_current_mv",
+          "summary_view": "public.ledger_summary_by_role_mv",
+          "sales_view": "public.ledger_sales_mv",
+          "account_balances_view": "public.ledger_account_balances_mv",
+          "product_metrics_view": "public.ledger_product_metrics_mv"
+        },
+        "hydrated_rows": 7127,
+        "target_hydration_rows": 1,
+        "view_count": {
+          "sales": 277,
+          "accounts": 14,
+          "products": 7
+        },
+        "pending_retractions": 0,
+        "last_visible_occurred_at": "2026-03-09T02:18:19.811231+00:00",
+        "last_visible_ingested_at": "2026-03-09T02:18:19.811240+00:00",
+        "last_source_offset": 7127,
+        "view_lag_ms": 1487,
+        "expected_view_lag_ms": 5000,
+        "freshness_ms": 1487,
+        "expected_freshness_ms": 5000,
+        "updated_at": "2026-03-09T02:18:21.298488+00:00",
+        "attempt": 3,
+        "last_success_at": "2026-03-09T02:16:40.142321+00:00"
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:23.299560+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "counts": {
+          "products": 6,
+          "accounts": 14,
+          "channels": 6,
+          "suppliers": 4,
+          "warehouses": 3
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:23.302105+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "adapters": {}
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:23.303925+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "active_backends": [
+          "materialize"
+        ],
+        "connections": {
+          "materialize": 1
+        },
+        "consumer": {
+          "state": "running",
+          "topic": "ledger-entries-v1",
+          "delivery_mode": "push-only",
+          "messages_processed": 7071,
+          "last_event_id": "0d2c057e-9fed-4499-870b-d3b77c7c19c6",
+          "last_offsets": {
+            "topic": "ledger-entries-v1",
+            "partition": 0,
+            "offset": 7362
+          },
+          "last_error": null
+        },
+        "authoritative_projection": {
+          "enabled_backends": [
+            "materialize"
+          ],
+          "supported_filters": [
+            "account_code",
+            "as_of",
+            "channel",
+            "customer_cpf",
+            "customer_email",
+            "customer_name",
+            "customer_segment",
+            "end_at",
+            "entry_category",
+            "entry_side",
+            "event_type",
+            "ontology_source",
+            "order_id",
+            "order_status",
+            "payment_method",
+            "product_category",
+            "product_name",
+            "sale_id",
+            "start_at",
+            "supplier_name",
+            "warehouse_id"
+          ],
+          "active_projection_count": 0,
+          "filtered_projection_count": 0,
+          "projections": []
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:23.305756+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "backend": "materialize",
+        "query_layer": {
+          "hydrated_rows": 7330,
+          "last_occurred_at": "2026-03-09T02:18:22.813103+00:00",
+          "last_ingested_at": "2026-03-09T02:18:22.813113+00:00",
+          "last_kafka_offset": 7329,
+          "view_lag_ms": 1343,
+          "freshness_ms": 1343
+        },
+        "refresh_interval_seconds": 1.0
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:24.158101+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": true,
+      "state": "ready",
+      "payload": {
+        "enabled": true,
+        "state": "ready",
+        "schema": "public",
+        "topic": "ledger-entries-v1",
+        "group_id_prefix": "ledger-materialize",
+        "objects": {
+          "connection": "public.ledger_kafka_connection",
+          "source": "public.ledger_entries_source",
+          "progress": "public.ledger_entries_source_progress",
+          "typed_view": "public.ledger_entries_typed",
+          "entries_view": "public.ledger_entries_current_mv",
+          "summary_view": "public.ledger_summary_by_role_mv",
+          "sales_view": "public.ledger_sales_mv",
+          "account_balances_view": "public.ledger_account_balances_mv",
+          "product_metrics_view": "public.ledger_product_metrics_mv"
+        },
+        "hydrated_rows": 7330,
+        "target_hydration_rows": 1,
+        "view_count": {
+          "sales": 288,
+          "accounts": 14,
+          "products": 7
+        },
+        "pending_retractions": 0,
+        "last_visible_occurred_at": "2026-03-09T02:18:22.813103+00:00",
+        "last_visible_ingested_at": "2026-03-09T02:18:22.813113+00:00",
+        "last_source_offset": 7418,
+        "view_lag_ms": 2438,
+        "expected_view_lag_ms": 5000,
+        "freshness_ms": 2438,
+        "expected_freshness_ms": 5000,
+        "updated_at": "2026-03-09T02:18:25.251590+00:00",
+        "attempt": 3,
+        "last_success_at": "2026-03-09T02:16:40.142321+00:00"
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:27.253127+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "counts": {
+          "products": 6,
+          "accounts": 14,
+          "channels": 6,
+          "suppliers": 4,
+          "warehouses": 3
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:27.256221+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "adapters": {}
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:27.257769+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "active_backends": [
+          "materialize"
+        ],
+        "connections": {
+          "materialize": 1
+        },
+        "consumer": {
+          "state": "running",
+          "topic": "ledger-entries-v1",
+          "delivery_mode": "push-only",
+          "messages_processed": 7378,
+          "last_event_id": "a0ed1ebe-9dd5-4f22-a7d1-986164e5910c",
+          "last_offsets": {
+            "topic": "ledger-entries-v1",
+            "partition": 0,
+            "offset": 7669
+          },
+          "last_error": null
+        },
+        "authoritative_projection": {
+          "enabled_backends": [
+            "materialize"
+          ],
+          "supported_filters": [
+            "account_code",
+            "as_of",
+            "channel",
+            "customer_cpf",
+            "customer_email",
+            "customer_name",
+            "customer_segment",
+            "end_at",
+            "entry_category",
+            "entry_side",
+            "event_type",
+            "ontology_source",
+            "order_id",
+            "order_status",
+            "payment_method",
+            "product_category",
+            "product_name",
+            "sale_id",
+            "start_at",
+            "supplier_name",
+            "warehouse_id"
+          ],
+          "active_projection_count": 0,
+          "filtered_projection_count": 0,
+          "projections": []
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:27.259143+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "backend": "materialize",
+        "query_layer": {
+          "hydrated_rows": 7650,
+          "last_occurred_at": "2026-03-09T02:18:26.793736+00:00",
+          "last_ingested_at": "2026-03-09T02:18:26.793749+00:00",
+          "last_kafka_offset": 7649,
+          "view_lag_ms": 1293,
+          "freshness_ms": 1293
+        },
+        "refresh_interval_seconds": 1.0
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:28.088443+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": true,
+      "state": "ready",
+      "payload": {
+        "enabled": true,
+        "state": "ready",
+        "schema": "public",
+        "topic": "ledger-entries-v1",
+        "group_id_prefix": "ledger-materialize",
+        "objects": {
+          "connection": "public.ledger_kafka_connection",
+          "source": "public.ledger_entries_source",
+          "progress": "public.ledger_entries_source_progress",
+          "typed_view": "public.ledger_entries_typed",
+          "entries_view": "public.ledger_entries_current_mv",
+          "summary_view": "public.ledger_summary_by_role_mv",
+          "sales_view": "public.ledger_sales_mv",
+          "account_balances_view": "public.ledger_account_balances_mv",
+          "product_metrics_view": "public.ledger_product_metrics_mv"
+        },
+        "hydrated_rows": 7650,
+        "target_hydration_rows": 1,
+        "view_count": {
+          "sales": 299,
+          "accounts": 14,
+          "products": 7
+        },
+        "pending_retractions": 0,
+        "last_visible_occurred_at": "2026-03-09T02:18:26.793736+00:00",
+        "last_visible_ingested_at": "2026-03-09T02:18:26.793749+00:00",
+        "last_source_offset": 7793,
+        "view_lag_ms": 3358,
+        "expected_view_lag_ms": 5000,
+        "freshness_ms": 3358,
+        "expected_freshness_ms": 5000,
+        "updated_at": "2026-03-09T02:18:30.152379+00:00",
+        "attempt": 3,
+        "last_success_at": "2026-03-09T02:16:40.142321+00:00"
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:32.153472+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "counts": {
+          "products": 6,
+          "accounts": 14,
+          "channels": 6,
+          "suppliers": 4,
+          "warehouses": 3
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:32.155385+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "adapters": {}
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:32.156467+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "active_backends": [
+          "materialize"
+        ],
+        "connections": {
+          "materialize": 1
+        },
+        "consumer": {
+          "state": "running",
+          "topic": "ledger-entries-v1",
+          "delivery_mode": "push-only",
+          "messages_processed": 7749,
+          "last_event_id": "c0bbc9e7-0329-4e70-87ca-f7ee34681970",
+          "last_offsets": {
+            "topic": "ledger-entries-v1",
+            "partition": 0,
+            "offset": 8040
+          },
+          "last_error": null
+        },
+        "authoritative_projection": {
+          "enabled_backends": [
+            "materialize"
+          ],
+          "supported_filters": [
+            "account_code",
+            "as_of",
+            "channel",
+            "customer_cpf",
+            "customer_email",
+            "customer_name",
+            "customer_segment",
+            "end_at",
+            "entry_category",
+            "entry_side",
+            "event_type",
+            "ontology_source",
+            "order_id",
+            "order_status",
+            "payment_method",
+            "product_category",
+            "product_name",
+            "sale_id",
+            "start_at",
+            "supplier_name",
+            "warehouse_id"
+          ],
+          "active_projection_count": 0,
+          "filtered_projection_count": 0,
+          "projections": []
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:32.157788+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "backend": "materialize",
+        "query_layer": {
+          "hydrated_rows": 7935,
+          "last_occurred_at": "2026-03-09T02:18:30.804992+00:00",
+          "last_ingested_at": "2026-03-09T02:18:30.805011+00:00",
+          "last_kafka_offset": 7934,
+          "view_lag_ms": 1398,
+          "freshness_ms": 1398
+        },
+        "refresh_interval_seconds": 1.0
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:18:32.204171+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": true,
+      "state": "ready",
+      "payload": {
+        "enabled": true,
+        "state": "ready",
+        "schema": "public",
+        "topic": "ledger-entries-v1",
+        "group_id_prefix": "ledger-materialize",
+        "objects": {
+          "connection": "public.ledger_kafka_connection",
+          "source": "public.ledger_entries_source",
+          "progress": "public.ledger_entries_source_progress",
+          "typed_view": "public.ledger_entries_typed",
+          "entries_view": "public.ledger_entries_current_mv",
+          "summary_view": "public.ledger_summary_by_role_mv",
+          "sales_view": "public.ledger_sales_mv",
+          "account_balances_view": "public.ledger_account_balances_mv",
+          "product_metrics_view": "public.ledger_product_metrics_mv"
+        },
+        "hydrated_rows": 7935,
+        "target_hydration_rows": 1,
+        "view_count": {
+          "sales": 311,
+          "accounts": 14,
+          "products": 7
+        },
+        "pending_retractions": 0,
+        "last_visible_occurred_at": "2026-03-09T02:18:30.804992+00:00",
+        "last_visible_ingested_at": "2026-03-09T02:18:30.805011+00:00",
+        "last_source_offset": 8113,
+        "view_lag_ms": 3324,
+        "expected_view_lag_ms": 5000,
+        "freshness_ms": 3324,
+        "expected_freshness_ms": 5000,
+        "updated_at": "2026-03-09T02:18:34.129978+00:00",
+        "attempt": 3,
+        "last_success_at": "2026-03-09T02:16:40.142321+00:00"
+      }
+    }
+  ]
+}

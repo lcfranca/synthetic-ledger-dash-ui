@@ -1,0 +1,4303 @@
+{
+  "backend": "druid",
+  "started_at": "2026-03-09T03:29:38.744900+00:00",
+  "duration_seconds": 90,
+  "sample_count": 268,
+  "endpoints": {
+    "health": {
+      "count": 54,
+      "success_count": 54,
+      "error_count": 0,
+      "min_ms": 9.317436997662298,
+      "avg_ms": 84.07617746262177,
+      "p50_ms": 64.03913300164277,
+      "p95_ms": 129.56347540311933,
+      "p99_ms": 969.6104081410149,
+      "max_ms": 1366.3946759988903,
+      "avg_response_bytes": 160.2962962962963
+    },
+    "summary": {
+      "count": 54,
+      "success_count": 50,
+      "error_count": 4,
+      "min_ms": 123.04454699915368,
+      "avg_ms": 296.30404908020864,
+      "p50_ms": 225.7880839970312,
+      "p95_ms": 594.3896724034857,
+      "p99_ms": 1001.7807378714489,
+      "max_ms": 1190.4153210052755,
+      "avg_response_bytes": 48906.9
+    },
+    "workspace": {
+      "count": 54,
+      "success_count": 50,
+      "error_count": 4,
+      "min_ms": 591.862390996539,
+      "avg_ms": 983.2495943999675,
+      "p50_ms": 883.4411769967119,
+      "p95_ms": 1748.3747422971642,
+      "p99_ms": 2613.2396050887455,
+      "max_ms": 3099.004220995994,
+      "avg_response_bytes": 343701.6
+    },
+    "entries": {
+      "count": 53,
+      "success_count": 50,
+      "error_count": 3,
+      "min_ms": 97.44549899915,
+      "avg_ms": 263.4100065402163,
+      "p50_ms": 122.84163450021879,
+      "p95_ms": 284.0964624472689,
+      "p99_ms": 3064.668506631486,
+      "max_ms": 5712.7918300029705,
+      "avg_response_bytes": 79605.76
+    },
+    "filter_search": {
+      "count": 53,
+      "success_count": 53,
+      "error_count": 0,
+      "min_ms": 1.0071599972434342,
+      "avg_ms": 1.7640353209297348,
+      "p50_ms": 1.423693000106141,
+      "p95_ms": 3.445617198303806,
+      "p99_ms": 6.789454042736894,
+      "max_ms": 8.850525002344511,
+      "avg_response_bytes": 77.0
+    }
+  },
+  "samples": [
+    {
+      "timestamp": "2026-03-09T03:27:59.732290+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1366.3946759988903,
+      "response_bytes": 433,
+      "payload_observations": {
+        "status": "warming_up",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:01.098703+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": false,
+      "status_code": 503,
+      "elapsed_ms": 616.3307499955408,
+      "response_bytes": 0,
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "timestamp": "2026-03-09T03:28:01.715134+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": false,
+      "status_code": 503,
+      "elapsed_ms": 678.4965269980603,
+      "response_bytes": 0,
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "timestamp": "2026-03-09T03:28:02.393762+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": false,
+      "status_code": 503,
+      "elapsed_ms": 1309.9489999949583,
+      "response_bytes": 0,
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "timestamp": "2026-03-09T03:28:03.703809+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.8702509987633675,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:03.705731+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 617.7451140029007,
+      "response_bytes": 433,
+      "payload_observations": {
+        "status": "warming_up",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:04.323507+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": false,
+      "status_code": 503,
+      "elapsed_ms": 618.7348949970328,
+      "response_bytes": 0,
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "timestamp": "2026-03-09T03:28:04.942329+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": false,
+      "status_code": 503,
+      "elapsed_ms": 3207.9240849998314,
+      "response_bytes": 0,
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "timestamp": "2026-03-09T03:28:08.150365+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": false,
+      "status_code": 503,
+      "elapsed_ms": 579.5235580008011,
+      "response_bytes": 0,
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "timestamp": "2026-03-09T03:28:08.729958+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 3.990089004219044,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:08.733974+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 99.95033100130968,
+      "response_bytes": 520,
+      "payload_observations": {
+        "status": "warming_up",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:08.833956+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": false,
+      "status_code": 503,
+      "elapsed_ms": 292.83584599761525,
+      "response_bytes": 0,
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "timestamp": "2026-03-09T03:28:09.126840+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": false,
+      "status_code": 503,
+      "elapsed_ms": 101.7948160006199,
+      "response_bytes": 0,
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "timestamp": "2026-03-09T03:28:09.228736+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": false,
+      "status_code": 503,
+      "elapsed_ms": 594.5442529991851,
+      "response_bytes": 0,
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "timestamp": "2026-03-09T03:28:09.823378+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 2.1909870047238655,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:09.825632+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 9.887021995382383,
+      "response_bytes": 520,
+      "payload_observations": {
+        "status": "warming_up",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:09.835548+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": false,
+      "status_code": 503,
+      "elapsed_ms": 101.1678299983032,
+      "response_bytes": 0,
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "timestamp": "2026-03-09T03:28:09.936793+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": false,
+      "status_code": 503,
+      "elapsed_ms": 93.02567200211342,
+      "response_bytes": 0,
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "timestamp": "2026-03-09T03:28:10.029918+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 5712.7918300029705,
+      "response_bytes": 74088,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:15.743164+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.2531620013760403,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:15.744506+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 89.81815299921436,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:15.834345+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1190.4153210052755,
+      "response_bytes": 48685,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:16.638620+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:17.025207+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 3099.004220995994,
+      "response_bytes": 342014,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:20.120947+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:20.127767+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 304.3458859974635,
+      "response_bytes": 79821,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:20.432862+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.7144950033980422,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:20.434696+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 86.43365099851508,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:20.521158+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 805.4467839974677,
+      "response_bytes": 47648,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:21.124494+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:24.260782+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 2107.6478620016132,
+      "response_bytes": 342117,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:26.365776+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:26.371219+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 225.79783700348344,
+      "response_bytes": 79842,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:26.598034+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.8775659991661087,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:26.600030+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 78.6992739958805,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:26.678755+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 593.965541003854,
+      "response_bytes": 48805,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:27.089573+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:27.272952+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1795.4752189980354,
+      "response_bytes": 343796,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:29.065509+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:29.071221+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 204.2640789950383,
+      "response_bytes": 79651,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:29.276087+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.5104289996088482,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:29.277686+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 90.12609199999133,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:29.367842+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 505.814783005917,
+      "response_bytes": 48850,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:29.753140+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:29.873883+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1582.941287997528,
+      "response_bytes": 343536,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:31.454407+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:31.459505+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 117.79347999981837,
+      "response_bytes": 79604,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:31.578347+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.5003220032667741,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:31.579967+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 74.93222600169247,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:31.654919+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 308.65595400246093,
+      "response_bytes": 48856,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:31.803608+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:31.963798+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1690.8074929961003,
+      "response_bytes": 343221,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:33.652581+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:33.657920+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 118.48181000095792,
+      "response_bytes": 79380,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:33.777442+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.3247559982119128,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:33.778825+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 92.71665599953849,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:33.871569+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 594.7366890031844,
+      "response_bytes": 48997,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:34.288800+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:34.466580+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1204.731644000276,
+      "response_bytes": 343892,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:35.668550+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:35.675143+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 216.1324059998151,
+      "response_bytes": 79900,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:35.892300+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 8.850525002344511,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:35.901286+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 68.38493500254117,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:35.969706+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 392.6873429954867,
+      "response_bytes": 48997,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:36.253787+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:36.362635+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1517.3292179970304,
+      "response_bytes": 344399,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:37.875684+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:37.883921+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 206.51833200099645,
+      "response_bytes": 79523,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:38.092552+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.93658699572552,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:38.094594+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 86.45695699669886,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:38.181082+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 496.39568499696907,
+      "response_bytes": 48509,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:38.498977+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:38.677792+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1196.6934949959978,
+      "response_bytes": 342816,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:39.872032+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:39.878184+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 193.125185003737,
+      "response_bytes": 80022,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:40.072378+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.2026469994452782,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:40.073676+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 14.436778998060618,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:40.088133+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 371.41101300221635,
+      "response_bytes": 49049,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:40.301615+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:40.459916+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1302.3915710000438,
+      "response_bytes": 344593,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:41.759496+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:41.764649+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 115.12057700019795,
+      "response_bytes": 79588,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:41.880868+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.423693000106141,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:41.882396+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 76.76637999975355,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:41.959191+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 227.2729799951776,
+      "response_bytes": 48916,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:42.095222+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:42.186704+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 979.3273280010908,
+      "response_bytes": 343916,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:43.163046+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:43.169117+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 259.3471669970313,
+      "response_bytes": 79596,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:43.429826+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.9026680020033382,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:43.431863+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 184.55931500648148,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:43.616459+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 271.8280729968683,
+      "response_bytes": 49145,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:43.797380+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:43.888720+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 888.4829640010139,
+      "response_bytes": 343877,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:44.774238+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:44.779524+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 203.28750200133072,
+      "response_bytes": 79630,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:44.983932+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 2.776307999738492,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:44.986988+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 81.27940700069303,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:45.068297+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 395.92633199936245,
+      "response_bytes": 48936,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:45.294230+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:45.464693+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 890.6889390054857,
+      "response_bytes": 343460,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:46.353374+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:46.357656+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 102.8638299976592,
+      "response_bytes": 79645,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:46.461208+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.2736970020341687,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:46.462531+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 13.941635996161494,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:46.476498+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 292.5032309940434,
+      "response_bytes": 48818,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:46.594064+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:46.769301+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1007.307870000659,
+      "response_bytes": 342862,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:47.774634+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:47.779613+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 115.42959199869074,
+      "response_bytes": 79581,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:47.895715+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.0900109991780482,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:47.896853+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 64.08625799667789,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:47.960961+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 208.03812200028915,
+      "response_bytes": 48607,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:48.077525+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:48.169286+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 996.366161001788,
+      "response_bytes": 343184,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:49.163343+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:49.168043+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 105.87851599848364,
+      "response_bytes": 79387,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:49.274871+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.7055350035661831,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:49.276734+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 77.83879899943713,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:49.354601+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 230.65554800268728,
+      "response_bytes": 48837,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:49.492782+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:49.585503+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 881.0740030021407,
+      "response_bytes": 342684,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:50.464146+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:50.469094+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 119.00030599645106,
+      "response_bytes": 79809,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:50.588988+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.2214570015203208,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:50.590288+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 71.47849100147141,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:50.661795+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 296.62258600001223,
+      "response_bytes": 48829,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:50.791742+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:50.958908+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 824.2712920036865,
+      "response_bytes": 343238,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:51.781032+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:51.785822+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 176.69480199401733,
+      "response_bytes": 79677,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:51.963378+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.1536429956322536,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:51.964591+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 14.607022996642627,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:51.979226+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 284.5941749983467,
+      "response_bytes": 49069,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:52.091640+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:52.264155+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1013.190925004892,
+      "response_bytes": 343772,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:53.274933+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:53.280136+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 192.24586800555699,
+      "response_bytes": 79496,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:53.473190+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.29306799499318,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:53.474550+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 80.21635199838784,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:53.554793+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 224.30318799888482,
+      "response_bytes": 49001,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:53.682306+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:53.779335+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1087.8591150030843,
+      "response_bytes": 344104,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:54.864942+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:54.870960+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 189.9592420013505,
+      "response_bytes": 79473,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:55.061654+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.1386050027795136,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:55.062857+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 14.317396002297755,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:55.077196+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 210.41238700126996,
+      "response_bytes": 48730,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:55.196760+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:55.287926+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 886.9239170016954,
+      "response_bytes": 343993,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:56.172050+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:56.178000+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 124.67493699659826,
+      "response_bytes": 79949,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:56.303822+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 2.2336330002872273,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:56.306187+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 57.586627001001034,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:56.363803+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 217.22218200011412,
+      "response_bytes": 49345,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:28:59.428702+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:28:59.518555+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 883.2262509968132,
+      "response_bytes": 344192,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:00.399604+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:00.404166+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 116.63351000606781,
+      "response_bytes": 79474,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:00.522199+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 4.886927003099117,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:00.527296+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 72.21530099923257,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:00.599537+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 295.3192109998781,
+      "response_bytes": 49201,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:00.754374+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:00.895116+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 813.0211839961703,
+      "response_bytes": 343815,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:01.705912+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:01.711230+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 108.98372300289338,
+      "response_bytes": 79933,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:01.821104+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.20212299952982,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:01.822364+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 73.44331400236115,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:01.895835+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 217.10412799438927,
+      "response_bytes": 48878,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:02.021913+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:02.113208+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 900.2840319953975,
+      "response_bytes": 343751,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:03.011043+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:03.015876+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 115.83385600533802,
+      "response_bytes": 79750,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:03.132403+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.0071599972434342,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:03.133449+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 63.84488000185229,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:03.197314+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 220.4609780019382,
+      "response_bytes": 48785,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:03.321679+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:03.418190+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 883.6561029966106,
+      "response_bytes": 343632,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:04.298362+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:04.305560+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 129.413934002514,
+      "response_bytes": 79914,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:04.436099+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.5978960000211373,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:04.437809+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 67.31635900359834,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:04.505165+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 321.59949900233187,
+      "response_bytes": 48608,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:04.739162+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:04.827019+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 971.0398640017956,
+      "response_bytes": 343226,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:05.795423+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:05.800508+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 105.93590699863853,
+      "response_bytes": 79927,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:05.907213+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.2444430030882359,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:05.908525+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 12.47560200135922,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:05.921024+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 282.1737410049536,
+      "response_bytes": 49006,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:06.037740+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:06.203497+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 789.3843760029995,
+      "response_bytes": 343595,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:06.990463+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:06.995296+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 105.69001600379124,
+      "response_bytes": 79711,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:07.101687+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.3509560012607835,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:07.103124+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 12.688331000390463,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:07.115837+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 206.48749700194458,
+      "response_bytes": 48856,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:07.231168+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:07.322728+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 987.360847000673,
+      "response_bytes": 344190,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:08.307294+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:08.313476+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 184.99685900314944,
+      "response_bytes": 79203,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:08.499288+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.3548220013035461,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:08.500758+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 12.12890000169864,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:08.512906+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 206.8833259982057,
+      "response_bytes": 48623,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:08.631838+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:08.720052+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 697.8102569992188,
+      "response_bytes": 343324,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:09.415441+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:09.420373+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 106.57121500116773,
+      "response_bytes": 79354,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:09.527695+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.2056870036758482,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:09.528973+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 66.0847169929184,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:09.595079+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 129.17341299908003,
+      "response_bytes": 49092,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:09.690486+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:09.724637+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 876.9493329964462,
+      "response_bytes": 343081,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:10.599205+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:10.604069+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 103.81571500329301,
+      "response_bytes": 80418,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:10.708683+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.375900006678421,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:10.710141+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 12.433121999492869,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:10.722594+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 197.2071540003526,
+      "response_bytes": 49100,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:10.837513+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:10.920056+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 704.7920080003678,
+      "response_bytes": 344118,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:11.621474+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:11.628382+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 180.1418070026557,
+      "response_bytes": 79338,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:11.809760+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 2.594890000182204,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:11.812487+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 15.342721999331843,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:11.827860+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 366.49387900251895,
+      "response_bytes": 48971,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:12.050203+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:12.194647+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 623.1756960041821,
+      "response_bytes": 344325,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:12.815702+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:12.820849+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 175.95931299729273,
+      "response_bytes": 79731,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:12.997585+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.1921449986402877,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:12.998834+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 11.00871399830794,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:13.009864+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 190.39178599632578,
+      "response_bytes": 48655,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:13.122427+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:13.200530+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 904.4061189997592,
+      "response_bytes": 343253,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:14.102728+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:14.107382+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 97.44549899915,
+      "response_bytes": 79937,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:14.205867+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.8360600006417371,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:14.207843+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 15.272878998075612,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:14.223137+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 198.33554200158687,
+      "response_bytes": 49186,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:14.343051+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:14.421735+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1072.7875910015428,
+      "response_bytes": 343938,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:15.491469+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:15.498124+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 128.03742899995996,
+      "response_bytes": 79945,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:15.627891+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.5679059943067841,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:15.629580+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 69.8497449993738,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:15.699460+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 211.0985740000615,
+      "response_bytes": 49178,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:15.830907+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:15.910809+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 686.5779890067643,
+      "response_bytes": 344282,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:16.595092+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:16.600303+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 100.771416000498,
+      "response_bytes": 79896,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:16.702175+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.0676189995137975,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:16.703282+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 10.493151996342931,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:16.713796+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 201.14422500046203,
+      "response_bytes": 48805,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:16.831564+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:16.915370+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 700.3112839956884,
+      "response_bytes": 344345,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:17.609982+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:17.622477+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 200.63321499765152,
+      "response_bytes": 79739,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:17.824158+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.7222690003109165,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:17.826052+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 66.01260100433137,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:17.892094+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 227.94994300056715,
+      "response_bytes": 48936,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:18.042222+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:18.120347+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 789.5429220006918,
+      "response_bytes": 343666,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:18.907374+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:18.912382+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 101.01915000268491,
+      "response_bytes": 79481,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:19.014821+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.699863001704216,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:19.016659+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 74.25897700159112,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:19.090944+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 306.8477260021609,
+      "response_bytes": 49135,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:19.238867+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:19.398244+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 716.1041740037035,
+      "response_bytes": 343948,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:20.112315+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:20.117073+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 112.49957400286803,
+      "response_bytes": 79639,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:20.230655+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.4348179975058883,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:20.232150+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 61.30089999351185,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:20.293478+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 123.04454699915368,
+      "response_bytes": 49149,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:20.356574+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:20.416789+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 785.2019889978692,
+      "response_bytes": 344158,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:21.198936+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:21.205703+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 121.00833200383931,
+      "response_bytes": 80035,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:21.327443+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.081021997379139,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:21.328577+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 66.126660000009,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:21.394727+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 126.18845300312387,
+      "response_bytes": 48768,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:21.459327+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:21.521168+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 591.862390996539,
+      "response_bytes": 343978,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:22.110094+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:22.116338+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 112.0683509943774,
+      "response_bytes": 79417,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:22.229419+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.442979002604261,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:22.230954+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 63.99200800660765,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:22.294965+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 123.40282200602815,
+      "response_bytes": 48934,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:22.356580+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:22.418644+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 794.0391669981182,
+      "response_bytes": 343926,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:23.210406+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:23.215171+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 181.29145899729338,
+      "response_bytes": 79986,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:23.397195+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.1729920006473549,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:23.398421+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 10.791696004162077,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:23.409238+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 192.4770109981182,
+      "response_bytes": 48983,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:23.528063+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:23.602073+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 701.8155260011554,
+      "response_bytes": 343403,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:24.301282+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:24.306807+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 106.75221100245835,
+      "response_bytes": 79966,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:24.414315+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.2228389969095588,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:24.415758+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 11.422438001318369,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:24.427207+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 212.29239499371033,
+      "response_bytes": 49060,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:24.537283+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:24.639902+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 759.0936889973818,
+      "response_bytes": 344411,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:25.396047+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:25.401906+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 109.03246200177819,
+      "response_bytes": 80311,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:25.512070+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.1947689999942668,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:25.513364+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 11.248107999563217,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:25.524643+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 192.2399899995071,
+      "response_bytes": 48927,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:25.640487+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:25.717284+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 595.7154709976749,
+      "response_bytes": 344898,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:26.309700+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:26.316679+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 183.26238299778197,
+      "response_bytes": 79665,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:26.500719+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.4114639998297207,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:26.502253+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 12.303884999710135,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:26.514577+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 201.34351400338346,
+      "response_bytes": 49240,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:26.634939+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:26.716170+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 691.0503420003806,
+      "response_bytes": 344393,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:27.404503+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:27.410973+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 189.60262299515307,
+      "response_bytes": 79571,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:27.601404+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.454117998946458,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:27.602950+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 11.728135999874212,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:27.614699+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 193.3876550028799,
+      "response_bytes": 48767,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:27.724087+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:27.808347+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 898.5246709999046,
+      "response_bytes": 343686,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:28.704835+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:28.709401+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 98.2218479985022,
+      "response_bytes": 79745,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:28.808338+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.1363769954186864,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:28.809525+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 13.190005003707483,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:28.822740+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 192.61202600318938,
+      "response_bytes": 48821,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:28.950128+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:29.015720+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 597.1920110023348,
+      "response_bytes": 343774,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:29.610814+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:29.615781+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 105.43115300242789,
+      "response_bytes": 79490,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:29.721989+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.064356001734268,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:29.723107+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 9.317436997662298,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:29.732449+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 182.75921099848347,
+      "response_bytes": 49049,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:29.838105+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:29.915471+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 796.2633909992292,
+      "response_bytes": 343912,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:30.709368+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:30.714837+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 182.46232199453516,
+      "response_bytes": 79705,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:30.898212+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.1763160000555217,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:30.899468+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 11.225818998354953,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:30.910720+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 213.4664810000686,
+      "response_bytes": 49155,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:31.089912+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:31.124443+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 694.7867609997047,
+      "response_bytes": 343871,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:34.748441+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:34.759839+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 308.45851699996274,
+      "response_bytes": 79392,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:35.069623+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.588334998814389,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:35.071320+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 64.17640899599064,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:35.135532+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 426.3416479952866,
+      "response_bytes": 48921,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:35.426769+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:35.562470+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 990.2364840017981,
+      "response_bytes": 343421,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:36.549506+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:36.556604+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 190.92276700393995,
+      "response_bytes": 79526,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:36.750421+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 3.0826359943603165,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:36.753694+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 14.014288994076196,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:36.767736+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 266.06533699668944,
+      "response_bytes": 48862,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:36.924666+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:37.034212+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 606.8293170028483,
+      "response_bytes": 342949,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:37.638447+00:00",
+        "entry_count": 180
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:37.643635+00:00",
+      "backend": "druid",
+      "endpoint": "entries",
+      "url": "http://localhost:8081/api/v1/dashboard/entries?limit=50",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 103.85057699750178,
+      "response_bytes": 80427,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": 50
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:37.748685+00:00",
+      "backend": "druid",
+      "endpoint": "filter_search",
+      "url": "http://localhost:8081/api/v1/dashboard/filter-search?field=product_name&query=a&limit=20",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 1.6900510017876513,
+      "response_bytes": 77,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:37.750508+00:00",
+      "backend": "druid",
+      "endpoint": "health",
+      "url": "http://localhost:8081/health",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 11.746926997147966,
+      "response_bytes": 135,
+      "payload_observations": {
+        "status": "ok",
+        "backend": "druid",
+        "timestamp": null,
+        "entry_count": null
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:37.762274+00:00",
+      "backend": "druid",
+      "endpoint": "summary",
+      "url": "http://localhost:8081/api/v1/dashboard/summary",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 272.00282500416506,
+      "response_bytes": 49065,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:37.928181+00:00",
+        "entry_count": 30
+      }
+    },
+    {
+      "timestamp": "2026-03-09T03:29:38.034805+00:00",
+      "backend": "druid",
+      "endpoint": "workspace",
+      "url": "http://localhost:8081/api/v1/dashboard/workspace",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_ms": 706.923954996455,
+      "response_bytes": 344145,
+      "payload_observations": {
+        "status": null,
+        "backend": "druid",
+        "timestamp": "2026-03-09T03:29:38.739159+00:00",
+        "entry_count": 180
+      }
+    }
+  ]
+}

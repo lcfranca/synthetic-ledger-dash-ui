@@ -1,0 +1,24 @@
+{
+  "round_id": "20260309T030326Z__materialize__report-conclusion__run-1",
+  "commit": "2211abae82145de28056003773f83d8785fe454e",
+  "branch": "main",
+  "backend": "materialize",
+  "scenario": "report-conclusion",
+  "run_number": 1,
+  "started_at": "2026-03-09T03:03:26Z",
+  "duration_seconds": 270,
+  "phase_budget_seconds": {
+    "bootstrap_wait": 180,
+    "backend_readiness_wait": 240,
+    "warmup": 10,
+    "per_probe_segment": 90
+  },
+  "env_file": "/home/subtilizer/Workspace/syntetic-ledger-dash-ui/artifacts/benchmark/20260309T030326Z__materialize__report-conclusion__run-1/materialize.env",
+  "active_stacks": "materialize",
+  "frontend_base_url": "http://localhost:5176",
+  "api_base_url": "http://localhost:8084",
+  "host_profile": {
+    "hostname": "Xenosystem",
+    "kernel": "Linux 6.6.87.2-microsoft-standard-WSL2 x86_64 GNU/Linux"
+  }
+}

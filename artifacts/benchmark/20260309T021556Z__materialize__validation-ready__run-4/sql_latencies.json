@@ -1,0 +1,1079 @@
+{
+  "backend": "materialize",
+  "duration_seconds": 45,
+  "sample_count": 33,
+  "queries": {
+    "entries_count": {
+      "count": 11,
+      "success_count": 11,
+      "error_count": 0,
+      "p50_ms": 559.0876689966535,
+      "p95_ms": 909.3315510035609,
+      "p99_ms": 932.4845182025456,
+      "min_ms": 22.609090003243182,
+      "max_ms": 938.2727600022918,
+      "avg_ms": 451.63979763707505,
+      "avg_row_count": 1.0
+    },
+    "summary_by_role": {
+      "count": 11,
+      "success_count": 11,
+      "error_count": 0,
+      "p50_ms": 156.45968099852325,
+      "p95_ms": 908.5564784982125,
+      "p99_ms": 927.359936501307,
+      "min_ms": 17.422029995941557,
+      "max_ms": 932.0608010020806,
+      "avg_ms": 390.41423099843087,
+      "avg_row_count": 14.0
+    },
+    "filtered_entries": {
+      "count": 11,
+      "success_count": 11,
+      "error_count": 0,
+      "p50_ms": 241.33039099979214,
+      "p95_ms": 1042.8403235018777,
+      "p99_ms": 1060.1114935016085,
+      "min_ms": 138.0985080031678,
+      "max_ms": 1064.4292860015412,
+      "avg_ms": 378.7587500013284,
+      "avg_row_count": 50.0
+    }
+  },
+  "samples": [
+    {
+      "timestamp": "2026-03-09T02:17:46.215109+00:00",
+      "backend": "materialize",
+      "query_name": "entries_count",
+      "query": "SELECT COUNT(*) AS c FROM public.ledger_entries_current_mv",
+      "ok": true,
+      "elapsed_ms": 824.0166739997221,
+      "row_count": 1,
+      "response_bytes": 70,
+      "preview": [
+        [
+          4798
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:17:48.105420+00:00",
+      "backend": "materialize",
+      "query_name": "summary_by_role",
+      "query": "SELECT account_role, statement_section, signed_amount, entry_count FROM public.ledger_summary_by_role_mv ORDER BY account_role LIMIT 32",
+      "ok": true,
+      "elapsed_ms": 121.18599099630956,
+      "row_count": 14,
+      "response_bytes": 315,
+      "preview": [
+        [
+          "accounts_payable",
+          "liability",
+          43196.32999831438,
+          77
+        ],
+        [
+          "bank_accounts",
+          "asset",
+          843.8500126004219,
+          844
+        ],
+        [
+          "bank_fees",
+          "expense",
+          147.77998489141464,
+          422
+        ],
+        [
+          "cash",
+          "asset",
+          41705.559992313385,
+          573
+        ],
+        [
+          "cogs",
+          "expense",
+          144083.09998941422,
+          459
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:17:49.123250+00:00",
+      "backend": "materialize",
+      "query_name": "filtered_entries",
+      "query": "SELECT entry_id, account_code, signed_amount FROM public.ledger_entries_current_mv WHERE product_name <> '' ORDER BY ingested_at DESC LIMIT 50",
+      "ok": true,
+      "elapsed_ms": 283.47157900134334,
+      "row_count": 50,
+      "response_bytes": 371,
+      "preview": [
+        [
+          "c9791e14-a151-4911-ac3b-453f5df23657",
+          "1.1.01.02",
+          -4.1
+        ],
+        [
+          "3ac8c82b-e308-43a2-82de-6827869f42a2",
+          "4.1.04.01",
+          0.35
+        ],
+        [
+          "952c7874-db50-48f7-9743-59fdd85eb035",
+          "4.1.03.01",
+          3.75
+        ],
+        [
+          "b1113c28-04a7-46d2-a6b3-5a214ec79126",
+          "1.1.01.02",
+          -10.75
+        ],
+        [
+          "ec6e2781-9599-4cb1-b672-fa2605dd1868",
+          "4.1.04.01",
+          0.35
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:17:50.310452+00:00",
+      "backend": "materialize",
+      "query_name": "entries_count",
+      "query": "SELECT COUNT(*) AS c FROM public.ledger_entries_current_mv",
+      "ok": true,
+      "elapsed_ms": 559.0876689966535,
+      "row_count": 1,
+      "response_bytes": 70,
+      "preview": [
+        [
+          5099
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:17:52.177100+00:00",
+      "backend": "materialize",
+      "query_name": "summary_by_role",
+      "query": "SELECT account_role, statement_section, signed_amount, entry_count FROM public.ledger_summary_by_role_mv ORDER BY account_role LIMIT 32",
+      "ok": true,
+      "elapsed_ms": 806.7708870003116,
+      "row_count": 14,
+      "response_bytes": 312,
+      "preview": [
+        [
+          "accounts_payable",
+          "liability",
+          47900.769998312,
+          80
+        ],
+        [
+          "bank_accounts",
+          "asset",
+          -640.1399863362312,
+          905
+        ],
+        [
+          "bank_fees",
+          "expense",
+          160.72998356819153,
+          459
+        ],
+        [
+          "cash",
+          "asset",
+          36602.40999174118,
+          614
+        ],
+        [
+          "cogs",
+          "expense",
+          159322.09998863935,
+          495
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:17:54.135890+00:00",
+      "backend": "materialize",
+      "query_name": "filtered_entries",
+      "query": "SELECT entry_id, account_code, signed_amount FROM public.ledger_entries_current_mv WHERE product_name <> '' ORDER BY ingested_at DESC LIMIT 50",
+      "ok": true,
+      "elapsed_ms": 1064.4292860015412,
+      "row_count": 50,
+      "response_bytes": 381,
+      "preview": [
+        [
+          "bc03c932-f124-4b99-a3b6-c52ae928441b",
+          "1.1.01.02",
+          -430.44
+        ],
+        [
+          "b54d53f3-f501-4b19-a071-b188f3f36c53",
+          "4.1.05.01",
+          430.44
+        ],
+        [
+          "0beb5911-7a21-4f34-88db-215d4bce02a2",
+          "1.1.03.01",
+          -118.31
+        ],
+        [
+          "73143f67-9f70-46d7-8db2-b63a8c0ade3c",
+          "1.1.01.01",
+          265.03
+        ],
+        [
+          "0a549d4d-fe84-465d-a086-e4611c6858de",
+          "4.1.01.01",
+          118.31
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:17:56.303425+00:00",
+      "backend": "materialize",
+      "query_name": "entries_count",
+      "query": "SELECT COUNT(*) AS c FROM public.ledger_entries_current_mv",
+      "ok": true,
+      "elapsed_ms": 813.8043689978076,
+      "row_count": 1,
+      "response_bytes": 70,
+      "preview": [
+        [
+          5566
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:17:58.156082+00:00",
+      "backend": "materialize",
+      "query_name": "summary_by_role",
+      "query": "SELECT account_role, statement_section, signed_amount, entry_count FROM public.ledger_summary_by_role_mv ORDER BY account_role LIMIT 32",
+      "ok": true,
+      "elapsed_ms": 94.77647499443265,
+      "row_count": 14,
+      "response_bytes": 311,
+      "preview": [
+        [
+          "accounts_payable",
+          "liability",
+          47900.769998312,
+          80
+        ],
+        [
+          "bank_accounts",
+          "asset",
+          -649.7199852466583,
+          969
+        ],
+        [
+          "bank_fees",
+          "expense",
+          174.37998217344284,
+          498
+        ],
+        [
+          "cash",
+          "asset",
+          50964.83999103308,
+          654
+        ],
+        [
+          "cogs",
+          "expense",
+          169646.2599876523,
+          532
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:17:59.215650+00:00",
+      "backend": "materialize",
+      "query_name": "filtered_entries",
+      "query": "SELECT entry_id, account_code, signed_amount FROM public.ledger_entries_current_mv WHERE product_name <> '' ORDER BY ingested_at DESC LIMIT 50",
+      "ok": true,
+      "elapsed_ms": 138.0985080031678,
+      "row_count": 50,
+      "response_bytes": 374,
+      "preview": [
+        [
+          "b7abb81e-9002-47d9-bee9-e943fe320972",
+          "1.1.03.01",
+          -62.7
+        ],
+        [
+          "0ae3d75f-3eec-4ec4-a4b6-fdac86a966ce",
+          "1.1.01.01",
+          159.89
+        ],
+        [
+          "a887e58e-8422-4d32-a558-b30db8845a1e",
+          "4.1.01.01",
+          62.7
+        ],
+        [
+          "cc226154-18aa-432c-9765-69865760fcba",
+          "4.1.02.01",
+          30.62
+        ],
+        [
+          "2186de6e-3b0f-4dd0-aadb-6a8a361dbf11",
+          "3.1.01.01",
+          -170.1
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:18:03.250602+00:00",
+      "backend": "materialize",
+      "query_name": "entries_count",
+      "query": "SELECT COUNT(*) AS c FROM public.ledger_entries_current_mv",
+      "ok": true,
+      "elapsed_ms": 29.00794499873882,
+      "row_count": 1,
+      "response_bytes": 70,
+      "preview": [
+        [
+          5799
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:18:04.198296+00:00",
+      "backend": "materialize",
+      "query_name": "summary_by_role",
+      "query": "SELECT account_role, statement_section, signed_amount, entry_count FROM public.ledger_summary_by_role_mv ORDER BY account_role LIMIT 32",
+      "ok": true,
+      "elapsed_ms": 932.0608010020806,
+      "row_count": 14,
+      "response_bytes": 312,
+      "preview": [
+        [
+          "accounts_payable",
+          "liability",
+          47900.769998312,
+          82
+        ],
+        [
+          "bank_accounts",
+          "asset",
+          1693.5500156879425,
+          1019
+        ],
+        [
+          "bank_fees",
+          "expense",
+          185.2399810552597,
+          529
+        ],
+        [
+          "cash",
+          "asset",
+          41926.67999047041,
+          695
+        ],
+        [
+          "cogs",
+          "expense",
+          176962.06998711824,
+          564
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:18:06.104618+00:00",
+      "backend": "materialize",
+      "query_name": "filtered_entries",
+      "query": "SELECT entry_id, account_code, signed_amount FROM public.ledger_entries_current_mv WHERE product_name <> '' ORDER BY ingested_at DESC LIMIT 50",
+      "ok": true,
+      "elapsed_ms": 168.05778499838198,
+      "row_count": 50,
+      "response_bytes": 375,
+      "preview": [
+        [
+          "01451773-ef79-4acc-8842-ae854a7cd856",
+          "1.1.03.01",
+          -25.54
+        ],
+        [
+          "d9134a50-6f70-482e-85b3-6aa57c1e8fe4",
+          "1.1.01.01",
+          58.49
+        ],
+        [
+          "63651801-e1eb-42ad-b5d0-834568dcd749",
+          "4.1.01.01",
+          25.54
+        ],
+        [
+          "bfc891d1-4e7e-4ca8-bf74-2f8b6bcba408",
+          "4.1.02.01",
+          9.75
+        ],
+        [
+          "51c46a1b-bd4e-4771-b030-6f22b269b4cb",
+          "3.1.01.01",
+          -60.93
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:18:07.249494+00:00",
+      "backend": "materialize",
+      "query_name": "entries_count",
+      "query": "SELECT COUNT(*) AS c FROM public.ledger_entries_current_mv",
+      "ok": true,
+      "elapsed_ms": 880.39034200483,
+      "row_count": 1,
+      "response_bytes": 68,
+      "preview": [
+        [
+          6190
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:18:09.118866+00:00",
+      "backend": "materialize",
+      "query_name": "summary_by_role",
+      "query": "SELECT account_role, statement_section, signed_amount, entry_count FROM public.ledger_summary_by_role_mv ORDER BY account_role LIMIT 32",
+      "ok": true,
+      "elapsed_ms": 156.45968099852325,
+      "row_count": 14,
+      "response_bytes": 313,
+      "preview": [
+        [
+          "accounts_payable",
+          "liability",
+          47900.769998312,
+          84
+        ],
+        [
+          "bank_accounts",
+          "asset",
+          3170.670016825199,
+          1072
+        ],
+        [
+          "bank_fees",
+          "expense",
+          197.13997983932495,
+          563
+        ],
+        [
+          "cash",
+          "asset",
+          44187.36998975277,
+          721
+        ],
+        [
+          "cogs",
+          "expense",
+          187976.52998656034,
+          593
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:18:10.210278+00:00",
+      "backend": "materialize",
+      "query_name": "filtered_entries",
+      "query": "SELECT entry_id, account_code, signed_amount FROM public.ledger_entries_current_mv WHERE product_name <> '' ORDER BY ingested_at DESC LIMIT 50",
+      "ok": true,
+      "elapsed_ms": 155.02194299915573,
+      "row_count": 50,
+      "response_bytes": 374,
+      "preview": [
+        [
+          "81e7bfef-9b75-4f4b-ba88-efcc7d46317b",
+          "1.1.01.02",
+          -3.39
+        ],
+        [
+          "88e8d3bc-79b1-4133-ba28-5c9debbf75a5",
+          "4.1.04.01",
+          0.35
+        ],
+        [
+          "0377c0ea-74e4-49c5-b791-abb8cd3d603d",
+          "4.1.03.01",
+          3.04
+        ],
+        [
+          "07e3ba86-7de3-496a-b1ba-e942495aa75c",
+          "1.1.03.01",
+          -51.08
+        ],
+        [
+          "192ea0b6-0ed4-480b-84e1-e9069586b313",
+          "1.1.01.01",
+          119.54
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:18:11.276457+00:00",
+      "backend": "materialize",
+      "query_name": "entries_count",
+      "query": "SELECT COUNT(*) AS c FROM public.ledger_entries_current_mv",
+      "ok": true,
+      "elapsed_ms": 22.609090003243182,
+      "row_count": 1,
+      "response_bytes": 71,
+      "preview": [
+        [
+          6411
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:18:12.302243+00:00",
+      "backend": "materialize",
+      "query_name": "summary_by_role",
+      "query": "SELECT account_role, statement_section, signed_amount, entry_count FROM public.ledger_summary_by_role_mv ORDER BY account_role LIMIT 32",
+      "ok": true,
+      "elapsed_ms": 852.9466920008417,
+      "row_count": 14,
+      "response_bytes": 314,
+      "preview": [
+        [
+          "accounts_payable",
+          "liability",
+          47900.769998312,
+          86
+        ],
+        [
+          "bank_accounts",
+          "asset",
+          1099.7600176930428,
+          1118
+        ],
+        [
+          "bank_fees",
+          "expense",
+          206.93997883796692,
+          591
+        ],
+        [
+          "cash",
+          "asset",
+          13270.719989061356,
+          750
+        ],
+        [
+          "cogs",
+          "expense",
+          193924.75998604298,
+          623
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:18:14.215908+00:00",
+      "backend": "materialize",
+      "query_name": "filtered_entries",
+      "query": "SELECT entry_id, account_code, signed_amount FROM public.ledger_entries_current_mv WHERE product_name <> '' ORDER BY ingested_at DESC LIMIT 50",
+      "ok": true,
+      "elapsed_ms": 183.01672000234248,
+      "row_count": 50,
+      "response_bytes": 380,
+      "preview": [
+        [
+          "c4699ff0-a63b-4620-84a0-a6372870d30a",
+          "1.1.03.01",
+          -157.75
+        ],
+        [
+          "f284ccd6-ae61-4bfd-a764-01f162eb6e2a",
+          "1.1.01.01",
+          420.44
+        ],
+        [
+          "83ae928d-922e-4c2d-8617-2c2486fb5f27",
+          "4.1.01.01",
+          157.75
+        ],
+        [
+          "25714627-801f-487f-a219-87e84620a24b",
+          "4.1.02.01",
+          65.02
+        ],
+        [
+          "2b6ac0cc-134b-4825-b48b-c83f22390441",
+          "3.1.01.01",
+          -433.45
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:18:15.216954+00:00",
+      "backend": "materialize",
+      "query_name": "entries_count",
+      "query": "SELECT COUNT(*) AS c FROM public.ledger_entries_current_mv",
+      "ok": true,
+      "elapsed_ms": 90.51210100005846,
+      "row_count": 1,
+      "response_bytes": 70,
+      "preview": [
+        [
+          6727
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:18:16.116666+00:00",
+      "backend": "materialize",
+      "query_name": "summary_by_role",
+      "query": "SELECT account_role, statement_section, signed_amount, entry_count FROM public.ledger_summary_by_role_mv ORDER BY account_role LIMIT 32",
+      "ok": true,
+      "elapsed_ms": 153.98589499818627,
+      "row_count": 14,
+      "response_bytes": 315,
+      "preview": [
+        [
+          "accounts_payable",
+          "liability",
+          47900.769998312,
+          86
+        ],
+        [
+          "bank_accounts",
+          "asset",
+          -605.3999816775322,
+          1152
+        ],
+        [
+          "bank_fees",
+          "expense",
+          214.98997801542282,
+          614
+        ],
+        [
+          "cash",
+          "asset",
+          25869.419988632202,
+          779
+        ],
+        [
+          "cogs",
+          "expense",
+          202036.69998550415,
+          648
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:18:17.137508+00:00",
+      "backend": "materialize",
+      "query_name": "filtered_entries",
+      "query": "SELECT entry_id, account_code, signed_amount FROM public.ledger_entries_current_mv WHERE product_name <> '' ORDER BY ingested_at DESC LIMIT 50",
+      "ok": true,
+      "elapsed_ms": 295.18351900333073,
+      "row_count": 50,
+      "response_bytes": 372,
+      "preview": [
+        [
+          "71cbb3aa-b322-41c4-b62c-aa8e5aafe067",
+          "1.1.01.02",
+          -7.84
+        ],
+        [
+          "3d935b47-e923-4816-990a-b69f7b24806c",
+          "4.1.04.01",
+          0.35
+        ],
+        [
+          "d17f63da-e35a-465a-8f2d-a34f087cfca2",
+          "4.1.03.01",
+          7.49
+        ],
+        [
+          "74c55b80-a8ba-4952-b291-3cf0bda6d60b",
+          "1.1.01.02",
+          -15.74
+        ],
+        [
+          "470735cf-b24a-4d15-957b-9b397a647f80",
+          "4.1.04.01",
+          0.35
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:18:18.331942+00:00",
+      "backend": "materialize",
+      "query_name": "entries_count",
+      "query": "SELECT COUNT(*) AS c FROM public.ledger_entries_current_mv",
+      "ok": true,
+      "elapsed_ms": 23.299168999074027,
+      "row_count": 1,
+      "response_bytes": 71,
+      "preview": [
+        [
+          6962
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:18:19.297342+00:00",
+      "backend": "materialize",
+      "query_name": "summary_by_role",
+      "query": "SELECT account_role, statement_section, signed_amount, entry_count FROM public.ledger_summary_by_role_mv ORDER BY account_role LIMIT 32",
+      "ok": true,
+      "elapsed_ms": 17.422029995941557,
+      "row_count": 14,
+      "response_bytes": 317,
+      "preview": [
+        [
+          "accounts_payable",
+          "liability",
+          42202.44999831915,
+          87
+        ],
+        [
+          "bank_accounts",
+          "asset",
+          -207.09998112916946,
+          1188
+        ],
+        [
+          "bank_fees",
+          "expense",
+          223.03997719287872,
+          637
+        ],
+        [
+          "cash",
+          "asset",
+          38997.59998816252,
+          805
+        ],
+        [
+          "cogs",
+          "expense",
+          211266.09998500347,
+          671
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:18:20.198637+00:00",
+      "backend": "materialize",
+      "query_name": "filtered_entries",
+      "query": "SELECT entry_id, account_code, signed_amount FROM public.ledger_entries_current_mv WHERE product_name <> '' ORDER BY ingested_at DESC LIMIT 50",
+      "ok": true,
+      "elapsed_ms": 1021.2513610022143,
+      "row_count": 50,
+      "response_bytes": 375,
+      "preview": [
+        [
+          "1185cb32-12e3-4adc-b17a-6e6bcff5533f",
+          "1.1.01.02",
+          -801.56
+        ],
+        [
+          "f6bcec5d-8470-4cba-88ec-ac6ae1b01455",
+          "2.1.02.01",
+          801.56
+        ],
+        [
+          "eb19e173-3e4c-45ad-85a8-9f36eb7d3c6e",
+          "1.1.01.02",
+          -7.54
+        ],
+        [
+          "1792f1b2-0429-4821-a506-2f8f12862054",
+          "4.1.04.01",
+          0.35
+        ],
+        [
+          "41bd51c9-822e-4574-9f53-35355f2060b3",
+          "4.1.03.01",
+          7.19
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:18:22.259974+00:00",
+      "backend": "materialize",
+      "query_name": "entries_count",
+      "query": "SELECT COUNT(*) AS c FROM public.ledger_entries_current_mv",
+      "ok": true,
+      "elapsed_ms": 938.2727600022918,
+      "row_count": 1,
+      "response_bytes": 70,
+      "preview": [
+        [
+          7330
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:18:24.277675+00:00",
+      "backend": "materialize",
+      "query_name": "summary_by_role",
+      "query": "SELECT account_role, statement_section, signed_amount, entry_count FROM public.ledger_summary_by_role_mv ORDER BY account_role LIMIT 32",
+      "ok": true,
+      "elapsed_ms": 885.0521559943445,
+      "row_count": 14,
+      "response_bytes": 314,
+      "preview": [
+        [
+          "accounts_payable",
+          "liability",
+          47900.769998312,
+          88
+        ],
+        [
+          "bank_accounts",
+          "asset",
+          -605.3999792337418,
+          1267
+        ],
+        [
+          "bank_fees",
+          "expense",
+          240.18997544050217,
+          686
+        ],
+        [
+          "cash",
+          "asset",
+          51116.279987335205,
+          848
+        ],
+        [
+          "cogs",
+          "expense",
+          227007.80998420715,
+          713
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:18:26.223329+00:00",
+      "backend": "materialize",
+      "query_name": "filtered_entries",
+      "query": "SELECT entry_id, account_code, signed_amount FROM public.ledger_entries_current_mv WHERE product_name <> '' ORDER BY ingested_at DESC LIMIT 50",
+      "ok": true,
+      "elapsed_ms": 204.38641300279414,
+      "row_count": 50,
+      "response_bytes": 374,
+      "preview": [
+        [
+          "fea153dc-7678-49ad-b4f4-5de4a6815a6a",
+          "1.1.01.02",
+          -7.32
+        ],
+        [
+          "4f08f138-c608-4c7a-a328-dd5dc8b9c79d",
+          "4.1.04.01",
+          0.35
+        ],
+        [
+          "3e3cdefe-051d-4e56-887b-d5d539ed8f10",
+          "4.1.03.01",
+          6.97
+        ],
+        [
+          "d005113d-58ff-4141-9bdc-4e2440edaea7",
+          "1.1.03.01",
+          -130.3
+        ],
+        [
+          "ffc67fe7-c4ba-44e5-9d7f-72235d79766b",
+          "1.1.01.01",
+          308.56
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:18:27.371315+00:00",
+      "backend": "materialize",
+      "query_name": "entries_count",
+      "query": "SELECT COUNT(*) AS c FROM public.ledger_entries_current_mv",
+      "ok": true,
+      "elapsed_ms": 754.0981480051414,
+      "row_count": 1,
+      "response_bytes": 70,
+      "preview": [
+        [
+          7726
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:18:29.105672+00:00",
+      "backend": "materialize",
+      "query_name": "summary_by_role",
+      "query": "SELECT account_role, statement_section, signed_amount, entry_count FROM public.ledger_summary_by_role_mv ORDER BY account_role LIMIT 32",
+      "ok": true,
+      "elapsed_ms": 239.26044499967247,
+      "row_count": 14,
+      "response_bytes": 317,
+      "preview": [
+        [
+          "accounts_payable",
+          "liability",
+          -12005.810001671314,
+          89
+        ],
+        [
+          "bank_accounts",
+          "asset",
+          5455.480021595955,
+          1317
+        ],
+        [
+          "bank_fees",
+          "expense",
+          252.43997418880463,
+          721
+        ],
+        [
+          "cash",
+          "asset",
+          56314.14998662472,
+          879
+        ],
+        [
+          "cogs",
+          "expense",
+          234422.87998366356,
+          742
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:18:30.226091+00:00",
+      "backend": "materialize",
+      "query_name": "filtered_entries",
+      "query": "SELECT entry_id, account_code, signed_amount FROM public.ledger_entries_current_mv WHERE product_name <> '' ORDER BY ingested_at DESC LIMIT 50",
+      "ok": true,
+      "elapsed_ms": 241.33039099979214,
+      "row_count": 50,
+      "response_bytes": 378,
+      "preview": [
+        [
+          "00732438-13cc-4a3f-b773-9970abc6c1a8",
+          "1.1.03.01",
+          -39.44
+        ],
+        [
+          "0c2838ef-c6df-481a-9254-adaef1a7e8b3",
+          "1.1.01.01",
+          103.73
+        ],
+        [
+          "80422d49-5fcd-4a48-bc2b-e35f8c3df423",
+          "4.1.01.01",
+          39.44
+        ],
+        [
+          "46413035-db32-4d85-9346-58ac1be4ea1b",
+          "4.1.02.01",
+          14.82
+        ],
+        [
+          "f45ee667-cd9a-44c9-b93f-36a7c2e7d300",
+          "3.1.01.01",
+          -105.85
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:18:31.384421+00:00",
+      "backend": "materialize",
+      "query_name": "entries_count",
+      "query": "SELECT COUNT(*) AS c FROM public.ledger_entries_current_mv",
+      "ok": true,
+      "elapsed_ms": 32.93950700026471,
+      "row_count": 1,
+      "response_bytes": 70,
+      "preview": [
+        [
+          7935
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:18:32.251732+00:00",
+      "backend": "materialize",
+      "query_name": "summary_by_role",
+      "query": "SELECT account_role, statement_section, signed_amount, entry_count FROM public.ledger_summary_by_role_mv ORDER BY account_role LIMIT 32",
+      "ok": true,
+      "elapsed_ms": 34.63548800209537,
+      "row_count": 14,
+      "response_bytes": 314,
+      "preview": [
+        [
+          "accounts_payable",
+          "liability",
+          47900.76999825239,
+          92
+        ],
+        [
+          "bank_accounts",
+          "asset",
+          -252.83997815847397,
+          1355
+        ],
+        [
+          "bank_fees",
+          "expense",
+          256.9899737238884,
+          734
+        ],
+        [
+          "cash",
+          "asset",
+          5788.14998626709,
+          904
+        ],
+        [
+          "cogs",
+          "expense",
+          241471.86998325586,
+          767
+        ]
+      ]
+    },
+    {
+      "timestamp": "2026-03-09T02:18:33.096071+00:00",
+      "backend": "materialize",
+      "query_name": "filtered_entries",
+      "query": "SELECT entry_id, account_code, signed_amount FROM public.ledger_entries_current_mv WHERE product_name <> '' ORDER BY ingested_at DESC LIMIT 50",
+      "ok": true,
+      "elapsed_ms": 412.09874500054866,
+      "row_count": 50,
+      "response_bytes": 378,
+      "preview": [
+        [
+          "9e4496f3-42e8-40c0-aa87-a0d971d08311",
+          "1.1.03.01",
+          -61.88
+        ],
+        [
+          "7b10f9e3-ad65-4333-9120-5a1b8244cf8c",
+          "1.1.01.01",
+          186.27
+        ],
+        [
+          "d5bc00de-8f03-4ff3-b82a-835936f6f0e4",
+          "4.1.01.01",
+          61.88
+        ],
+        [
+          "04f83bf0-d29e-4a04-895e-f9def4efea2d",
+          "4.1.02.01",
+          28.81
+        ],
+        [
+          "d9bb781d-cbe1-407e-8ef0-5a467189ddaf",
+          "3.1.01.01",
+          -192.04
+        ]
+      ]
+    }
+  ]
+}

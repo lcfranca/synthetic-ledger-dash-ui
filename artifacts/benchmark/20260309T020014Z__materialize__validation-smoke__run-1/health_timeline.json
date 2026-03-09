@@ -1,0 +1,2015 @@
+{
+  "backend": "materialize",
+  "duration_seconds": 90,
+  "interval_seconds": 2.0,
+  "transition_count": {
+    "backend_debug": 4
+  },
+  "samples": [
+    {
+      "timestamp": "2026-03-09T02:01:21.847961+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "counts": {
+          "products": 6,
+          "accounts": 14,
+          "channels": 6,
+          "suppliers": 4,
+          "warehouses": 3
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:01:21.880075+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "adapters": {}
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:01:21.881814+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "active_backends": [
+          "materialize"
+        ],
+        "connections": {
+          "materialize": 1
+        },
+        "consumer": {
+          "state": "running",
+          "topic": "ledger-entries-v1",
+          "delivery_mode": "push-only",
+          "messages_processed": 400,
+          "last_event_id": "a709f1cb-d2b6-4eea-8f9e-e6bcae40643b",
+          "last_offsets": {
+            "topic": "ledger-entries-v1",
+            "partition": 0,
+            "offset": 733
+          },
+          "last_error": null
+        },
+        "authoritative_projection": {
+          "enabled_backends": [
+            "materialize"
+          ],
+          "supported_filters": [
+            "account_code",
+            "as_of",
+            "channel",
+            "customer_cpf",
+            "customer_email",
+            "customer_name",
+            "customer_segment",
+            "end_at",
+            "entry_category",
+            "entry_side",
+            "event_type",
+            "ontology_source",
+            "order_id",
+            "order_status",
+            "payment_method",
+            "product_category",
+            "product_name",
+            "sale_id",
+            "start_at",
+            "supplier_name",
+            "warehouse_id"
+          ],
+          "active_projection_count": 0,
+          "filtered_projection_count": 0,
+          "projections": []
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:01:21.883445+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "backend": "materialize",
+        "query_layer": {
+          "hydrated_rows": 653,
+          "last_occurred_at": "2026-03-09T02:01:20.754207+00:00",
+          "last_ingested_at": "2026-03-09T02:01:20.754220+00:00",
+          "last_kafka_offset": 652,
+          "view_lag_ms": 1310,
+          "freshness_ms": 1310
+        },
+        "refresh_interval_seconds": 1.0
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:01:22.065323+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": true,
+      "state": "warming_up",
+      "payload": {
+        "enabled": true,
+        "state": "warming_up",
+        "schema": "public",
+        "topic": "ledger-entries-v1",
+        "group_id_prefix": "ledger-materialize",
+        "objects": {
+          "connection": "public.ledger_kafka_connection",
+          "source": "public.ledger_entries_source",
+          "progress": "public.ledger_entries_source_progress",
+          "typed_view": "public.ledger_entries_typed",
+          "entries_view": "public.ledger_entries_current_mv",
+          "summary_view": "public.ledger_summary_by_role_mv",
+          "sales_view": "public.ledger_sales_mv",
+          "account_balances_view": "public.ledger_account_balances_mv",
+          "product_metrics_view": "public.ledger_product_metrics_mv"
+        },
+        "hydrated_rows": 653,
+        "target_hydration_rows": 1,
+        "view_count": {
+          "sales": 25,
+          "accounts": 13,
+          "products": 7
+        },
+        "pending_retractions": 0,
+        "last_visible_occurred_at": "2026-03-09T02:01:20.754207+00:00",
+        "last_visible_ingested_at": "2026-03-09T02:01:20.754220+00:00",
+        "last_source_offset": 881,
+        "view_lag_ms": 5291,
+        "expected_view_lag_ms": 5000,
+        "freshness_ms": 5291,
+        "expected_freshness_ms": 5000,
+        "updated_at": "2026-03-09T02:01:26.045876+00:00",
+        "attempt": 3,
+        "last_success_at": "2026-03-09T02:01:16.114281+00:00"
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:01:28.047266+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "counts": {
+          "products": 6,
+          "accounts": 14,
+          "channels": 6,
+          "suppliers": 4,
+          "warehouses": 3
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:01:28.050012+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "adapters": {}
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:01:28.052066+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "active_backends": [
+          "materialize"
+        ],
+        "connections": {
+          "materialize": 1
+        },
+        "consumer": {
+          "state": "running",
+          "topic": "ledger-entries-v1",
+          "delivery_mode": "push-only",
+          "messages_processed": 862,
+          "last_event_id": "dfb40c0d-57d2-4911-9267-e1dafbd1c956",
+          "last_offsets": {
+            "topic": "ledger-entries-v1",
+            "partition": 0,
+            "offset": 1195
+          },
+          "last_error": null
+        },
+        "authoritative_projection": {
+          "enabled_backends": [
+            "materialize"
+          ],
+          "supported_filters": [
+            "account_code",
+            "as_of",
+            "channel",
+            "customer_cpf",
+            "customer_email",
+            "customer_name",
+            "customer_segment",
+            "end_at",
+            "entry_category",
+            "entry_side",
+            "event_type",
+            "ontology_source",
+            "order_id",
+            "order_status",
+            "payment_method",
+            "product_category",
+            "product_name",
+            "sale_id",
+            "start_at",
+            "supplier_name",
+            "warehouse_id"
+          ],
+          "active_projection_count": 0,
+          "filtered_projection_count": 0,
+          "projections": []
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:01:28.053773+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "backend": "materialize",
+        "query_layer": {
+          "hydrated_rows": 1188,
+          "last_occurred_at": "2026-03-09T02:01:27.799864+00:00",
+          "last_ingested_at": "2026-03-09T02:01:27.799875+00:00",
+          "last_kafka_offset": 1187,
+          "view_lag_ms": 1294,
+          "freshness_ms": 1294
+        },
+        "refresh_interval_seconds": 1.0
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:01:29.095655+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": true,
+      "state": "ready",
+      "payload": {
+        "enabled": true,
+        "state": "ready",
+        "schema": "public",
+        "topic": "ledger-entries-v1",
+        "group_id_prefix": "ledger-materialize",
+        "objects": {
+          "connection": "public.ledger_kafka_connection",
+          "source": "public.ledger_entries_source",
+          "progress": "public.ledger_entries_source_progress",
+          "typed_view": "public.ledger_entries_typed",
+          "entries_view": "public.ledger_entries_current_mv",
+          "summary_view": "public.ledger_summary_by_role_mv",
+          "sales_view": "public.ledger_sales_mv",
+          "account_balances_view": "public.ledger_account_balances_mv",
+          "product_metrics_view": "public.ledger_product_metrics_mv"
+        },
+        "hydrated_rows": 1262,
+        "target_hydration_rows": 1,
+        "view_count": {
+          "sales": 42,
+          "accounts": 13,
+          "products": 7
+        },
+        "pending_retractions": 0,
+        "last_visible_occurred_at": "2026-03-09T02:01:28.820338+00:00",
+        "last_visible_ingested_at": "2026-03-09T02:01:28.820351+00:00",
+        "last_source_offset": 1409,
+        "view_lag_ms": 3269,
+        "expected_view_lag_ms": 5000,
+        "freshness_ms": 3269,
+        "expected_freshness_ms": 5000,
+        "updated_at": "2026-03-09T02:01:32.089876+00:00",
+        "attempt": 3,
+        "last_success_at": "2026-03-09T02:01:16.114281+00:00"
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:01:34.091101+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "counts": {
+          "products": 6,
+          "accounts": 14,
+          "channels": 6,
+          "suppliers": 4,
+          "warehouses": 3
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:01:34.115287+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "adapters": {}
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:01:34.116805+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "active_backends": [
+          "materialize"
+        ],
+        "connections": {
+          "materialize": 1
+        },
+        "consumer": {
+          "state": "running",
+          "topic": "ledger-entries-v1",
+          "delivery_mode": "push-only",
+          "messages_processed": 1313,
+          "last_event_id": "870a4849-086b-48fd-972d-5bb147b0408f",
+          "last_offsets": {
+            "topic": "ledger-entries-v1",
+            "partition": 0,
+            "offset": 1646
+          },
+          "last_error": null
+        },
+        "authoritative_projection": {
+          "enabled_backends": [
+            "materialize"
+          ],
+          "supported_filters": [
+            "account_code",
+            "as_of",
+            "channel",
+            "customer_cpf",
+            "customer_email",
+            "customer_name",
+            "customer_segment",
+            "end_at",
+            "entry_category",
+            "entry_side",
+            "event_type",
+            "ontology_source",
+            "order_id",
+            "order_status",
+            "payment_method",
+            "product_category",
+            "product_name",
+            "sale_id",
+            "start_at",
+            "supplier_name",
+            "warehouse_id"
+          ],
+          "active_projection_count": 0,
+          "filtered_projection_count": 0,
+          "projections": []
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:01:34.118520+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "backend": "materialize",
+        "query_layer": {
+          "hydrated_rows": 1721,
+          "last_occurred_at": "2026-03-09T02:01:37.928316+00:00",
+          "last_ingested_at": "2026-03-09T02:01:37.928330+00:00",
+          "last_kafka_offset": 1720,
+          "view_lag_ms": 1138,
+          "freshness_ms": 1138
+        },
+        "refresh_interval_seconds": 1.0
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:01:39.067425+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": true,
+      "state": "ready",
+      "payload": {
+        "enabled": true,
+        "state": "ready",
+        "schema": "public",
+        "topic": "ledger-entries-v1",
+        "group_id_prefix": "ledger-materialize",
+        "objects": {
+          "connection": "public.ledger_kafka_connection",
+          "source": "public.ledger_entries_source",
+          "progress": "public.ledger_entries_source_progress",
+          "typed_view": "public.ledger_entries_typed",
+          "entries_view": "public.ledger_entries_current_mv",
+          "summary_view": "public.ledger_summary_by_role_mv",
+          "sales_view": "public.ledger_sales_mv",
+          "account_balances_view": "public.ledger_account_balances_mv",
+          "product_metrics_view": "public.ledger_product_metrics_mv"
+        },
+        "hydrated_rows": 1796,
+        "target_hydration_rows": 1,
+        "view_count": {
+          "sales": 62,
+          "accounts": 13,
+          "products": 7
+        },
+        "pending_retractions": 0,
+        "last_visible_occurred_at": "2026-03-09T02:01:38.948502+00:00",
+        "last_visible_ingested_at": "2026-03-09T02:01:38.948517+00:00",
+        "last_source_offset": 2001,
+        "view_lag_ms": 4129,
+        "expected_view_lag_ms": 5000,
+        "freshness_ms": 4129,
+        "expected_freshness_ms": 5000,
+        "updated_at": "2026-03-09T02:01:43.078044+00:00",
+        "attempt": 3,
+        "last_success_at": "2026-03-09T02:01:16.114281+00:00"
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:01:45.079141+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "counts": {
+          "products": 6,
+          "accounts": 14,
+          "channels": 6,
+          "suppliers": 4,
+          "warehouses": 3
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:01:45.081509+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "adapters": {}
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:01:45.082720+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "active_backends": [
+          "materialize"
+        ],
+        "connections": {
+          "materialize": 1
+        },
+        "consumer": {
+          "state": "running",
+          "topic": "ledger-entries-v1",
+          "delivery_mode": "push-only",
+          "messages_processed": 1919,
+          "last_event_id": "64f4fbe0-9b1b-47f5-bb01-51f82725c088",
+          "last_offsets": {
+            "topic": "ledger-entries-v1",
+            "partition": 0,
+            "offset": 2252
+          },
+          "last_error": null
+        },
+        "authoritative_projection": {
+          "enabled_backends": [
+            "materialize"
+          ],
+          "supported_filters": [
+            "account_code",
+            "as_of",
+            "channel",
+            "customer_cpf",
+            "customer_email",
+            "customer_name",
+            "customer_segment",
+            "end_at",
+            "entry_category",
+            "entry_side",
+            "event_type",
+            "ontology_source",
+            "order_id",
+            "order_status",
+            "payment_method",
+            "product_category",
+            "product_name",
+            "sale_id",
+            "start_at",
+            "supplier_name",
+            "warehouse_id"
+          ],
+          "active_projection_count": 0,
+          "filtered_projection_count": 0,
+          "projections": []
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:01:45.083964+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "backend": "materialize",
+        "query_layer": {
+          "hydrated_rows": 2236,
+          "last_occurred_at": "2026-03-09T02:01:44.773824+00:00",
+          "last_ingested_at": "2026-03-09T02:01:44.773836+00:00",
+          "last_kafka_offset": 2235,
+          "view_lag_ms": 1295,
+          "freshness_ms": 1295
+        },
+        "refresh_interval_seconds": 1.0
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:01:46.069799+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": true,
+      "state": "ready",
+      "payload": {
+        "enabled": true,
+        "state": "ready",
+        "schema": "public",
+        "topic": "ledger-entries-v1",
+        "group_id_prefix": "ledger-materialize",
+        "objects": {
+          "connection": "public.ledger_kafka_connection",
+          "source": "public.ledger_entries_source",
+          "progress": "public.ledger_entries_source_progress",
+          "typed_view": "public.ledger_entries_typed",
+          "entries_view": "public.ledger_entries_current_mv",
+          "summary_view": "public.ledger_summary_by_role_mv",
+          "sales_view": "public.ledger_sales_mv",
+          "account_balances_view": "public.ledger_account_balances_mv",
+          "product_metrics_view": "public.ledger_product_metrics_mv"
+        },
+        "hydrated_rows": 2314,
+        "target_hydration_rows": 1,
+        "view_count": {
+          "sales": 81,
+          "accounts": 13,
+          "products": 7
+        },
+        "pending_retractions": 0,
+        "last_visible_occurred_at": "2026-03-09T02:01:45.794797+00:00",
+        "last_visible_ingested_at": "2026-03-09T02:01:45.794808+00:00",
+        "last_source_offset": 2544,
+        "view_lag_ms": 4281,
+        "expected_view_lag_ms": 5000,
+        "freshness_ms": 4281,
+        "expected_freshness_ms": 5000,
+        "updated_at": "2026-03-09T02:01:50.076086+00:00",
+        "attempt": 3,
+        "last_success_at": "2026-03-09T02:01:16.114281+00:00"
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:01:52.077241+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "counts": {
+          "products": 6,
+          "accounts": 14,
+          "channels": 6,
+          "suppliers": 4,
+          "warehouses": 3
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:01:52.080138+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "adapters": {}
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:01:52.081335+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "active_backends": [
+          "materialize"
+        ],
+        "connections": {
+          "materialize": 1
+        },
+        "consumer": {
+          "state": "running",
+          "topic": "ledger-entries-v1",
+          "delivery_mode": "push-only",
+          "messages_processed": 2481,
+          "last_event_id": "d1404b82-fe29-40c2-92fb-f301ea251d57",
+          "last_offsets": {
+            "topic": "ledger-entries-v1",
+            "partition": 0,
+            "offset": 2814
+          },
+          "last_error": null
+        },
+        "authoritative_projection": {
+          "enabled_backends": [
+            "materialize"
+          ],
+          "supported_filters": [
+            "account_code",
+            "as_of",
+            "channel",
+            "customer_cpf",
+            "customer_email",
+            "customer_name",
+            "customer_segment",
+            "end_at",
+            "entry_category",
+            "entry_side",
+            "event_type",
+            "ontology_source",
+            "order_id",
+            "order_status",
+            "payment_method",
+            "product_category",
+            "product_name",
+            "sale_id",
+            "start_at",
+            "supplier_name",
+            "warehouse_id"
+          ],
+          "active_projection_count": 0,
+          "filtered_projection_count": 0,
+          "projections": []
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:01:52.082720+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "backend": "materialize",
+        "query_layer": {
+          "hydrated_rows": 2800,
+          "last_occurred_at": "2026-03-09T02:01:51.789903+00:00",
+          "last_ingested_at": "2026-03-09T02:01:51.789926+00:00",
+          "last_kafka_offset": 2799,
+          "view_lag_ms": 1264,
+          "freshness_ms": 1264
+        },
+        "refresh_interval_seconds": 1.0
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:01:53.055527+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": true,
+      "state": "warming_up",
+      "payload": {
+        "enabled": true,
+        "state": "warming_up",
+        "schema": "public",
+        "topic": "ledger-entries-v1",
+        "group_id_prefix": "ledger-materialize",
+        "objects": {
+          "connection": "public.ledger_kafka_connection",
+          "source": "public.ledger_entries_source",
+          "progress": "public.ledger_entries_source_progress",
+          "typed_view": "public.ledger_entries_typed",
+          "entries_view": "public.ledger_entries_current_mv",
+          "summary_view": "public.ledger_summary_by_role_mv",
+          "sales_view": "public.ledger_sales_mv",
+          "account_balances_view": "public.ledger_account_balances_mv",
+          "product_metrics_view": "public.ledger_product_metrics_mv"
+        },
+        "hydrated_rows": 2800,
+        "target_hydration_rows": 1,
+        "view_count": {
+          "sales": 101,
+          "accounts": 13,
+          "products": 7
+        },
+        "pending_retractions": 0,
+        "last_visible_occurred_at": "2026-03-09T02:01:51.789903+00:00",
+        "last_visible_ingested_at": "2026-03-09T02:01:51.789926+00:00",
+        "last_source_offset": 3010,
+        "view_lag_ms": 5303,
+        "expected_view_lag_ms": 5000,
+        "freshness_ms": 5303,
+        "expected_freshness_ms": 5000,
+        "updated_at": "2026-03-09T02:01:57.093561+00:00",
+        "attempt": 3,
+        "last_success_at": "2026-03-09T02:01:16.114281+00:00"
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:01:59.094684+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "counts": {
+          "products": 6,
+          "accounts": 14,
+          "channels": 6,
+          "suppliers": 4,
+          "warehouses": 3
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:01:59.097121+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "adapters": {}
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:01:59.098673+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "active_backends": [
+          "materialize"
+        ],
+        "connections": {
+          "materialize": 1
+        },
+        "consumer": {
+          "state": "running",
+          "topic": "ledger-entries-v1",
+          "delivery_mode": "push-only",
+          "messages_processed": 3000,
+          "last_event_id": "4d46bb25-725c-479a-afe7-7c1b821c913e",
+          "last_offsets": {
+            "topic": "ledger-entries-v1",
+            "partition": 0,
+            "offset": 3333
+          },
+          "last_error": null
+        },
+        "authoritative_projection": {
+          "enabled_backends": [
+            "materialize"
+          ],
+          "supported_filters": [
+            "account_code",
+            "as_of",
+            "channel",
+            "customer_cpf",
+            "customer_email",
+            "customer_name",
+            "customer_segment",
+            "end_at",
+            "entry_category",
+            "entry_side",
+            "event_type",
+            "ontology_source",
+            "order_id",
+            "order_status",
+            "payment_method",
+            "product_category",
+            "product_name",
+            "sale_id",
+            "start_at",
+            "supplier_name",
+            "warehouse_id"
+          ],
+          "active_projection_count": 0,
+          "filtered_projection_count": 0,
+          "projections": []
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:01:59.099895+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "backend": "materialize",
+        "query_layer": {
+          "hydrated_rows": 3319,
+          "last_occurred_at": "2026-03-09T02:01:58.817781+00:00",
+          "last_ingested_at": "2026-03-09T02:01:58.817792+00:00",
+          "last_kafka_offset": 3318,
+          "view_lag_ms": 1311,
+          "freshness_ms": 1311
+        },
+        "refresh_interval_seconds": 1.0
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:02:00.131032+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": true,
+      "state": "ready",
+      "payload": {
+        "enabled": true,
+        "state": "ready",
+        "schema": "public",
+        "topic": "ledger-entries-v1",
+        "group_id_prefix": "ledger-materialize",
+        "objects": {
+          "connection": "public.ledger_kafka_connection",
+          "source": "public.ledger_entries_source",
+          "progress": "public.ledger_entries_source_progress",
+          "typed_view": "public.ledger_entries_typed",
+          "entries_view": "public.ledger_entries_current_mv",
+          "summary_view": "public.ledger_summary_by_role_mv",
+          "sales_view": "public.ledger_sales_mv",
+          "account_balances_view": "public.ledger_account_balances_mv",
+          "product_metrics_view": "public.ledger_product_metrics_mv"
+        },
+        "hydrated_rows": 3393,
+        "target_hydration_rows": 1,
+        "view_count": {
+          "sales": 118,
+          "accounts": 13,
+          "products": 7
+        },
+        "pending_retractions": 0,
+        "last_visible_occurred_at": "2026-03-09T02:01:59.793674+00:00",
+        "last_visible_ingested_at": "2026-03-09T02:01:59.793693+00:00",
+        "last_source_offset": 3565,
+        "view_lag_ms": 3299,
+        "expected_view_lag_ms": 5000,
+        "freshness_ms": 3299,
+        "expected_freshness_ms": 5000,
+        "updated_at": "2026-03-09T02:02:03.093033+00:00",
+        "attempt": 3,
+        "last_success_at": "2026-03-09T02:01:16.114281+00:00"
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:02:05.094197+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "counts": {
+          "products": 6,
+          "accounts": 14,
+          "channels": 6,
+          "suppliers": 4,
+          "warehouses": 3
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:02:05.097882+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "adapters": {}
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:02:05.099465+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "active_backends": [
+          "materialize"
+        ],
+        "connections": {
+          "materialize": 1
+        },
+        "consumer": {
+          "state": "running",
+          "topic": "ledger-entries-v1",
+          "delivery_mode": "push-only",
+          "messages_processed": 3464,
+          "last_event_id": "c95f06c3-82fa-431b-8706-dacc91791928",
+          "last_offsets": {
+            "topic": "ledger-entries-v1",
+            "partition": 0,
+            "offset": 3797
+          },
+          "last_error": null
+        },
+        "authoritative_projection": {
+          "enabled_backends": [
+            "materialize"
+          ],
+          "supported_filters": [
+            "account_code",
+            "as_of",
+            "channel",
+            "customer_cpf",
+            "customer_email",
+            "customer_name",
+            "customer_segment",
+            "end_at",
+            "entry_category",
+            "entry_side",
+            "event_type",
+            "ontology_source",
+            "order_id",
+            "order_status",
+            "payment_method",
+            "product_category",
+            "product_name",
+            "sale_id",
+            "start_at",
+            "supplier_name",
+            "warehouse_id"
+          ],
+          "active_projection_count": 0,
+          "filtered_projection_count": 0,
+          "projections": []
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:02:05.100759+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "backend": "materialize",
+        "query_layer": {
+          "hydrated_rows": 3781,
+          "last_occurred_at": "2026-03-09T02:02:04.828200+00:00",
+          "last_ingested_at": "2026-03-09T02:02:04.828212+00:00",
+          "last_kafka_offset": 3780,
+          "view_lag_ms": 1763,
+          "freshness_ms": 1764
+        },
+        "refresh_interval_seconds": 1.0
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:02:06.593600+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": true,
+      "state": "ready",
+      "payload": {
+        "enabled": true,
+        "state": "ready",
+        "schema": "public",
+        "topic": "ledger-entries-v1",
+        "group_id_prefix": "ledger-materialize",
+        "objects": {
+          "connection": "public.ledger_kafka_connection",
+          "source": "public.ledger_entries_source",
+          "progress": "public.ledger_entries_source_progress",
+          "typed_view": "public.ledger_entries_typed",
+          "entries_view": "public.ledger_entries_current_mv",
+          "summary_view": "public.ledger_summary_by_role_mv",
+          "sales_view": "public.ledger_sales_mv",
+          "account_balances_view": "public.ledger_account_balances_mv",
+          "product_metrics_view": "public.ledger_product_metrics_mv"
+        },
+        "hydrated_rows": 3858,
+        "target_hydration_rows": 1,
+        "view_count": {
+          "sales": 142,
+          "accounts": 13,
+          "products": 7
+        },
+        "pending_retractions": 0,
+        "last_visible_occurred_at": "2026-03-09T02:02:05.811440+00:00",
+        "last_visible_ingested_at": "2026-03-09T02:02:05.811460+00:00",
+        "last_source_offset": 4015,
+        "view_lag_ms": 3276,
+        "expected_view_lag_ms": 5000,
+        "freshness_ms": 3276,
+        "expected_freshness_ms": 5000,
+        "updated_at": "2026-03-09T02:02:09.088392+00:00",
+        "attempt": 3,
+        "last_success_at": "2026-03-09T02:01:16.114281+00:00"
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:02:14.028661+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "counts": {
+          "products": 6,
+          "accounts": 14,
+          "channels": 6,
+          "suppliers": 4,
+          "warehouses": 3
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:02:14.032056+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "adapters": {}
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:02:14.033966+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": false,
+      "state": null,
+      "error": "[Errno 104] Connection reset by peer"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:14.034983+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "backend": "materialize",
+        "query_layer": {
+          "hydrated_rows": 4217,
+          "last_occurred_at": "2026-03-09T02:02:13.568602+00:00",
+          "last_ingested_at": "2026-03-09T02:02:13.568634+00:00",
+          "last_kafka_offset": 4216,
+          "view_lag_ms": 1481,
+          "freshness_ms": 1481
+        },
+        "refresh_interval_seconds": 1.0
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:02:15.051398+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": true,
+      "state": "degraded",
+      "payload": {
+        "enabled": true,
+        "state": "degraded",
+        "schema": "public",
+        "topic": "ledger-entries-v1",
+        "group_id_prefix": "ledger-materialize",
+        "objects": {
+          "connection": "public.ledger_kafka_connection",
+          "source": "public.ledger_entries_source",
+          "progress": "public.ledger_entries_source_progress",
+          "typed_view": "public.ledger_entries_typed",
+          "entries_view": "public.ledger_entries_current_mv",
+          "summary_view": "public.ledger_summary_by_role_mv",
+          "sales_view": "public.ledger_sales_mv",
+          "account_balances_view": "public.ledger_account_balances_mv",
+          "product_metrics_view": "public.ledger_product_metrics_mv"
+        },
+        "hydrated_rows": 3858,
+        "target_hydration_rows": 1,
+        "view_count": {
+          "sales": 142,
+          "accounts": 13,
+          "products": 7
+        },
+        "pending_retractions": 0,
+        "last_visible_occurred_at": "2026-03-09T02:02:05.811440+00:00",
+        "last_visible_ingested_at": "2026-03-09T02:02:05.811460+00:00",
+        "last_source_offset": 4015,
+        "view_lag_ms": 3276,
+        "expected_view_lag_ms": 5000,
+        "freshness_ms": 3276,
+        "expected_freshness_ms": 5000,
+        "updated_at": "2026-03-09T02:02:09.088392+00:00",
+        "attempt": 3,
+        "last_success_at": "2026-03-09T02:01:16.114281+00:00",
+        "last_error": "consuming input failed: server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request."
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:02:17.917840+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "counts": {
+          "products": 6,
+          "accounts": 14,
+          "channels": 6,
+          "suppliers": 4,
+          "warehouses": 3
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:02:17.920086+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": true,
+      "state": "ok",
+      "payload": {
+        "status": "ok",
+        "adapters": {}
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:02:17.921275+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:17.922086+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:17.922350+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": true,
+      "state": "degraded",
+      "payload": {
+        "enabled": true,
+        "state": "degraded",
+        "schema": "public",
+        "topic": "ledger-entries-v1",
+        "group_id_prefix": "ledger-materialize",
+        "objects": {
+          "connection": "public.ledger_kafka_connection",
+          "source": "public.ledger_entries_source",
+          "progress": "public.ledger_entries_source_progress",
+          "typed_view": "public.ledger_entries_typed",
+          "entries_view": "public.ledger_entries_current_mv",
+          "summary_view": "public.ledger_summary_by_role_mv",
+          "sales_view": "public.ledger_sales_mv",
+          "account_balances_view": "public.ledger_account_balances_mv",
+          "product_metrics_view": "public.ledger_product_metrics_mv"
+        },
+        "hydrated_rows": 3858,
+        "target_hydration_rows": 1,
+        "view_count": {
+          "sales": 142,
+          "accounts": 13,
+          "products": 7
+        },
+        "pending_retractions": 0,
+        "last_visible_occurred_at": "2026-03-09T02:02:05.811440+00:00",
+        "last_visible_ingested_at": "2026-03-09T02:02:05.811460+00:00",
+        "last_source_offset": 4015,
+        "view_lag_ms": 3276,
+        "expected_view_lag_ms": 5000,
+        "freshness_ms": 3276,
+        "expected_freshness_ms": 5000,
+        "updated_at": "2026-03-09T02:02:09.088392+00:00",
+        "attempt": 3,
+        "last_success_at": "2026-03-09T02:01:16.114281+00:00",
+        "last_error": "consuming input failed: server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request."
+      }
+    },
+    {
+      "timestamp": "2026-03-09T02:02:19.923538+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": false,
+      "state": null,
+      "error": "[Errno 104] Connection reset by peer"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:19.924534+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:19.924739+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:19.924898+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:19.925050+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:21.925280+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:21.925644+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:21.925757+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:21.925882+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:21.925992+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:23.926194+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:23.926795+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:23.927132+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:23.927335+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:23.927521+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:25.927767+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:25.928148+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:25.928273+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:25.928381+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:25.928483+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:27.928690+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:27.929064+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:27.929179+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:27.929286+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:27.929391+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:29.929570+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:29.929998+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:29.930204+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:29.930532+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:29.930713+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:31.930988+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:31.931367+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:31.931537+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:31.931655+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:31.931760+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:33.931958+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:33.932280+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:33.932404+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:33.932517+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:33.932621+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:35.932810+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:35.933201+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:35.933320+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:35.933431+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:35.933542+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:37.933739+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:37.934206+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:37.934356+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:37.934569+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:37.934686+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:39.934889+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:39.935435+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:39.935585+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:39.935756+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:39.935924+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:41.936206+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:41.936948+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:41.937236+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:41.937461+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:41.937598+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:43.937802+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:43.938305+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:43.938694+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:43.938968+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:43.939133+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:48.866376+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:48.866743+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:48.866885+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:48.867017+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:48.867179+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:50.867426+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:50.868108+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:50.868249+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:50.868412+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:50.868520+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:52.868801+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:52.869343+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:52.869747+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:52.869926+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:52.870065+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:54.870301+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:54.870959+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:54.871128+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:54.871279+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:54.871422+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:56.871791+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:56.872411+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:56.872526+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:56.872633+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:56.872735+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:58.872949+00:00",
+      "endpoint": "master_data",
+      "url": "http://localhost:8091/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:58.873614+00:00",
+      "endpoint": "storage_writer",
+      "url": "http://localhost:8092/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:58.873778+00:00",
+      "endpoint": "realtime_gateway",
+      "url": "http://localhost:8083/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:58.873919+00:00",
+      "endpoint": "backend_health",
+      "url": "http://localhost:8084/health",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    },
+    {
+      "timestamp": "2026-03-09T02:02:58.874061+00:00",
+      "endpoint": "backend_debug",
+      "url": "http://localhost:8092/debug/materialize-bootstrap",
+      "ok": false,
+      "state": null,
+      "error": "<urlopen error [Errno 111] Connection refused>"
+    }
+  ]
+}

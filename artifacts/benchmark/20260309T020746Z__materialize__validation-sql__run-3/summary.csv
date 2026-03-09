@@ -1,0 +1,2 @@
+round_id,commit,backend,scenario,run_number,started_at,duration_seconds,api_summary_p95_ms,api_workspace_p95_ms,sql_entries_count_p95_ms,sql_summary_by_role_p95_ms,frontend_time_to_first_meaningful_state_ms,snapshot_rate_per_second,entry_rate_per_second,balance_sheet_difference,health_transition_total
+20260309T020746Z__materialize__validation-sql__run-3,b1ca00e42747fe126e28bf27146b84cc829e4dbf,materialize,validation-sql,3,2026-03-09T02:07:46Z,90,2039.6374333016865,2019.678015550744,,,61,2.180618038229574,68.91538809107519,0.0,7

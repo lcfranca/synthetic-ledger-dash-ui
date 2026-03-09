@@ -107,7 +107,33 @@ Identificador recomendado:
 
 Total alvo: 600 segundos.
 
+### 5.1 Perfil efetivamente usado na bateria conclusiva do relatorio
+
+Para a bateria final incorporada ao relatorio tecnico, foi usado um perfil mais curto e estritamente padronizado, orientado ao cenario `report-conclusion`.
+
+| Parametro | Valor efetivo |
+| --- | ---: |
+| `collection_seconds` | 270 s |
+| `bootstrap_wait` | 180 s |
+| `backend_readiness_wait` | 240 s |
+| `warmup` | 10 s |
+| `per_probe_segment` | 90 s |
+
+Esse perfil nao substitui a recomendacao geral de janelas mais longas e repeticoes multiplas. Ele documenta, especificamente, o protocolo que gerou os artefatos finais usados no PDF.
+
 ## 6. Estrutura Recomendada de Scripts
+
+Implementacao concreta no repositorio:
+
+- `scripts/benchmark/run_round.sh` executa a rodada completa e consolida os artefatos.
+- `scripts/benchmark/run_clickhouse_round.sh`, `scripts/benchmark/run_druid_round.sh`, `scripts/benchmark/run_pinot_round.sh` e `scripts/benchmark/run_materialize_round.sh` sao wrappers por backend.
+- `scripts/benchmark/collect_api_latencies.py` coleta latencias reais dos endpoints HTTP.
+- `scripts/benchmark/collect_sql_latencies.py` coleta tempos reais de consultas nativas por backend.
+- `scripts/benchmark/collect_ws_convergence.mjs` mede convergencia websocket e latencia percebida no frontend.
+- `scripts/benchmark/collect_container_stats.py` coleta CPU, memoria e IO reais dos containers.
+- `scripts/benchmark/collect_health_timeline.py` coleta transicoes reais de health e estados de aquecimento/degradacao.
+- `scripts/benchmark/collect_debug_snapshots.py` captura snapshots operacionais reais ao final da rodada.
+- `scripts/benchmark/consolidate_round_results.py` produz `round_report.json` e `summary.csv` no formato canonico.
 
 ### 6.1 Script mestre por backend
 
@@ -341,7 +367,10 @@ Cada rodada deve gerar ao menos:
 - `resources.json`
 - `health_timeline.json`
 - `debug_snapshots.json`
+- `round_report.json`
 - `summary.csv`
+
+O formato canonico consolidado destes arquivos foi descrito em `docs/benchmark-round-output-spec.md`.
 
 ## 11. Formato de Metadata da Rodada
 

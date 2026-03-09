@@ -4,6 +4,14 @@ Plataforma para geração de eventos contábeis sintéticos, ingestão por Kafka
 
 Versão atual do projeto (configuração oficial): `pyproject.toml` (`project.version = 0.0.1-rc.1`).
 
+## Benchmark final do relatorio
+
+- PDF final: `relatorio/dist/synthetic-ledger-backend-benchmark-report.pdf`
+- Sintese executiva curta: `docs/benchmark-executive-summary.md`
+- Artefatos reais da bateria conclusiva: `artifacts/benchmark/`
+
+O benchmark conclusivo compara ClickHouse, Druid, Pinot e Materialize sob o cenario `report-conclusion`, com dados reais e corretude contabil preservada em todas as stacks observadas.
+
 ## Estrutura
 
 - `producer/`: gerador de eventos contábeis sintéticos em Python.
