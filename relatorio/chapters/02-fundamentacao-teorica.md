@@ -1,0 +1,74 @@
+# Fundamentacao Teorica
+
+## 2.1 Delimitacao do problema cientifico
+
+O problema investigado nesta pesquisa situa-se na intersecao entre sistemas de eventos, modelos de leitura near-real-time, arquitetura de dashboards push-oriented e engenharia de backends analiticos ou incrementais para suporte a decisao gerencial. Nao se trata apenas de medir qual sistema responde consultas mais rapidamente em condicoes laboratoriais simplificadas. O que esta em jogo e a capacidade de reduzir, de modo arquiteturalmente defensavel, a distancia temporal, semantica e operacional entre um evento canonico de negocio e sua traducao em estado derivado consultavel por interfaces de decisao.
+
+Em um dominio contabil-financeiro, essa questao ganha gravidade adicional. Ao contrario de workloads puramente observacionais, o fluxo de eventos precisa manter coerencia entre granularidade transacional, agregados gerenciais e invariantes de dupla entrada. Isso implica que um backend potencialmente rapido, mas incapaz de preservar consistencia entre ledger detalhado, balanco patrimonial e demonstracao de resultados sob replay, ajuste ou reprocessamento, nao pode ser considerado tecnicamente equivalente a outro que ofereca menor throughput, mas maior robustez semantica. Portanto, a fundamentacao teorica desta pesquisa exige uma articulacao entre teoria de sistemas orientados a eventos, manutencao incremental de views, arquitetura de bancos analiticos e teoria de desempenho percebido em frontends operacionais.
+
+## 2.2 Event sourcing, ledger canonico e corretude contabil
+
+Uma primeira base conceitual e o paradigma de event sourcing, no qual os fatos de negocio sao registrados como ocorrencias imutaveis, ordenadas e auditaveis, e o estado derivado do sistema e reconstruido a partir dessa trilha de eventos. Em sua formulacao mais rigorosa, event sourcing nao e meramente um padrao de persistencia alternativo; ele redefine a relacao entre temporalidade, auditabilidade, reprodutibilidade e modelagem do dominio. A vantagem epistemica do paradigma reside no fato de que o sistema preserva a historia do que ocorreu, em vez de apenas armazenar um snapshot tardio do estado vigente.
+
+No caso em estudo, a trilha canonica nao se resume ao evento comercial bruto. O repositorio organiza a verdade operacional em torno de `ledger-entries-v1`, um stream canonico de lancamentos contabeis derivados por um `storage_writer` especializado. Essa decisao e teoricamente relevante. Ela introduz uma camada intermediaria entre o evento primario e o modelo de leitura, permitindo que o benchmark compare backends sobre uma base financeira normalizada, e nao sobre eventos heterogeneos de dominio comercial. Em termos metodologicos, isso reduz o risco de que diferencas de modelagem de ingestao contaminem a comparacao entre motores de consulta ou de manutencao incremental.
+
+Em sistemas contabeis, a imutabilidade do ledger e inseparavel do principio de dupla entrada. Cada evento economico relevante deve ser refletido por pares ou conjuntos coerentes de debito e credito, de tal modo que a soma agregada das classes patrimoniais e de resultado continue satisfazendo invariantes fundamentais. Essa exigencia aproxima o benchmark de uma classe de problemas em que corretude semantica tem precedencia sobre latencia isolada. Em outras palavras, o sistema nao avalia apenas quao rapidamente um painel atualiza, mas quao rapidamente ele atualiza sem degradar a confiabilidade da representacao contabil.
+
+Outro conceito central e o de replay. Em arquiteturas baseadas em eventos, replay nao e uma excecao operacional, mas uma propriedade estrutural do sistema. Seja por cold start, reprocessamento, mudanca de topologia ou recuperacao de falha, a capacidade de recomputar modelos de leitura a partir do historico canonico e uma condicao de robustez. Essa propriedade, contudo, afeta de forma desigual backends analiticos e incrementais. Motores de consulta quente tendem a operar melhor quando o read model ja foi materializado; motores de manutencao incremental tendem a internalizar parte da logica de derivacao. Assim, a analise teorica do benchmark precisa incluir o replay como variavel de primeira classe, nao como mero teste de excecao.
+
+## 2.3 Sistemas push, pull e arquiteturas hibridas de convergencia visual
+
+A literatura de sistemas interativos distribuidos distingue, de forma classica, mecanismos pull, push e modelos hibridos. Em arquiteturas pull, o cliente consulta periodicamente uma fonte autoritativa. O modelo e operacionalmente simples, mas produz um custo recorrente de polling, uma latencia perceptual fortemente quantizada pela periodicidade das consultas e uma tensao direta entre responsividade e custo operacional. Em dashboards near-real-time, polling puro tende a impor uma escolha ruim: ou se consulta frequentemente, onerando o sistema, ou se consulta pouco, degradando a atualidade percebida.
+
+Arquiteturas push deslocam parte dessa dinamica, permitindo que o servidor notifique o cliente quando novos eventos, agregados ou snapshots estiverem disponiveis. No entanto, push puro raramente resolve sozinho o problema de consistencia visual. Um stream de eventos unitarios pode preservar continuidade perceptual, mas nao garante, por si so, que o cliente mantenha uma visao autoritativa de agregados complexos. Isso e particularmente evidente quando o painel depende de joins, filtros compostos, catalogos auxiliares ou agregacoes contabeis cumulativas. Nesses casos, o push de eventos deve ser articulado com alguma forma de snapshot autoritativo ou de reconciliacao incremental.
+
+O repositorio estudado concretiza exatamente esse ponto por meio de um `realtime_gateway` que opera como camada de convergencia visual. Em algumas stacks, ele preserva um modo `push-first` com projecao local no frontend; em outras, opera com `authoritative snapshot resync`; e, no caso do Materialize, desloca-se para `authoritative incremental snapshot`. Essa taxonomia e teoricamente rica porque mostra que a comparacao nao e apenas entre bancos, mas entre estrategias de convergencia visual acopladas a diferentes modelos de leitura. Em termos de teoria de sistemas interativos, isso significa que a unidade relevante de comparacao deixa de ser o banco isolado e passa a ser a combinacao banco + API + gateway + frontend.
+
+## 2.4 OLAP quente, HTAP e sistemas relacionais orientados a stream
+
+O problema estudado tambem se insere na literatura sobre sistemas analiticos. Motores como ClickHouse, Druid e Pinot pertencem, com nuances, a uma familia de sistemas desenhados para consultas de baixa latencia sobre grandes volumes de dados, frequentemente em colunas, com forte otimizacao para agregacoes, filtros e scans seletivos. Ainda que o termo HTAP seja por vezes empregado de forma ampla, convem distinguir sistemas voltados a analise quente de sistemas cuja proposta central e a manutencao incremental do proprio estado derivado.
+
+No contexto deste benchmark, ClickHouse, Druid e Pinot funcionam como motores `hot-analytic`. Eles consomem ou recebem um fluxo canonico, materializam um read model consultavel e, a partir dai, servem consultas operacionais com latencia baixa. O valor desses sistemas reside em sua eficiencia como serving layer analitica. Ja o Materialize aproxima-se de outra classe conceitual: sistemas relacionais streaming-first, nos quais a definicao de `source`, `view` e `materialized view` participa do proprio mecanismo de convergencia incremental entre stream e estado consultavel.
+
+Essa distincao e decisiva para a validade do benchmark. Comparar um motor de leitura quente com um sistema de incremental view maintenance como se ambos fossem apenas adaptadores SQL equivalentes produz vies conceitual. O primeiro e otimizado para consultas sobre materializacao existente; o segundo tende a reduzir o custo de recomputacao entre evento e view derivada. Portanto, a fundamentacao teorica exige reconhecer que a unidade de comparacao deve preservar a natureza do paradigma, inclusive no desenho dos cenarios, metricas e estrategias de coleta.
+
+## 2.5 Incremental view maintenance, retracoes e joins incrementais
+
+Incremental view maintenance e o campo teorico que investiga como atualizar visoes derivadas sem recomputar integralmente o resultado a cada novo fato. Em termos algebricos, o problema consiste em propagar diferencas sobre operadores relacionais e agregacoes, preservando consistencia sem incorrer no custo de recalculo total. Esse tema e central para workloads em que o volume de atualizacoes e elevado, o custo de recomputacao total e proibitivo e a latencia de propagacao importa diretamente para a utilidade do sistema.
+
+No caso deste trabalho, a manutencao incremental nao e uma abstracao distante; ela aparece concretamente na necessidade de atualizar `summary`, `workspace`, `sales_workspace`, catalogos e agregados contabeis sob fluxo continuo de `ledger entries`. Contudo, a teoria adverte que nem toda view e incrementalmente trivial. Agregacoes nao monotonicas, retracoes, correcoes tardias, joins de alta cardinalidade e filtros compostos podem elevar dramaticamente o custo da manutencao incremental. Em sistemas financeiros, isso e particularmente relevante porque devolucoes, cancelamentos, ajustes e revisoes sao semanticamente importantes e frequentemente introduzem retracoes no estado derivado.
+
+As retracoes merecem atencao especial. Em workloads monotonicos, novas tuplas apenas expandem o resultado. Em workloads com correcoes, e preciso remover ou invalidar contribuicoes anteriores. Isso torna a manutencao incremental conceitualmente mais exigente. A literatura sobre Differential Dataflow, por exemplo, mostra como diferencas positivas e negativas podem ser propagadas em dataflows incrementais complexos. Na pratica do benchmark, isso significa que metricas de `pending_retractions`, tempo de reconvergencia e estabilidade sob replay nao sao opcionais; elas sao a forma empirica de testar se o paradigma incremental sustenta sua promessa sob a complexidade real do dominio.
+
+## 2.6 Latencia percebida, continuidade visual e utilidade gerencial
+
+Uma contribuicao importante desta pesquisa e deslocar o foco da latencia exclusivamente infraestrutural para a latencia percebida no frontend. Em sistemas de dashboard, a pergunta decisiva nao e apenas quando a API ficou apta a responder, mas quando o usuario passou a enxergar um estado util, coerente e suficientemente atualizado para orientar decisao. Isso aproxima o benchmark da literatura de `time-to-first-meaningful-result`, `responsiveness` e `situational awareness` em sistemas interativos.
+
+Nesse contexto, o conceito de `frontend_time_to_first_meaningful_state_ms` adquire papel teorico. Ele mede o intervalo entre o inicio da sessao do cliente e o momento em que uma representacao minimamente informativa se torna disponivel. Esse valor nao coincide necessariamente com a primeira resposta HTTP, com o primeiro pacote websocket ou com a primeira linha consultavel no banco. Ele representa um limiar semantico: o instante em que o sistema deixa de ser apenas tecnicamente responsivo e passa a ser operacionalmente util.
+
+Outro conceito associado e o de continuidade perceptual. Um painel pode ser correto do ponto de vista eventual, mas parecer erratico, vazio ou incoerente durante a convergencia. Portanto, a arquitetura de push deve ser julgada tambem por sua capacidade de evitar descontinuidades bruscas, listas vazias indevidas, oscilacoes espurias de estado e divergencia entre visoes detalhadas e agregadas. Isso justifica o uso de snapshots autoritativos, projecoes locais transitorias ou reconciliacoes incrementais conforme o backend. Em termos teoricos, a latencia percebida e uma propriedade do sistema completo, nao do banco isolado.
+
+## 2.7 Validade experimental em sistemas distribuidos locais
+
+Benchmarks de sistemas distribuidos sofrem com problemas classicos de validade interna e externa. Em ambiente local, jitter de CPU, page cache, efeitos de aquecimento, limites de memoria, comportamento do SO hospedeiro e rede Docker podem introduzir variabilidade significativa. Alem disso, diferentes backends possuem tempos de bootstrap, formas de aquecimento e estruturas de metadata muito distintas. Comparar resultados sem controlar esses fatores leva a conclusoes frageis.
+
+Por essa razao, o protocolo desta pesquisa adota rodadas individualizadas por backend, com janela maxima de 10 minutos, scripts dedicados, coleta de health timeline, recursos de container, latencias de API/SQL e snapshots finais de debug. Esse desenho nao elimina todos os vieses, mas melhora substancialmente a comparabilidade. Em particular, a coleta isolada evita que um backend seja penalizado ou favorecido por competir com outros na mesma maquina, o que seria metodologicamente inaceitavel quando o objetivo e comparar paradigmas com perfis distintos de consumo.
+
+Tambem se torna necessario distinguir explicitamente `cold start`, `warm state` e `replay recovery`. Um sistema pode ter excelente latencia em estado aquecido e desempenho mediocre na primeira leitura util; outro pode demorar a hidratar mas oferecer convergencia incremental superior apos estabilizacao. Essas diferencas nao devem ser apagadas por uma media unica. Elas sao parte da contribuicao analitica do benchmark.
+
+## 2.8 Sintese teorica do capitulo
+
+Este capitulo estabeleceu que o problema central do benchmark nao pode ser reduzido a um duelo simplista de throughput ou tempo de resposta SQL. O caso de uso exige a articulacao de cinco eixos teoricos: imutabilidade e replay em sistemas orientados a eventos; corretude contabil como restricao semantica forte; diferencas entre arquiteturas pull, push e hibridas; distincao entre motores analiticos quentes e sistemas de manutencao incremental de views; e latencia percebida como fenomeno de sistema completo. A partir dessa base, torna-se possivel analisar, no capitulo seguinte, cada tecnologia nao como produto isolado, mas como instancia de um paradigma com propriedades internas, trade-offs e implicacoes especificas para dashboards gerenciais near-real-time.
+
+## Bibliografia-base do Capitulo 2
+
+- Abadi, D. J.; Boncz, P. A.; Harizopoulos, S. Column-oriented database systems.
+- Abadi, D. J. Query execution in column-oriented database systems.
+- Gray, J.; Reuter, A. Transaction Processing: Concepts and Techniques.
+- Hellerstein, J. M.; Stonebraker, M.; Hamilton, J. Architecture of a database system.
+- Kleppmann, M. Designing Data-Intensive Applications.
+- Martin Fowler. Event Sourcing.
+- McSherry, F.; Murray, D. G.; Isaacs, R.; Isard, M. Differential Dataflow.
+- Murray, D. G.; McSherry, F.; Isaacs, R.; Isard, M.; Barham, P.; Abadi, M. Naiad: A Timely Dataflow System.
+- Pat Helland. Immutability Changes Everything.
+- Stonebraker, M. et al. C-Store: A Column-oriented DBMS.

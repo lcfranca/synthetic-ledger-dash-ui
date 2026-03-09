@@ -1,0 +1,24 @@
+title: Relatorio Tecnico de Benchmark de Backends para Dashboards Gerenciais em Tempo Real
+subtitle: Avaliacao arquitetural, operacional e experimental de ClickHouse, Druid, Pinot e Materialize no repositorio Synthetic Ledger Dash UI
+document_type: Relatorio tecnico analitico
+repository_name: Synthetic Ledger Dash UI
+document_scope: Analise do benchmark de convergencia visual, corretude contabil e latencia percebida em paineis orientados por eventos
+date: 2026-03-08
+documentclass: report
+classoption:
+  - 12pt
+  - oneside
+lang: pt-BR
+toc: true
+toc-depth: 2
+lof: false
+lot: true
+numbersections: true
+papersize: a4
+geometry:
+  - margin=2.8cm
+colorlinks: true
+linkcolor: black
+urlcolor: blue
+citecolor: black
+titlepage: true

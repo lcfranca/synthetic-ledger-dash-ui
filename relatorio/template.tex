@@ -1,0 +1,101 @@
+\documentclass[$for(classoption)$$classoption$$sep$,$endfor$]{$documentclass$}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{lmodern}
+\else
+  \usepackage{fontspec}
+  \setmainfont{TeX Gyre Pagella}
+  \setsansfont{TeX Gyre Heros}
+  \setmonofont{Latin Modern Mono}
+\fi
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{calc}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{float}
+\usepackage{caption}
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=blue,
+  citecolor=black,
+  pdftitle={$title$}
+}
+\setstretch{1.25}
+\setlength{\parindent}{1.25cm}
+\setlength{\parskip}{0.2em}
+\setlist[itemize]{noitemsep, topsep=4pt}
+\setlist[enumerate]{noitemsep, topsep=4pt}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\nouppercase{$title$}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\titleformat{\chapter}[display]
+  {\normalfont\bfseries\Large}
+  {\chaptertitlename\ \thechapter}
+  {0.5em}
+  {\Large}
+
+$for(header-includes)$
+$header-includes$
+$endfor$
+
+\begin{document}
+
+$if(titlepage)$
+\begin{titlepage}
+\raggedright
+{\sffamily\bfseries\Huge $title$ \par}
+$if(subtitle)$
+\vspace{0.8cm}
+{\sffamily\Large $subtitle$ \par}
+$endif$
+\vspace{1.5cm}
+{\Large $document_type$ \par}
+\vspace{1cm}
+\rule{\textwidth}{0.8pt}
+\vspace{0.8cm}
+
+\begin{tabular}{@{}p{0.28\textwidth}p{0.66\textwidth}@{}}
+Repositorio-base & $repository_name$ \\
+Escopo & $document_scope$ \\
+Data do documento & $date$ \\
+\end{tabular}
+
+\vfill
+Este documento consolida, em formato de relatorio tecnico impessoal, a analise do benchmark implementado no repositorio e os resultados observados nos artefatos operacionais disponiveis.
+\end{titlepage}
+$endif$
+
+$if(toc)$
+\tableofcontents
+\clearpage
+$endif$
+
+$if(lof)$
+\listoffigures
+\clearpage
+$endif$
+
+$if(lot)$
+\listoftables
+\clearpage
+$endif$
+
+$body$
+
+\end{document}
