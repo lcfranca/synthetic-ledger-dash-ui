@@ -1,0 +1,5 @@
+backend,round_id,bootstrap_wait_s,backend_readiness_wait_s,warmup_s,per_probe_segment_s,duration_seconds
+clickhouse,20260309T033332Z__clickhouse__report-conclusion__run-1,180,240,10,90,270
+druid,20260309T032706Z__druid__report-conclusion__run-1,180,240,10,90,270
+materialize,20260309T030326Z__materialize__report-conclusion__run-1,180,240,10,90,270
+pinot,20260309T025603Z__pinot__report-conclusion__run-1,180,240,10,90,270

@@ -1,0 +1,14 @@
+classificacao,backend,cenario,round_id,probe_type,probe_name,error_count,sample_count,success_count,p95_ms
+validação,materialize,validation-smoke,20260309T020307Z__materialize__validation-smoke__run-2,sql,entries_count,16,16,0,
+validação,materialize,validation-smoke,20260309T020307Z__materialize__validation-smoke__run-2,sql,summary_by_role,16,16,0,
+validação,materialize,validation-smoke,20260309T020307Z__materialize__validation-smoke__run-2,sql,filtered_entries,16,16,0,
+validação,materialize,validation-sql,20260309T020746Z__materialize__validation-sql__run-3,sql,entries_count,17,17,0,
+validação,materialize,validation-sql,20260309T020746Z__materialize__validation-sql__run-3,sql,summary_by_role,16,16,0,
+validação,materialize,validation-sql,20260309T020746Z__materialize__validation-sql__run-3,sql,filtered_entries,16,16,0,
+substituída,clickhouse,report-conclusion,20260309T024926Z__clickhouse__report-conclusion__run-1,sql,entries_count,33073,33073,0,
+substituída,clickhouse,report-conclusion,20260309T024926Z__clickhouse__report-conclusion__run-1,sql,summary_by_role,33072,33072,0,
+substituída,clickhouse,report-conclusion,20260309T024926Z__clickhouse__report-conclusion__run-1,sql,filtered_entries,33072,33072,0,
+canônica,druid,report-conclusion,20260309T032706Z__druid__report-conclusion__run-1,api,summary,4,54,50,594.3896724034857
+canônica,druid,report-conclusion,20260309T032706Z__druid__report-conclusion__run-1,api,workspace,4,54,50,1748.3747422971642
+canônica,druid,report-conclusion,20260309T032706Z__druid__report-conclusion__run-1,api,entries,3,53,50,284.0964624472689
+canônica,druid,report-conclusion,20260309T032706Z__druid__report-conclusion__run-1,sql,filtered_entries,2374,2374,0,

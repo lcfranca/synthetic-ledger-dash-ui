@@ -1,0 +1,21 @@
+backend,endpoint,sample_count,non_ok_samples,first_ok_ms,transitions,states_seen
+clickhouse,backend_debug,134,134,,0,running
+clickhouse,backend_health,134,0,51730,0,ok
+clickhouse,master_data,134,0,51691,0,ok
+clickhouse,realtime_gateway,134,0,51728,0,ok
+clickhouse,storage_writer,134,0,51722,0,ok
+druid,backend_debug,122,122,,0,desconhecido
+druid,backend_health,122,3,64441,1,warming_up | ok
+druid,master_data,122,0,53731,0,ok
+druid,realtime_gateway,122,0,54489,0,ok
+druid,storage_writer,122,0,53764,0,ok
+materialize,backend_debug,53,53,,14,ready | warming_up
+materialize,backend_health,53,0,68156,0,ok
+materialize,master_data,53,0,68124,0,ok
+materialize,realtime_gateway,53,0,68153,0,ok
+materialize,storage_writer,53,0,68149,0,ok
+pinot,backend_debug,134,134,,1,retrying | ready
+pinot,backend_health,134,0,120928,0,ok
+pinot,master_data,134,0,120878,0,ok
+pinot,realtime_gateway,134,0,120924,0,ok
+pinot,storage_writer,134,0,120915,0,ok

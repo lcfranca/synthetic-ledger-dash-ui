@@ -10,92 +10,129 @@
   \setsansfont{TeX Gyre Heros}
   \setmonofont{Latin Modern Mono}
 \fi
-\usepackage{geometry}
-\usepackage{setspace}
-\usepackage{longtable}
-\usepackage{booktabs}
-\usepackage{array}
-\usepackage{calc}
-\usepackage{graphicx}
-\usepackage{xcolor}
-\usepackage{hyperref}
-\usepackage{fancyhdr}
-\usepackage{titlesec}
-\usepackage{enumitem}
+\usepackage[a4paper,left=3cm,top=3cm,right=2cm,bottom=2cm]{geometry}
 \usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{ragged2e}
+\usepackage{graphicx}
 \usepackage{float}
 \usepackage{caption}
+\usepackage{hyperref}
+\usepackage{xurl}
+\usepackage{bookmark}
+\usepackage{enumitem}
+\usepackage{pdflscape}
+\usepackage{setspace}
+
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
 \hypersetup{
-  colorlinks=true,
-  linkcolor=black,
-  urlcolor=blue,
-  citecolor=black,
-  pdftitle={$title$}
+  pdftitle={$title$},
+  pdfauthor={$author$},
+  pdfsubject={$document_scope$},
+  hidelinks
 }
-\setstretch{1.25}
+
+\OnehalfSpacing
 \setlength{\parindent}{1.25cm}
-\setlength{\parskip}{0.2em}
-\setlist[itemize]{noitemsep, topsep=4pt}
-\setlist[enumerate]{noitemsep, topsep=4pt}
-\pagestyle{fancy}
-\fancyhf{}
-\fancyhead[L]{\nouppercase{$title$}}
-\fancyfoot[C]{\thepage}
-\renewcommand{\headrulewidth}{0.3pt}
-\titleformat{\chapter}[display]
-  {\normalfont\bfseries\Large}
-  {\chaptertitlename\ \thechapter}
-  {0.5em}
-  {\Large}
+\setlength{\parskip}{0pt}
+\setlist[itemize]{topsep=4pt,itemsep=2pt}
+\setlist[enumerate]{topsep=4pt,itemsep=2pt}
+\newcolumntype{L}[1]{>{\RaggedRight\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\Centering\arraybackslash}p{#1}}
+
+$if(title)$
+$if(subtitle)$
+\titulo{$title$\\[0.3cm]\large $subtitle$}
+$else$
+\titulo{$title$}
+$endif$
+$endif$
+$if(author)$
+\autor{$author$}
+$endif$
+$if(institution)$
+\instituicao{$institution$}
+$endif$
+$if(location)$
+\local{$location$}
+$endif$
+$if(date)$
+\data{$date$}
+$endif$
+$if(document_type)$
+\tipotrabalho{$document_type$}
+$endif$
+$if(document_scope)$
+\preambulo{$document_scope$}
+$endif$
 
 $for(header-includes)$
 $header-includes$
 $endfor$
 
 \begin{document}
+\selectlanguage{brazil}
+\frenchspacing
 
+\pretextual
 $if(titlepage)$
-\begin{titlepage}
-\raggedright
-{\sffamily\bfseries\Huge $title$ \par}
-$if(subtitle)$
-\vspace{0.8cm}
-{\sffamily\Large $subtitle$ \par}
+\imprimircapa
+\imprimirfolhaderosto*
 $endif$
-\vspace{1.5cm}
-{\Large $document_type$ \par}
-\vspace{1cm}
-\rule{\textwidth}{0.8pt}
-\vspace{0.8cm}
 
-\begin{tabular}{@{}p{0.28\textwidth}p{0.66\textwidth}@{}}
-Repositorio-base & $repository_name$ \\
-Escopo & $document_scope$ \\
-Data do documento & $date$ \\
-\end{tabular}
+$if(abstract_pt)$
+\begin{resumo}
+$abstract_pt$
 
-\vfill
-Este documento consolida, em formato de relatorio tecnico impessoal, a analise do benchmark implementado no repositorio e os resultados observados nos artefatos operacionais disponiveis.
-\end{titlepage}
+\vspace{\onelineskip}
+\noindent
+\textbf{Palavras-chave}: $keywords_pt$.
+\end{resumo}
+$endif$
+
+$if(abstract_en)$
+\begin{resumo}[Abstract]
+\begin{otherlanguage*}{english}
+$abstract_en$
+
+\vspace{\onelineskip}
+\noindent
+\textbf{Keywords}: $keywords_en$.
+\end{otherlanguage*}
+\end{resumo}
+$endif$
+
+$if(scope_note)$
+\chapter*{Nota de Escopo}
+$scope_note$
+
+$if(editorial_note)$
+\section*{Critérios Editoriais}
+$editorial_note$
+$endif$
 $endif$
 
 $if(toc)$
-\tableofcontents
+\pdfbookmark[0]{\contentsname}{toc}
+\tableofcontents*
 \clearpage
 $endif$
 
 $if(lof)$
-\listoffigures
+\listoffigures*
 \clearpage
 $endif$
 
 $if(lot)$
-\listoftables
+\listoftables*
 \clearpage
 $endif$
 
+\textual
 $body$
 
 \end{document}

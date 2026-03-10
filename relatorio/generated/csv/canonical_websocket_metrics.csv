@@ -1,0 +1,5 @@
+backend,frontend_time_to_first_meaningful_state_ms,first_snapshot_visible_ms,entry_to_queue_visible_ms,event_to_snapshot_visible_ms,sale_to_sales_workspace_visible_ms,snapshot_rate_per_second,entry_rate_per_second,snapshot_count,entry_created_count
+clickhouse,104,258,104,154,154,2.3369213337649724,78.32227258012301,231,7742
+druid,45,556,45,511,508,2.306968461312746,79.35769141261345,228,7843
+materialize,157,1439,157,1282,524,2.335279399499583,53.48206839032527,224,5130
+pinot,42,42,155,,,0.02023758929836278,78.93671705826402,2,7801

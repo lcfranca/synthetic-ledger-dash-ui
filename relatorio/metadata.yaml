@@ -1,13 +1,22 @@
-title: Relatorio Tecnico de Benchmark de Backends para Dashboards Gerenciais em Tempo Real
-subtitle: Avaliacao arquitetural, operacional e experimental de ClickHouse, Druid, Pinot e Materialize no repositorio Synthetic Ledger Dash UI
-document_type: Relatorio tecnico analitico
+title: Relatório Técnico de Benchmark de Backends para Dashboards Gerenciais em Tempo Real
+subtitle: Avaliação arquitetural, operacional e experimental de ClickHouse, Druid, Pinot e Materialize no repositório Synthetic Ledger Dash UI
+author: Projeto Synthetic Ledger Dash UI
+institution: Repositório Synthetic Ledger Dash UI
+location: Ambiente local instrumentado
+document_type: Relatório técnico analítico
 repository_name: Synthetic Ledger Dash UI
-document_scope: Analise do benchmark de convergencia visual, corretude contabil e latencia percebida em paineis orientados por eventos
+document_scope: Análise do benchmark de convergência visual, corretude contábil e latência percebida em painéis orientados por eventos
 date: 2026-03-09
-documentclass: report
+documentclass: abntex2
 classoption:
   - 12pt
   - oneside
+  - a4paper
+  - openright
+  - chapter=TITLE
+  - section=TITLE
+  - english
+  - brazil
 lang: pt-BR
 toc: true
 toc-depth: 2
@@ -16,9 +25,22 @@ lot: true
 numbersections: true
 papersize: a4
 geometry:
-  - margin=2.8cm
-colorlinks: true
+  - left=3cm
+  - top=3cm
+  - right=2cm
+  - bottom=2cm
+colorlinks: false
 linkcolor: black
 urlcolor: blue
 citecolor: black
 titlepage: true
+abstract_pt: |
+  Este relatório analisa como diferentes famílias de backends analíticos e incrementais se comportam quando usadas como camada de serving para painéis gerenciais near-real-time orientados por eventos. O problema avaliado não se reduz à latência SQL isolada; ele envolve a distância entre o evento canônico de negócio e a disponibilidade de um estado derivado semanticamente e contabilmente confiável no frontend. Para enfrentar esse problema, o documento consolida um benchmark reprodutível sobre um repositório monolítico que integra producer, OpenTelemetry Collector, Kafka, storage writer, APIs especializadas, gateway realtime e frontends por backend. O corpus tecnológico comparado abrange ClickHouse, Apache Druid, Apache Pinot e Materialize, cobrindo tanto motores hot-analytic quanto sistemas incremental-streaming. A metodologia experimental opera por rodadas individualizadas, com coleta de métricas de bootstrap, latência de API, latência SQL, convergência websocket, corretude contábil e consumo de recursos. As tabelas do capítulo de resultados são geradas automaticamente a partir dos artefatos persistidos em `artifacts/benchmark`, preservando rastreabilidade entre coleta, síntese tabular e interpretação analítica.
+keywords_pt: benchmark de backends; dashboards em tempo real; event sourcing; OLAP; incremental view maintenance; Materialize; ClickHouse; Druid; Pinot
+abstract_en: |
+  This report analyzes how different analytical and incremental backends behave when used as the serving layer for event-driven near-real-time management dashboards. The evaluated problem is not limited to isolated SQL latency; it concerns the distance between the canonical business event and the availability of a semantically and financially reliable derived state in the frontend. To address this problem, the document consolidates a reproducible benchmark on top of a monolithic repository integrating producer, OpenTelemetry Collector, Kafka, storage writer, specialized APIs, a realtime gateway and backend-specific frontends. The compared technological corpus includes ClickHouse, Apache Druid, Apache Pinot and Materialize, therefore covering both hot-analytic engines and incremental-streaming systems. The experimental methodology operates through isolated rounds with metrics for bootstrap, API latency, SQL latency, websocket convergence, accounting correctness and resource consumption. The results chapter tables are generated automatically from the persisted artifacts in `artifacts/benchmark`, preserving traceability between collection, tabular synthesis and analytical interpretation.
+keywords_en: backend benchmarking; real-time dashboards; event sourcing; OLAP; incremental view maintenance; Materialize; ClickHouse; Druid; Pinot
+scope_note: |
+  Este pacote organiza em uma única pasta os arquivos-fonte do relatório, o template ABNT de compilação, o capítulo de resultados gerado a partir dos artefatos e o PDF resultante, sempre com base no estado observável do benchmark implementado no repositório.
+editorial_note: |
+  O texto adota formato impessoal, ancora afirmações factuais em artefatos verificáveis do repositório e evita substituir dados coletados por valores exemplificativos.
